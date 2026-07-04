@@ -7,16 +7,16 @@ changed; each line is a point to decide or edit.
 
 - ~~`examples/dotnet-postgres/devcontainer.json`~~ — RESOLVED 2026-07-04: keep fully verbatim, comment block included; the example's README already frames the files as unmodified and lists the values to replace on instantiation.
 - ~~`.claude/skills/frontend-design/SKILL.md` + `.claude/skills/responsive-layout/SKILL.md`~~ — RESOLVED 2026-07-04: both kept. responsive-layout: neutralized the two illustrative `job-tracker-ui` paths (now `frontend/src`). frontend-design: genericized with `<placeholders>` for dirs/stack; workflow kept intact.
-- `docs/reference/deployment-setup.md` — placeholder the `jobtracker-*` AWS resource / IAM names.
-- `docs/reference/Setup pipeline in EC2.md` — placeholder remaining project names / IP / key names.
-- `docs/reference/Ssl tls production setup guide.md` — placeholder the real domain.
-- `CLAUDE.md` (root) — first comment line still says "Rename to CLAUDE.md at the new repo root"; already renamed — reword?
-- `.claude/settings.json` — deny entry `Read(**/appsettings.*.json)` is .NET-specific; keep in seed (harmless) or move to example?
+- ~~`docs/reference/deployment-setup.md`~~ — RESOLVED 2026-07-04 (full cleanup): `jobtracker-*` names → `<project>-*`; sender address → `noreply@yourdomain.com`; app-specific secret rows tagged as examples; dangling `Production build plan.md` links repointed to `production-checklist.md` / `Ssl tls production setup guide.md`.
+- ~~`docs/reference/Setup pipeline in EC2.md`~~ — RESOLVED 2026-07-04: `jobtracker-key.pem` → `<project>-key.pem` (IP/username were already placeholders).
+- ~~`docs/reference/Ssl tls production setup guide.md`~~ — RESOLVED 2026-07-04: two real-domain mentions → `<YOUR_DOMAIN>` (rest of the guide already used that placeholder).
+- ~~`CLAUDE.md` (root)~~ — RESOLVED 2026-07-04: reworded the stale comment to "Template skeleton. Replace every `<placeholder>`…" (no rename happens on template instantiation).
+- ~~`.claude/settings.json`~~ — RESOLVED 2026-07-04: keep the `Read(**/appsettings.*.json)` deny entry in the seed — never matches outside .NET, protects .NET projects by default (same rationale as `**/.env*`).
 
 ## New files — review wording/contents
 
-- `.editorconfig` — revisit contents (universal-only settings chosen; no indent rules).
-- `.claude/rules/example.md` — new file: source rules were frontmatter-only, nothing to copy; check placeholder wording.
+- ~~`.editorconfig`~~ — RESOLVED 2026-07-04: settings kept; every rule now commented (so format mysteries are traceable) + a note that indent rules are omitted on purpose, with a per-filetype example.
+- ~~`.claude/rules/example.md`~~ — RESOLVED 2026-07-04: wording checked, kept as-is (placeholder path can't accidentally match; copy-per-area pattern explained in the file).
 - `docs/progress.md`, `docs/reference/production-checklist.md`, `examples/dotnet-postgres/README.md` + `.env.example`, root `README.md` — written new per plan; review.
 
 ## Placement calls made — confirm

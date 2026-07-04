@@ -9,7 +9,7 @@ This document covers the core concepts behind setting up SSL/TLS on a production
 - EC2 instance (Ubuntu) running Docker containers
 - nginx running inside a Docker container, serving HTTP on port 80
 - Certbot installed on the host OS in standalone mode
-- Domain: `jobtracker.nagarenegishi.com`
+- Domain: `<YOUR_DOMAIN>`
 - Goal: HTTPS with automated certificate renewal
 
 ---
@@ -108,7 +108,7 @@ After a successful run, Certbot writes files to `/etc/letsencrypt/` on the host.
 ```
 Root CA (pre-installed in browsers)
   └── Intermediate CA (Let's Encrypt)
-        └── Your server certificate (jobtracker.nagarenegishi.com)
+        └── Your server certificate (<YOUR_DOMAIN>)
 ```
 
 ### What nginx Does With Them (The TLS Handshake)

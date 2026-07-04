@@ -14,7 +14,7 @@ Everything below this block is the template skeleton shipped to new projects —
 
 <!-- END TEMPORARY -->
 
-<!-- Rename to CLAUDE.md at the new repo root. Replace every <placeholder>.
+<!-- Template skeleton. Replace every <placeholder>.
      Delete sections that do not apply. -->
 
 ## Project Overview

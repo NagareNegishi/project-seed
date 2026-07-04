@@ -9,11 +9,11 @@ Run once after launching the EC2 instance. Sets up Docker, Docker Compose, AWS C
 ```bash
 # Copy key into WSL (skip if already done)
 mkdir -p ~/.ssh
-cp /mnt/c/Users/YOUR_WINDOWS_USERNAME/PATH_TO_KEY/jobtracker-key.pem ~/.ssh/jobtracker-key.pem
-chmod 400 ~/.ssh/jobtracker-key.pem
+cp /mnt/c/Users/YOUR_WINDOWS_USERNAME/PATH_TO_KEY/<project>-key.pem ~/.ssh/<project>-key.pem
+chmod 400 ~/.ssh/<project>-key.pem
 
 # Connect to EC2
-ssh -i ~/.ssh/jobtracker-key.pem ubuntu@YOUR_ELASTIC_IP
+ssh -i ~/.ssh/<project>-key.pem ubuntu@YOUR_ELASTIC_IP
 ```
 
 ---
@@ -80,7 +80,7 @@ The docker group change only takes effect on a new session:
 
 ```bash
 exit
-ssh -i ~/.ssh/jobtracker-key.pem ubuntu@YOUR_ELASTIC_IP
+ssh -i ~/.ssh/<project>-key.pem ubuntu@YOUR_ELASTIC_IP
 
 docker --version
 docker compose version

@@ -1,10 +1,25 @@
+# EditorConfig — editors apply these automatically on edit/save (https://editorconfig.org).
+# If files seem to "reformat themselves", the rules below are the likely cause.
+
+# Stop searching for .editorconfig files above this directory
 root = true
 
 [*]
+# Write files as UTF-8
 charset = utf-8
+# Force Unix line endings — prevents CRLF/LF churn in diffs between Windows and the container
 end_of_line = lf
+# Add a newline at the end of file on save (POSIX convention; avoids "\ No newline" diff noise)
 insert_final_newline = true
+# Strip spaces/tabs at line ends on save — a common source of "why did this line change?" diffs
 trim_trailing_whitespace = true
 
 [*.md]
+# Exempt Markdown: two trailing spaces are meaningful there (hard line break)
 trim_trailing_whitespace = false
+
+# No indent rules on purpose — indent width is stack-specific (C# 4, JS/TS 2, ...).
+# Add per-filetype sections in your project, e.g.:
+# [*.cs]
+# indent_style = space
+# indent_size = 4
