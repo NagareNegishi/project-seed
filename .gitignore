@@ -1,0 +1,2 @@
+# Local environment — never commit real values; the pattern lives in .env.example
+.devcontainer/.env

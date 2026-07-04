@@ -1,0 +1,71 @@
+// Generic dev container: app service + Claude Code sandbox behind an outbound firewall.
+// Replace every <placeholder>. Real stack values live in examples/<stack>/.
+// For format details, see https://aka.ms/devcontainer.json
+{
+	"name": "<project-name>",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		// Node.js for frontend tooling and Claude Code
+		"ghcr.io/devcontainers/features/node:1": {},
+		// Claude Code
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	},
+
+	// Configure tool-specific properties.
+	// VS code specific properties: https://containers.dev/supporting#visual-studio-code
+	"customizations": {
+		"vscode": {
+			// <placeholder> stack extensions, e.g. "ms-dotnettools.csdevkit"
+			"extensions": []
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// <placeholder> backend, frontend, db ports
+	"forwardPorts": [],
+
+	"mounts": [
+		// Fixed volume name shared by every project built from the seed:
+		// one Claude login/config for all of them. Documented in the seed README.
+		"source=claude-credentials,target=/home/vscode/.claude,type=volume"
+		// <placeholder> stack mounts, e.g. a dev-cert volume (see examples/)
+	],
+
+	// Use 'containerEnv' to set environment variables in the container. (for all processes, set during container build)
+	"containerEnv": {
+		// Increase Node.js memory limit for Claude Code
+		"NODE_OPTIONS": "--max-old-space-size=4096",
+		// Tell Claude Code where to find its config
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+		// <placeholder> e.g. Pacific/Auckland
+		"TZ": "Etc/UTC"
+	},
+
+	// Use 'remoteEnv' to set environment variables in the container. (for VS Code remote session)
+	// <placeholder> stack remoteEnv if needed, e.g. dev-cert path/password (see examples/)
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": {
+		// Set up Claude onboarding state, skip the onboarding process
+		"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json"
+		// <placeholder> dependency restore/install commands per stack (see examples/)
+	},
+
+	// Executes the firewall script every time the container starts
+	// and tells git "I trust this directory": https://www.kenmuse.com/blog/avoiding-dubious-ownership-in-dev-containers/
+	"postStartCommand": "sudo /usr/local/bin/project-firewall.sh && git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+	// Wait for the firewall to be set up
+	"waitFor": "postStartCommand"
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
+
+// Reference: claude-code example devcontainer configuration:
+// https://github.com/anthropics/claude-code/blob/main/.devcontainer/devcontainer.json
+// Its firewall grants NET_ADMIN/NET_RAW via "runArgs", which does not work with a
+// docker compose setup — that's why cap_add lives in docker-compose.yml here.
