@@ -29,7 +29,11 @@ changed; each line is a point to decide or edit.
 
 - Seed repo name.
 - LICENSE if the repo is public.
-- Which other projects become `examples/` entries (candidates with same setup: company-verification, DJ-App, expense-splitter, NagareNegishi.github.io).
+- Which other projects become `examples/` entries. Candidates confirmed 2026-07-04: all have the same devcontainer + firewall + `.claude` pattern, visible at `/workspaces/<name>` from this container; stack read from each `.devcontainer/Dockerfile` base image:
+  - `DJ-App` — C++ (`devcontainers/cpp:1-ubuntu-24.04`), client + server dirs → distinct stack, strongest candidate (`examples/cpp/`).
+  - `expense-splitter` — Vite + TypeScript frontend-only (`devcontainers/base:ubuntu-22.04`) → candidate (`examples/node-vite/`).
+  - `NagareNegishi.github.io` — Vite frontend, GitHub Pages (`devcontainers/base:ubuntu-22.04`) → same shape as expense-splitter; pick one of the two.
+  - `company-verification` — .NET 10 (`devcontainers/dotnet:2-10.0`), API + Core + Tests → overlaps dotnet-postgres; likely skip unless its setup differs.
 - Delete the `project-seed/` working folder (plan/README/template/this file) before marking as template?
 - Source-repo housekeeping: Job-Application-Tracker `docs/progress.md` still links `docs/Production build plan.md` / `docs/Demo and Auth Features Plan.md`; actual paths are `docs/plans/production-build.md` / `docs/plans/demo-auth-features.md`. Fix in the source repo, not here.
 - User action: GitHub → Settings → check "Template repository".
