@@ -1,18 +1,3 @@
-<!-- TEMPORARY — seed build only. Delete this block together with the
-     project-seed/ folder before marking the repo as a template (progress.md step 4). -->
-
-## Seed build (temporary)
-
-This repo is the seed itself, still being built. Decision sources, in order:
-
-- `project-seed/progress.md` — current state + remaining steps; read at session start.
-- `project-seed/plan.md` — the original build plan.
-- `project-seed/README.md` — working rules: the user runs all shell commands themselves; explain each change before making it; files copied from the source repo are verbatim — never refactor or reword them silently.
-
-Everything below this block is the template skeleton shipped to new projects — fill it there, not here.
-
-<!-- END TEMPORARY -->
-
 <!-- Template skeleton. Replace every <placeholder>.
      Delete sections that do not apply. -->
 
