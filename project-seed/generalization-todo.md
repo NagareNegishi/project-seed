@@ -18,7 +18,7 @@ changed; each line is a point to decide or edit.
 - ~~`.editorconfig`~~ — RESOLVED 2026-07-04: settings kept; every rule now commented (so format mysteries are traceable) + a note that indent rules are omitted on purpose, with a per-filetype example.
 - ~~`.claude/rules/example.md`~~ — RESOLVED 2026-07-04: wording checked, kept as-is (placeholder path can't accidentally match; copy-per-area pattern explained in the file).
 - ~~`docs/progress.md`, `docs/reference/production-checklist.md`, `examples/dotnet-postgres/README.md`, root `README.md`~~ — RESOLVED 2026-07-04: reviewed, all kept as written (checklist's source-repo link already uses the corrected `docs/plans/production-build.md` path).
-- `examples/dotnet-postgres/.env.example` — review still pending: the old `Read(**/.env*)` deny blocked it this session. Deny has been narrowed in `.claude/settings.json` (enumerated secret variants; `.env.example` readable) — takes effect next session; verify then.
+- ~~`examples/dotnet-postgres/.env.example`~~ — RESOLVED 2026-07-04: narrowed deny verified working (both `.env.example` files readable). Reviewed: dotnet-postgres one is placeholder-only, fine. `examples/dotnet/.env.example` is verbatim and references source-repo adapter paths (`CompanyVerification.Core/Providers/...`) + app-specific keys; kept verbatim, framed in that example's README as "keep the pattern, replace the contents".
 
 ## Placement calls made — CONFIRMED 2026-07-04
 
@@ -35,7 +35,7 @@ changed; each line is a point to decide or edit.
   - `expense-splitter` → `examples/node-vite/` — Vite+TS frontend-only.
   - `company-verification` → `examples/dotnet/` — .NET 10 API, no db; root `.env.example` copied too.
   - Files copied 2026-07-04 (verbatim; lock files and real `.env` excluded), verified present.
-  - NEXT SESSION: write the three example READMEs in the `examples/dotnet-postgres/README.md` style ("what goes where": Dockerfile base image + packages, compose services, devcontainer fragments, firewall stack-domain block). Source facts gathered this session: cpp = JUCE 8.0.12 baked into image, clang default, ninja + clang-tools-18, VS Code domains in firewall; node-vite = base:ubuntu-22.04 + node feature, port 5173, `ui.shadcn.com` in firewall; dotnet = dotnet:2-10.0 base, no db service, ports 7100/5286, NuGet + `api.business.govt.nz`/`abr.business.gov.au` in firewall (app-specific API domains worth calling out), `.env.example` included.
+  - ~~NEXT SESSION: write the three example READMEs~~ — DONE 2026-07-04: all three written in the dotnet-postgres style, per-example project-specific values listed inline (no pointer to this todo file, since `project-seed/` gets deleted). Same dangling pointer removed from `examples/dotnet-postgres/README.md`'s closing paragraph.
 - Delete the `project-seed/` working folder (plan/README/template/this file) before marking as template?
 - Source-repo housekeeping: Job-Application-Tracker `docs/progress.md` still links `docs/Production build plan.md` / `docs/Demo and Auth Features Plan.md`; actual paths are `docs/plans/production-build.md` / `docs/plans/demo-auth-features.md`. Fix in the source repo, not here.
 - User action: GitHub → Settings → check "Template repository".

@@ -9,16 +9,20 @@ Tracks finishing this seed repo itself. Update after each work session.
 - `.claude/`: settings.json copied as-is; 12 skills copied, 5 state files excluded; rules example created; `issue-creator-decisions.md` shipped with the github-issue-creator skill as `decisions.md`.
 - `docs/`: progress.md template, plans/.gitkeep, 11 reference docs copied verbatim, production-checklist.md extracted.
 - `examples/dotnet-postgres/`: source repo's real devcontainer files verbatim + `.env.example` + README + 2 .NET reference docs.
-- Root: `CLAUDE.md` (from template, template deleted), `README.md` instantiation checklist, `.editorconfig` (revisit noted), `.gitignore`.
-- `generalization-todo.md` written — all deferred edits and open decisions live there.
+- Root: `CLAUDE.md` (from template, template deleted), `README.md` instantiation checklist, `.editorconfig`, `.gitignore`.
+- **Review session 2026-07-04** — walked `generalization-todo.md` end to end; every item resolved or confirmed (resolutions recorded inline in that file). Highlights:
+  - frontend-design skill genericized with `<placeholders>`; responsive-layout examples neutralized.
+  - deployment-setup / EC2 / SSL docs placeholder-cleaned; dangling doc links repointed.
+  - `.editorconfig`: every rule commented so format issues are traceable; indent gap documented as deliberate.
+  - `Read(**/.env*)` deny narrowed to enumerated secret variants so `.env.example` stays readable (takes effect next session).
+  - Repo name: keep `project-seed`. LICENSE: MIT added + "review/replace LICENSE" step in README checklist.
+  - Examples: keep-all policy (projects prune unused entries — pruning step added to README checklist); three new entries copied verbatim: `examples/cpp/` (DJ-App), `examples/node-vite/` (expense-splitter), `examples/dotnet/` (company-verification, incl. `.env.example`). `NagareNegishi.github.io` dropped — identical container files to expense-splitter.
+- **Session 2026-07-04 (continued)** — READMEs written for `examples/cpp/`, `examples/node-vite/`, `examples/dotnet/` (dotnet-postgres style; project-specific values listed inline in each). Narrowed `.env*` deny verified working; both `.env.example` files reviewed — placeholder-only, kept verbatim (dotnet one's source-repo adapter references framed in its README). Removed the dangling "seed's generalization todo" pointer from `examples/dotnet-postgres/README.md`.
 
 ## Remaining
 
-1. Review session: walk `generalization-todo.md` together; apply the agreed edits.
-2. Decide: seed repo name, LICENSE, `.editorconfig` contents, frontend-design/responsive-layout keep-or-drop.
-3. Optional: build more `examples/` entries — candidate list with confirmed stacks in `generalization-todo.md` ("Still open").
-4. First commit + push to GitHub.
-5. Test-drive: instantiate a throwaway project from the seed, open the dev container, confirm firewall + Claude login via `claude-credentials` volume work.
-6. Delete `project-seed/` working folder + the "Seed build (temporary)" block at the top of root `CLAUDE.md`.
-7. Mark repo as GitHub template (Settings → "Template repository").
-8. Source-repo housekeeping (in Job-Application-Tracker, not here): fix stale plan links in its `docs/progress.md`.
+1. First commit + push to GitHub.
+2. Test-drive: instantiate a throwaway project from the seed, open the dev container, confirm firewall + Claude login via `claude-credentials` volume work.
+3. Delete `project-seed/` working folder + the "Seed build (temporary)" block at the top of root `CLAUDE.md`.
+4. Mark repo as GitHub template (Settings → "Template repository").
+5. Source-repo housekeeping (in Job-Application-Tracker, not here): fix stale plan links in its `docs/progress.md`.

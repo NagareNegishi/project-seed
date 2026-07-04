@@ -11,5 +11,4 @@ stack-specific parts into the seed's `.devcontainer/` placeholders:
 - `reference/` — .NET-stack docs (ASP.NET Core backend, ASP.NET Identity).
 
 Project-specific values still inside these files (paths, connection-string key,
-timezone) are listed in the seed's generalization todo — replace them when
-instantiating.
+timezone) — replace them when instantiating.
