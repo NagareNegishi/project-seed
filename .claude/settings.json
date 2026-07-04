@@ -12,7 +12,13 @@
       "Bash(git commit *)"
     ],
     "deny": [
-      "Read(**/.env*)",
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.production)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.test)",
+      "Read(**/.env.*.local)",
       "Read(**/appsettings.*.json)",
       "Read(**/*secret*)",
       "Bash(git push *)",

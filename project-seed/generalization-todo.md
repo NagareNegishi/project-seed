@@ -17,9 +17,10 @@ changed; each line is a point to decide or edit.
 
 - ~~`.editorconfig`~~ — RESOLVED 2026-07-04: settings kept; every rule now commented (so format mysteries are traceable) + a note that indent rules are omitted on purpose, with a per-filetype example.
 - ~~`.claude/rules/example.md`~~ — RESOLVED 2026-07-04: wording checked, kept as-is (placeholder path can't accidentally match; copy-per-area pattern explained in the file).
-- `docs/progress.md`, `docs/reference/production-checklist.md`, `examples/dotnet-postgres/README.md` + `.env.example`, root `README.md` — written new per plan; review.
+- ~~`docs/progress.md`, `docs/reference/production-checklist.md`, `examples/dotnet-postgres/README.md`, root `README.md`~~ — RESOLVED 2026-07-04: reviewed, all kept as written (checklist's source-repo link already uses the corrected `docs/plans/production-build.md` path).
+- `examples/dotnet-postgres/.env.example` — review still pending: the old `Read(**/.env*)` deny blocked it this session. Deny has been narrowed in `.claude/settings.json` (enumerated secret variants; `.env.example` readable) — takes effect next session; verify then.
 
-## Placement calls made — confirm
+## Placement calls made — CONFIRMED 2026-07-04
 
 - `issue-creator-decisions.md` → `.claude/skills/github-issue-creator/decisions.md` (plan open item: checked, it is that skill's decision log).
 - `devcontainer-lock.json` not copied into the example (machine-specific pin; seed has its own).
@@ -27,13 +28,14 @@ changed; each line is a point to decide or edit.
 
 ## Still open (from plan)
 
-- Seed repo name.
-- LICENSE if the repo is public.
-- Which other projects become `examples/` entries. Candidates confirmed 2026-07-04: all have the same devcontainer + firewall + `.claude` pattern, visible at `/workspaces/<name>` from this container; stack read from each `.devcontainer/Dockerfile` base image:
-  - `DJ-App` — C++ (`devcontainers/cpp:1-ubuntu-24.04`), client + server dirs → distinct stack, strongest candidate (`examples/cpp/`).
-  - `expense-splitter` — Vite + TypeScript frontend-only (`devcontainers/base:ubuntu-22.04`) → candidate (`examples/node-vite/`).
-  - `NagareNegishi.github.io` — Vite frontend, GitHub Pages (`devcontainers/base:ubuntu-22.04`) → same shape as expense-splitter; pick one of the two.
-  - `company-verification` — .NET 10 (`devcontainers/dotnet:2-10.0`), API + Core + Tests → overlaps dotnet-postgres; likely skip unless its setup differs.
+- ~~Seed repo name~~ — RESOLVED 2026-07-04: keep `project-seed`.
+- ~~LICENSE~~ — RESOLVED 2026-07-04: MIT added under Nagare Negishi ("anyone can use, credit required" = MIT's retained copyright notice); README instantiation checklist got a "review/replace LICENSE" step for closed-source projects.
+- Examples selection — DECIDED 2026-07-04: keep three new entries (extra examples cost nothing in the template; each new project picks the best match and deletes unused entries — pruning step added to the README checklist). Checked: `company-verification` is NOT redundant — plain .NET API, no db service, and its firewall demonstrates app-specific API domains. `NagareNegishi.github.io` dropped: its devcontainer files are identical to expense-splitter's except the `name` field.
+  - `DJ-App` → `examples/cpp/` — C++/JUCE, CMake+Ninja, JUCE baked into the image.
+  - `expense-splitter` → `examples/node-vite/` — Vite+TS frontend-only.
+  - `company-verification` → `examples/dotnet/` — .NET 10 API, no db; root `.env.example` copied too.
+  - Files copied 2026-07-04 (verbatim; lock files and real `.env` excluded), verified present.
+  - NEXT SESSION: write the three example READMEs in the `examples/dotnet-postgres/README.md` style ("what goes where": Dockerfile base image + packages, compose services, devcontainer fragments, firewall stack-domain block). Source facts gathered this session: cpp = JUCE 8.0.12 baked into image, clang default, ninja + clang-tools-18, VS Code domains in firewall; node-vite = base:ubuntu-22.04 + node feature, port 5173, `ui.shadcn.com` in firewall; dotnet = dotnet:2-10.0 base, no db service, ports 7100/5286, NuGet + `api.business.govt.nz`/`abr.business.gov.au` in firewall (app-specific API domains worth calling out), `.env.example` included.
 - Delete the `project-seed/` working folder (plan/README/template/this file) before marking as template?
 - Source-repo housekeeping: Job-Application-Tracker `docs/progress.md` still links `docs/Production build plan.md` / `docs/Demo and Auth Features Plan.md`; actual paths are `docs/plans/production-build.md` / `docs/plans/demo-auth-features.md`. Fix in the source repo, not here.
 - User action: GitHub → Settings → check "Template repository".

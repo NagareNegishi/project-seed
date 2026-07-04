@@ -1,0 +1,74 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
+{
+    "name": "Expense Splitter (React + Vite)",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		// Node.js for frontend
+		"ghcr.io/devcontainers/features/node:1": {},
+		// Claude Code
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Configure tool-specific properties.
+	// VS code specific properties: https://containers.dev/supporting#visual-studio-code
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"bradlc.vscode-tailwindcss",
+				"vitest.explorer"
+			]
+		}
+	},
+
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// frontend (Vite dev server)
+	"forwardPorts": [5173],
+	// "portsAttributes": {
+	//		"5001": {
+	//			"protocol": "https"
+	//		}
+	// }
+
+    "mounts": [
+		// Mount a volume for Claude credentials
+		"source=claude-credentials,target=/home/vscode/.claude,type=volume"
+    ],
+
+	// Use 'containerEnv' to set environment variables in the container. (for all processes, set during container build)
+	"containerEnv": {
+		// Increase Node.js memory limit for Claude Code
+		"NODE_OPTIONS": "--max-old-space-size=4096",
+		// Tell Claude Code where to find its config
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+		"TZ": "Pacific/Auckland"
+	},
+
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": {
+    // Install frontend dependencies
+    "frontend": "npm install",
+	// Set up Claude onboarding state, skip the onboarding process
+	"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json"
+	},
+
+	// Executes the firewall script every time the container starts
+	// and tells git "I trust this directory": https://www.kenmuse.com/blog/avoiding-dubious-ownership-in-dev-containers/
+	"postStartCommand": "sudo /usr/local/bin/project-firewall.sh && git config --global --add safe.directory ${containerWorkspaceFolder}",
+
+	// Wait for the firewall to be set up
+	"waitFor": "postStartCommand"
+
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

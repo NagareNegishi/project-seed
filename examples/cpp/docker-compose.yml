@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+
+    # Overrides default command so the container stays alive after build finishes.
+    command: sleep infinity
+
+    # Granting specific Linux kernel capabilities for the firewall script.
+    cap_add:
+      # Grants permission to modify network interfaces and routing rules.
+      - NET_ADMIN
+      # Grants permission to use raw network sockets.
+      - NET_RAW
+
+    # Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    # user: root
+
+    # Use "forwardPorts" in devcontainer.json to forward an app port locally.
+    # (Adding the "ports" property here will not forward from a Codespace.)
+
+  # sync-server: Node.js WebSocket relay for multi-user state sync.
+  # Will be a separate service in this file with its own build context under ../server/
+  # and forwardPorts entry in devcontainer.json for the WebSocket port.
+
+volumes:
+  # Find existing volume named "claude-credentials" and reuse it, or create one if missing.
+  claude-credentials:
+    name: claude-credentials

@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+
+    env_file:
+      - path: ../.env
+        required: false
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    # Granting specific Linux kernel capabilities
+    cap_add:
+      # Grants permission to modify network interfaces and routing rules
+      - NET_ADMIN
+      # Grants permission to use raw network sockets
+      - NET_RAW
+    
+    # Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    # user: root
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+volumes:
+  # find existing volume named "claude-credentials" and use it, or create a new one if it doesn't exist
+  claude-credentials:
+    name: claude-credentials

@@ -14,9 +14,11 @@ reference docs. New projects start from this repo (GitHub → "Use this template
 ## Instantiation checklist
 
 1. Create a repo from this template and open it locally.
-2. Pick a stack from `examples/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains.
+2. Pick a stack from `examples/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains. Then delete the `examples/` entries you didn't use.
 3. Create `.devcontainer/.env` from `.env.example` and fill the values.
 4. Fill `CLAUDE.md` (skeleton at repo root) and `.claude/rules/` paths.
+   Review `LICENSE` — the seed ships MIT under the seed author's name; replace or
+   delete it if this project is closed-source or licensed differently.
 5. Open in the dev container ("Reopen in Container"). The firewall runs on every start; only allowlisted domains are reachable.
 6. After the first feature, start updating `docs/progress.md`.
 
