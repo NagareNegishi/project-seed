@@ -1,0 +1,194 @@
+{
+  "Access_Control_Cheat_Sheet.md": {
+    "commit_sha": "eebb0aff65c546613de0df8396260bd96faba29a",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Authorization_Cheat_Sheet.md": {
+    "commit_sha": "17c8fb42a380a3f47ca6a3adc4fac817e46955a6",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "915da9d441af02f4ea192c551e82f4a143cceaaa",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "2280503ee24a0c954a63e0d8d0dcb64790063052",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Server_Side_Request_Forgery_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "32f84272ceabcef3359969052b256fd52ac43d37",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "HTTP_Headers_Cheat_Sheet.md": {
+    "commit_sha": "e95f1935a7f457787f545cbbd25f7305d705f87a",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Content_Security_Policy_Cheat_Sheet.md": {
+    "commit_sha": "b32b228e985b67a25468ae276c4a8b8c62f48152",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Docker_Security_Cheat_Sheet.md": {
+    "commit_sha": "e9521ae27dd57b45ea939763a58870074aa9c9c8",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "NodeJS_Docker_Cheat_Sheet.md": {
+    "commit_sha": "8267a001b2986dc134b80ec61ea5b02404475be1",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Software_Supply_Chain_Security_Cheat_Sheet.md": {
+    "commit_sha": "db57adcac489f635ba3319110ff04a1004c3c5fb",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Dependency_Graph_SBOM_Cheat_Sheet.md": {
+    "commit_sha": "5d9fc8c0f489231b1471e07aa573b415b4e82f1e",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "NPM_Security_Cheat_Sheet.md": {
+    "commit_sha": "1c10822031f980a6e2281ced112881cd2fa87a56",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Cryptographic_Storage_Cheat_Sheet.md": {
+    "commit_sha": "96a8715a5b65889e2de891e3db34ddf4374be107",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Password_Storage_Cheat_Sheet.md": {
+    "commit_sha": "f999994724f8f063f57f5f5c49cedd953a715abb",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Key_Management_Cheat_Sheet.md": {
+    "commit_sha": "77653b8ad1bb219f3625b0d5e65582a2e31d4f7b",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "HTTP_Strict_Transport_Security_Cheat_Sheet.md": {
+    "commit_sha": "c8527386c1e6db5defde2e6d88c26158ab4743da",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Secrets_Management_Cheat_Sheet.md": {
+    "commit_sha": "abacdf53ad24a01abcefae8305488b4275a57439",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "SQL_Injection_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "21bce3eb87f0c630ede91958b905b63ddcf6c583",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Injection_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "739d19a236c5afaf34b789b82d7d0829070b6fd6",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Cross_Site_Scripting_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "a49ef31dcbc7c93e4ec6b9b15419c667e9ec325d",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "DOM_based_XSS_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "d9762e23bbd1835bc8ea3665e8b8dce54c612631",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "DOM_Clobbering_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "3f4384b2e1af6b942c27be88ede2273cf97a52e1",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "OS_Command_Injection_Defense_Cheat_Sheet.md": {
+    "commit_sha": "87054c7274666b18fc5c2ca240a52120a2989a8f",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "LDAP_Injection_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "c297cfad1d891e54da042cdb5392de0e3cc6f99c",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Input_Validation_Cheat_Sheet.md": {
+    "commit_sha": "59819d4f5d545a2d3e97acc63b57550503db351e",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Query_Parameterization_Cheat_Sheet.md": {
+    "commit_sha": "97c5da6d15f4926b05dabbcdf0aaae787b60b0d8",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Prototype_Pollution_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "05be6684f65a171b7557c343c30447d600e7d4e7",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Secure_Product_Design_Cheat_Sheet.md": {
+    "commit_sha": "5ca4f423a79fd04b731f7c73d4251063702aa9b2",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Abuse_Case_Cheat_Sheet.md": {
+    "commit_sha": "28deee8d362fc46f479902344ebd2b86ec8471b3",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Attack_Surface_Analysis_Cheat_Sheet.md": {
+    "commit_sha": "5e049c4d16fae7e0597ec02c402e6971d6edcbfa",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Denial_of_Service_Cheat_Sheet.md": {
+    "commit_sha": "109192a625360a12a41861fbe5d82a392215d527",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Authentication_Cheat_Sheet.md": {
+    "commit_sha": "777b2b0aa7eb091d6d6db7bd4b65753c3d94e31c",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Session_Management_Cheat_Sheet.md": {
+    "commit_sha": "246cd6125fb37a1780245be8e88b005c277698a7",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Forgot_Password_Cheat_Sheet.md": {
+    "commit_sha": "41b734138be55e9cec8a18e6418362a381188305",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Credential_Stuffing_Prevention_Cheat_Sheet.md": {
+    "commit_sha": "dc31ac409f8d58c0f871d6143846bbf86ff7dd03",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Multifactor_Authentication_Cheat_Sheet.md": {
+    "commit_sha": "c897a0157841b73f4390204e23b1bd8f9647e558",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "JSON_Web_Token_for_Java_Cheat_Sheet.md": {
+    "commit_sha": "b1697bb036aa561f22775ac1f9914e4b959baf3c",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Deserialization_Cheat_Sheet.md": {
+    "commit_sha": "a38d0fb44c04735c511754b125834103bb3bdb14",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Logging_Cheat_Sheet.md": {
+    "commit_sha": "48ee7bec7ed5c3c1ec582e956eb5ee3a46650000",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Logging_Vocabulary_Cheat_Sheet.md": {
+    "commit_sha": "115024dfb7c57462baf9cc8d3d307f62146131c5",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Error_Handling_Cheat_Sheet.md": {
+    "commit_sha": "7524ecc4757cc46ba09dbce6ead517d53f45fd1d",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "DotNet_Security_Cheat_Sheet.md": {
+    "commit_sha": "9d9cdabc625b27ed678e21cad4fe56651537e5ad",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "REST_Security_Cheat_Sheet.md": {
+    "commit_sha": "324780248637734c1bfb1896f968661533f3d8c5",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Mass_Assignment_Cheat_Sheet.md": {
+    "commit_sha": "51d4f8da97c1babe606a8c86759151dea06edb42",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Microservices_Security_Cheat_Sheet.md": {
+    "commit_sha": "78ac6a3dd5cbc852a54b1cb0df680842a256230c",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Nodejs_Security_Cheat_Sheet.md": {
+    "commit_sha": "bf285371b4f3b161f120c72bab8211e394592d01",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "HTML5_Security_Cheat_Sheet.md": {
+    "commit_sha": "89951f899ff09c55469dda926c92d6895cad0118",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  },
+  "Securing_Cascading_Style_Sheets_Cheat_Sheet.md": {
+    "commit_sha": "0cb6d5786e3fe17abff2ae1f5862646d797fa580",
+    "fetched_at": "2026-04-05T11:55:23Z"
+  }
+}

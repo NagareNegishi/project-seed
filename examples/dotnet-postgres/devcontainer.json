@@ -1,0 +1,150 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet-postgres
+{
+    "name": "C# (.NET) and PostgreSQL",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		// Node.js for frontend
+		"ghcr.io/devcontainers/features/node:1": {},
+		// Claude Code
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Configure tool-specific properties.
+	// VS code specific properties: https://containers.dev/supporting#visual-studio-code
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-dotnettools.csdevkit"
+			]
+		}
+	},
+
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// backend, frontend, postgres
+	"forwardPorts": [7100, 5286, 5173, 5432],
+	// "portsAttributes": {
+	//		"5001": {
+	//			"protocol": "https"
+	//		}
+	// }
+
+    "mounts": [
+		// Store dev cert in a Docker volume — persists across rebuilds without needing .NET on the Windows host
+        "source=aspnet-https,target=/home/vscode/.aspnet/https,type=volume",
+		// Mount a volume for Claude credentials
+		"source=claude-credentials,target=/home/vscode/.claude,type=volume"
+    ],
+
+	// Use 'containerEnv' to set environment variables in the container. (for all processes, set during container build)
+	"containerEnv": {
+		// Increase Node.js memory limit for Claude Code
+		"NODE_OPTIONS": "--max-old-space-size=4096",
+		// Tell Claude Code where to find its config
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+		"TZ": "Pacific/Auckland"
+	},
+
+	// Use 'remoteEnv' to set environment variables in the container. (for VS Code remote session)
+    "remoteEnv": {
+		// Tell Kestrel where to find the cert and its password
+        "ASPNETCORE_Kestrel__Certificates__Default__Password": "${localEnv:KESTREL_CERT_PASSWORD}",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "/home/vscode/.aspnet/https/aspnetapp.pfx"
+    },
+
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": {
+	// Restore .NET dependencies
+    "backend": "cd JobTrackerApi && dotnet restore",
+    // Install frontend dependencies
+    "frontend": "cd job-tracker-ui && npm install",
+	// Set up Claude onboarding state, skip the onboarding process
+	"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json",
+	// Sources .env vars then explicitly builds ConnectionStrings__JobTrackerContext (what dotnet ef CLI reads)
+	// from individual POSTGRES_* vars — avoids duplication in .env and works automatically on every new machine
+	"shell-env": "echo 'set -a; source /workspaces/Job-Application-Tracker/.devcontainer/.env; set +a; export ConnectionStrings__JobTrackerContext=\"Host=db;Database=$POSTGRES_DB;Username=$POSTGRES_USER;Password=$POSTGRES_PASSWORD\"' >> ~/.bashrc"
+	},
+
+	// Executes the firewall script every time the container starts
+	// and tells git "I trust this directory": https://www.kenmuse.com/blog/avoiding-dubious-ownership-in-dev-containers/
+	"postStartCommand": "sudo /usr/local/bin/project-firewall.sh && git config --global --add safe.directory ${containerWorkspaceFolder}",
+	
+	// Wait for the firewall to be set up
+	"waitFor": "postStartCommand"
+
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
+
+
+// claude-code example devcontainer configuration:
+// https://github.com/anthropics/claude-code/blob/main/.devcontainer/devcontainer.json
+//
+// {
+//   "name": "Claude Code Sandbox",
+
+	// only required if you need Dockerfile
+//   "build": {
+//     "dockerfile": "Dockerfile",
+//     "args": {
+//       "TZ": "${localEnv:TZ:America/Los_Angeles}",
+//       "CLAUDE_CODE_VERSION": "latest",
+//       "GIT_DELTA_VERSION": "0.18.2",
+//       "ZSH_IN_DOCKER_VERSION": "1.2.0"
+//     }
+//   },
+	// for firewall, but dont work with docker compose setup
+//   "runArgs": [
+//     "--cap-add=NET_ADMIN",
+//     "--cap-add=NET_RAW"
+//   ],
+//   "customizations": {
+//     "vscode": {
+//       "extensions": [
+//         "anthropic.claude-code",
+//         "dbaeumer.vscode-eslint",
+//         "esbenp.prettier-vscode",
+//         "eamodio.gitlens"
+//       ],
+//       "settings": {
+//         "editor.formatOnSave": true,
+//         "editor.defaultFormatter": "esbenp.prettier-vscode",
+//         "editor.codeActionsOnSave": {
+//           "source.fixAll.eslint": "explicit"
+//         },
+//         "terminal.integrated.defaultProfile.linux": "zsh",
+//         "terminal.integrated.profiles.linux": {
+//           "bash": {
+//             "path": "bash",
+//             "icon": "terminal-bash"
+//           },
+//           "zsh": {
+//             "path": "zsh"
+//           }
+//         }
+//       }
+//     }
+//   },
+//   "remoteUser": "node",
+//   "mounts": [
+//     "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+//     "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
+//   ],
+//   "containerEnv": {
+//     "NODE_OPTIONS": "--max-old-space-size=4096",
+//     "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+//     "POWERLEVEL9K_DISABLE_GITSTATUS": "true"
+//   },
+//   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+//   "workspaceFolder": "/workspace",
+//   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+//   "waitFor": "postStartCommand"
+// }

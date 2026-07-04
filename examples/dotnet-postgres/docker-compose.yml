@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
+
+    # Granting specific Linux kernel capabilities
+    cap_add:
+      # Grants permission to modify network interfaces and routing rules
+      - NET_ADMIN
+      # Grants permission to use raw network sockets
+      - NET_RAW
+    
+    # Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    # user: root
+
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  db:
+    image: postgres:14.3
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      
+    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+volumes:
+  postgres-data:
+  # find existing volume named "claude-credentials" and use it, or create a new one if it doesn't exist
+  claude-credentials:
+    name: claude-credentials
+  # stores the dev HTTPS cert — persists across rebuilds without needing .NET on the Windows host
+  aspnet-https:
+    name: aspnet-https

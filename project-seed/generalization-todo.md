@@ -1,0 +1,35 @@
+# Generalization TODO — review together
+
+Files were copied from Job-Application-Tracker verbatim. Nothing below has been
+changed; each line is a point to decide or edit.
+
+## Copied verbatim — project-specific values inside
+
+- `examples/dotnet-postgres/devcontainer.json` — `shell-env` postCreateCommand hardcodes `/workspaces/Job-Application-Tracker/.devcontainer/.env` and `ConnectionStrings__JobTrackerContext`; dirs `JobTrackerApi`/`job-tracker-ui`; `TZ: Pacific/Auckland`; long commented claude-code reference block at bottom (seed copy has a shorter note — trim?).
+- `.claude/skills/frontend-design/SKILL.md` + `.claude/skills/responsive-layout/SKILL.md` — plan says "genericize or drop"; hardcode `job-tracker-ui/`. Copied as-is; decide.
+- `docs/reference/deployment-setup.md` — placeholder the `jobtracker-*` AWS resource / IAM names.
+- `docs/reference/Setup pipeline in EC2.md` — placeholder remaining project names / IP / key names.
+- `docs/reference/Ssl tls production setup guide.md` — placeholder the real domain.
+- `CLAUDE.md` (root) — first comment line still says "Rename to CLAUDE.md at the new repo root"; already renamed — reword?
+- `.claude/settings.json` — deny entry `Read(**/appsettings.*.json)` is .NET-specific; keep in seed (harmless) or move to example?
+
+## New files — review wording/contents
+
+- `.editorconfig` — revisit contents (universal-only settings chosen; no indent rules).
+- `.claude/rules/example.md` — new file: source rules were frontmatter-only, nothing to copy; check placeholder wording.
+- `docs/progress.md`, `docs/reference/production-checklist.md`, `examples/dotnet-postgres/README.md` + `.env.example`, root `README.md` — written new per plan; review.
+
+## Placement calls made — confirm
+
+- `issue-creator-decisions.md` → `.claude/skills/github-issue-creator/decisions.md` (plan open item: checked, it is that skill's decision log).
+- `devcontainer-lock.json` not copied into the example (machine-specific pin; seed has its own).
+- `api.osv.dev` — already in the seed's generic firewall; plan open item resolved as generic.
+
+## Still open (from plan)
+
+- Seed repo name.
+- LICENSE if the repo is public.
+- Which other projects become `examples/` entries (candidates with same setup: company-verification, DJ-App, expense-splitter, NagareNegishi.github.io).
+- Delete the `project-seed/` working folder (plan/README/template/this file) before marking as template?
+- Source-repo housekeeping: Job-Application-Tracker `docs/progress.md` still links `docs/Production build plan.md` / `docs/Demo and Auth Features Plan.md`; actual paths are `docs/plans/production-build.md` / `docs/plans/demo-auth-features.md`. Fix in the source repo, not here.
+- User action: GitHub → Settings → check "Template repository".
