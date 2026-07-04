@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Improve the visual design of the job tracker React frontend. Use when asked to improve, redesign, restyle, or enhance the UI in job-tracker-ui/.
+description: Improve the visual design of the <project> frontend. Use when asked to improve, redesign, restyle, or enhance the UI in <frontend-dir>/.
 ---
 
 ## Scope
@@ -8,23 +8,23 @@ description: Improve the visual design of the job tracker React frontend. Use wh
 ### Allowed
 - Restyle one component at a time — stop after each and wait for approval
 - Improving layout, spacing, typography, color
-- Add, remove, or change Tailwind class names on existing elements
-- Refactoring components in `src/components/` for visual improvements
-- Suggest new shadcn/ui primitives before adding — explain why it's needed and what alternatives exist, then wait for approval
+- Add, remove, or change <styling-system, e.g. Tailwind> class names on existing elements
+- Refactoring components in `<components-dir, e.g. src/components/>` for visual improvements
+- Suggest new <component-library, e.g. shadcn/ui> primitives before adding — explain why it's needed and what alternatives exist, then wait for approval
 
 ### Off-limits
 - Do not make any functional changes — visual and structural changes only
-- Do not modify backend files (`JobTrackerApi/`, `JobTrackerApi.Tests/`)
-- Do not change `src/services/`, `src/hooks/`, or `src/types/`
+- Do not modify backend files (`<backend-dir>/`, `<test-dir>/`)
+- Do not change <non-visual frontend dirs, e.g. `src/services/`, `src/hooks/`, `src/types/`>
 - Do not change routing structure
-- Do not modify `vite.config.ts`, `tsconfig.json`, or build config
+- Do not modify <build config files, e.g. `vite.config.ts`, `tsconfig.json`>
 - Do not add npm dependencies without explicit approval
 
 ## Conventions
-- Use Tailwind utility classes for all styling — no inline styles, no CSS modules, no custom CSS files
-- Use existing shadcn/ui components from `src/components/ui/` first
-- If no suitable shadcn/ui component exists, suggest an alternative (new component or third-party package) with reasoning — do not install or add dependencies yourself, wait for approval
-- Use `@/` path alias for all imports
+- Use <styling-system> utility classes for all styling — no inline styles, no CSS modules, no custom CSS files
+- Use existing <component-library> components from `<ui-components-dir>` first
+- If no suitable <component-library> component exists, suggest an alternative (new component or third-party package) with reasoning — do not install or add dependencies yourself, wait for approval
+- Use <path-alias, e.g. `@/`> for all imports
 
 ## Workflow
 

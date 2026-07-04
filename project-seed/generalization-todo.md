@@ -5,8 +5,8 @@ changed; each line is a point to decide or edit.
 
 ## Copied verbatim — project-specific values inside
 
-- `examples/dotnet-postgres/devcontainer.json` — `shell-env` postCreateCommand hardcodes `/workspaces/Job-Application-Tracker/.devcontainer/.env` and `ConnectionStrings__JobTrackerContext`; dirs `JobTrackerApi`/`job-tracker-ui`; `TZ: Pacific/Auckland`; long commented claude-code reference block at bottom (seed copy has a shorter note — trim?).
-- `.claude/skills/frontend-design/SKILL.md` + `.claude/skills/responsive-layout/SKILL.md` — plan says "genericize or drop"; hardcode `job-tracker-ui/`. Copied as-is; decide.
+- ~~`examples/dotnet-postgres/devcontainer.json`~~ — RESOLVED 2026-07-04: keep fully verbatim, comment block included; the example's README already frames the files as unmodified and lists the values to replace on instantiation.
+- ~~`.claude/skills/frontend-design/SKILL.md` + `.claude/skills/responsive-layout/SKILL.md`~~ — RESOLVED 2026-07-04: both kept. responsive-layout: neutralized the two illustrative `job-tracker-ui` paths (now `frontend/src`). frontend-design: genericized with `<placeholders>` for dirs/stack; workflow kept intact.
 - `docs/reference/deployment-setup.md` — placeholder the `jobtracker-*` AWS resource / IAM names.
 - `docs/reference/Setup pipeline in EC2.md` — placeholder remaining project names / IP / key names.
 - `docs/reference/Ssl tls production setup guide.md` — placeholder the real domain.

@@ -43,8 +43,8 @@ No argument: ask which mode to run — do not read any files first.
 Schema — file paths relative to the detected root:
 ```json
 {
-  "config": { "root": "job-tracker-ui/src" },
-  "files": { "components/KanbanBoard.tsx": { "audited": "2026-07-03" } }
+  "config": { "root": "frontend/src" },
+  "files": { "components/Board.tsx": { "audited": "2026-07-03" } }
 }
 ```
 
@@ -68,7 +68,7 @@ Issue entry format in `issues.md` — one `##` block per issue, located by
 component + element description + a short class snippet (NOT line numbers):
 
 ```markdown
-## job-tracker-ui/src/components/KanbanBoard.tsx — board column container
+## frontend/src/components/Board.tsx — board column container
 - Snippet: `className="grid grid-cols-5 gap-4"`
 - Risk: 5 fixed columns overflow below ~1024px
 - Suggestion: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-5`
