@@ -5,8 +5,13 @@ Status (2026-07-05): first drafts done for all five, in `.claude/skills/`.
 `.github/PULL_REQUEST_TEMPLATE.md`. Next: polish the remaining four, one
 skill per session (see "Polish criteria" below).
 
+**Session start**: read this plan and the target skill's `SKILL.md` — nothing
+else. Do not read already-polished skills, other drafts, or files tied to a
+noted follow-up (follow-ups get their own pass). The target is the first
+non-polished skill in the list below unless the user names one.
+
 1. `pr-draft` — polished, template shipped (2026-07-05)
-2. `systematic-debugging` — drafted
+2. `systematic-debugging` — polished (2026-07-05)
 3. `session-wrapup` — drafted
 4. `dependency-upgrade` — drafted
 5. `release-notes` — drafted
@@ -43,6 +48,10 @@ review between sections. Per section:
   sentence already implies.
 - Add concrete examples only where they help operation — exact commands
   (`git log <base>..HEAD`), a sample of the output format.
+- Trigger-phrase examples in a description must each cover a request the
+  trigger sentence would not obviously catch (test: would triggering fail
+  without it?). From the `systematic-debugging` pass: keep "fix it" (reads as
+  a change task, not diagnosis), drop "it's broken" (already covered).
 - Add new rules only where they prevent a realistic misfire. Examples from the
   `pr-draft` pass: `git fetch` looks harmless but is a network call; a test
   plan must not claim verification that never ran; the draft file must never
