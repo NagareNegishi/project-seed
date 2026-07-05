@@ -1,12 +1,27 @@
 # Plan: five new portable skills
 
-Status: planned, none built yet. Build one at a time, in this order:
+Status (2026-07-05): first drafts done for all five, in `.claude/skills/`.
+Next: polish each skill in its own session.
 
-1. `pr-draft`
-2. `systematic-debugging`
-3. `session-wrapup`
-4. `dependency-upgrade`
-5. `release-notes`
+1. `pr-draft` — drafted
+2. `systematic-debugging` — drafted
+3. `session-wrapup` — drafted
+4. `dependency-upgrade` — drafted
+5. `release-notes` — drafted
+
+Decisions made while drafting, to revisit during polish:
+
+- `pr-draft` writes to `.github/drafts/pr-draft.md` (matching
+  `github-issue-creator`) instead of the plan's "one copy-paste block".
+- `session-wrapup` is invoked as `/session-wrapup`, not `/wrapup` — the slash
+  command comes from the skill name. Rename to `wrapup` if the short command
+  matters.
+- `dependency-upgrade` went explicit (`disable-model-invocation: true`), with
+  optional package-name arguments.
+- `release-notes` writes to `.github/drafts/release-notes.md` (same pattern as
+  `pr-draft`) and never edits `CHANGELOG.md` itself — pasting the entry in is
+  the user's step. It defaults to latest-tag→HEAD and asks for a start ref when
+  the repo has no tags rather than summarizing all history.
 
 Delete this file (and its temporary pointer in `CLAUDE.md`) when all five ship.
 
