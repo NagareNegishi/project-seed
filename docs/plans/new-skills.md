@@ -1,9 +1,11 @@
 # Plan: five new portable skills
 
 Status (2026-07-05): first drafts done for all five, in `.claude/skills/`.
-Next: polish each skill in its own session.
+`pr-draft` polished and its PR template shipped as
+`.github/PULL_REQUEST_TEMPLATE.md`. Next: polish the remaining four, one
+skill per session (see "Polish criteria" below).
 
-1. `pr-draft` — drafted
+1. `pr-draft` — polished, template shipped (2026-07-05)
 2. `systematic-debugging` — drafted
 3. `session-wrapup` — drafted
 4. `dependency-upgrade` — drafted
@@ -22,6 +24,30 @@ Decisions made while drafting, to revisit during polish:
   `pr-draft`) and never edits `CHANGELOG.md` itself — pasting the entry in is
   the user's step. It defaults to latest-tag→HEAD and asks for a start ref when
   the repo has no tags rather than summarizing all history.
+- The seed's PR template lives at `.github/PULL_REQUEST_TEMPLATE.md`, not under
+  the skill: GitHub pre-fills the web PR form from that path, and `pr-draft`
+  deliberately fills the project's own template so it tracks later edits.
+  Follow-up for a future `pr-draft` pass: the template has a checklist and the
+  skill has no checkbox rule — add "leave a box unchecked unless the session
+  actually did it".
+
+## Polish criteria
+
+Polish means making the skill effective for Claude Code as the reader, not
+improving the prose. Work one skill per session, one section at a time, with
+review between sections. Per section:
+
+- Directive, command-based voice: "Never push", not "This skill never pushes".
+- Trim anything redundant for an agent: rationale it doesn't need to act,
+  restatements across sections, trigger paraphrases the description's first
+  sentence already implies.
+- Add concrete examples only where they help operation — exact commands
+  (`git log <base>..HEAD`), a sample of the output format.
+- Add new rules only where they prevent a realistic misfire. Examples from the
+  `pr-draft` pass: `git fetch` looks harmless but is a network call; a test
+  plan must not claim verification that never ran; the draft file must never
+  be committed; an empty commit log must stop the skill, not produce an
+  invented draft.
 
 Delete this file (and its temporary pointer in `CLAUDE.md`) when all five ship.
 
