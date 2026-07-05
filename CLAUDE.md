@@ -1,11 +1,8 @@
 <!-- Template skeleton. Replace every <placeholder>.
      Delete sections that do not apply. -->
 
-<!-- TEMPORARY (seed work, not part of the template): remove this block and the
-     plan file once all five skills are built. -->
-**Active seed work**: adding five portable skills (pr-draft, systematic-debugging,
-session-wrapup, dependency-upgrade, release-notes). Read `docs/plans/new-skills.md`
-before continuing that work.
+**Skill work**: before polishing or adding a skill in `.claude/skills/`, read
+`docs/plans/new-skills.md` (authoring and polish guide).
 
 ## Project Overview
 
