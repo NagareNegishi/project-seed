@@ -12,7 +12,7 @@ non-polished skill in the list below unless the user names one.
 
 1. `pr-draft` — polished, template shipped (2026-07-05)
 2. `systematic-debugging` — polished (2026-07-05)
-3. `session-wrapup` — drafted
+3. `session-wrapup` — polished (2026-07-05)
 4. `dependency-upgrade` — drafted
 5. `release-notes` — drafted
 
