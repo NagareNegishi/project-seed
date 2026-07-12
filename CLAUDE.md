@@ -4,6 +4,13 @@
 **Skill work**: before polishing or adding a skill in `.claude/skills/`, read
 `docs/plans/new-skills.md` (authoring and polish guide).
 
+**Config work**: changes to `.claude/settings.json` (permissions, hooks) must cite
+the relevant code.claude.com docs and get user sign-off before writing.
+
+**Session notes**: record observations worth remembering as one-line entries in
+`docs/notes.md` (gitignored) — not auto-memory; promote to CLAUDE.md or a skill
+only with user review.
+
 ## Project Overview
 
 <One paragraph: what the app does.>
