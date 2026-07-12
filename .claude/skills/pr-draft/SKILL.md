@@ -9,16 +9,17 @@ Produce a paste-ready PR title and body from local git history; the user pastes 
 
 ## Hard limits
 
-- Read-only local git only. Never `git push`, never `gh`, never any network call — including `git fetch` and `git pull`. Diff against the local base ref even if it may be stale.
+- Read-only git only. Never `git push`, never `gh`, never any network write — `git fetch` and `git pull` included. The one permitted network call is the read-only `git ls-remote` staleness check below. Diff against the local base ref even when it is stale.
 - Draft only: never create, update, or comment on a pull request.
 
 ## Gather input
 
-1. Detect the base branch: `git symbolic-ref refs/remotes/origin/HEAD --short`, stripped of the remote prefix. If that fails, use `main`, or `master` when there is no `main`.
-2. Collect the branch's work: `git log <base>..HEAD` and `git diff <base>...HEAD --stat`. If the log is empty (on the base branch, or no commits yet), stop and tell the user there is nothing to draft — never invent one.
-3. Read the full diff of any file whose purpose is unclear from the stat and commit messages. Never paste raw diffs into the draft.
-4. Run `git status`; if anything is uncommitted, note in chat that it is not part of the draft.
-5. If `.github/PULL_REQUEST_TEMPLATE.md` exists, fill its structure instead of the default one below.
+1. Detect the base branch: `git rev-parse --abbrev-ref refs/remotes/origin/HEAD`, stripped of the `origin/` prefix. If that fails, use `main`, or `master` when there is no `main`.
+2. Check the base for staleness: compare the remote's SHA from `git ls-remote origin <base>` against the local one from `git rev-parse origin/<base>`. On mismatch, warn in chat that the local base ref is behind the remote, so the draft may describe a wider or narrower changeset than the actual PR will show — then continue against the local ref (fetch is not available). If `ls-remote` fails (offline, no remote), note that staleness could not be checked and continue.
+3. Collect the branch's work: `git log <base>..HEAD` and `git diff <base>...HEAD --stat`. If the log is empty (on the base branch, or no commits yet), stop and tell the user there is nothing to draft — never invent one.
+4. Read the full diff of any file whose purpose is unclear from the stat and commit messages. Never paste raw diffs into the draft.
+5. Run `git status`; if anything is uncommitted, note in chat that it is not part of the draft.
+6. If `.github/PULL_REQUEST_TEMPLATE.md` exists, fill its structure instead of the default one below.
 
 ## Write the draft
 
