@@ -1,6 +1,6 @@
 # v1 — allow git reads and scoped add
 
-Designed 2026-07-12, not yet applied. Extends [v0](v0-baseline-strict.md) in two ways: allow rules for read-only git commands, and a three-tier policy for `git add`. Commit stays at ask, push and the rest of the deny list stay denied.
+Designed 2026-07-12, applied to `.claude/settings.json` 2026-07-12. Extends [v0](v0-baseline-strict.md) in two ways: allow rules for read-only git commands, and a three-tier policy for `git add`. Commit stays at ask, push and the rest of the deny list stay denied.
 
 ## Intent
 
