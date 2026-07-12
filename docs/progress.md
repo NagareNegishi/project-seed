@@ -17,8 +17,11 @@
 - Record docs hold only config content, history, and stated intent — no inferred analysis (user rule).
 - v2 (2026-07-12): exact `git fetch origin main` allowed; every other fetch form hard-denied by a PreToolUse hook (`.claude/hooks/fetch-guard.sh`). User pipe-tested 7/7; design, references, and known limits in `docs/permissions/v2-fetch-origin-main.md`.
 - v2 accepted trade-off: any command containing a literal `git fetch` substring (grep on the policy doc, commit messages mentioning it) is denied — reword and retry.
+- v2 hook confirmed live 2026-07-12: settings jq check passed, hook detail visible under `/hooks` → PreToolUse(1).
+- pr-draft refactored 2026-07-12 to consume v2: base `main` refreshed via exact `git fetch origin main`; other bases accepted only on `ls-remote`/local SHA match; unconfirmed freshness stops the skill with no draft (was warn-and-continue).
+- pr-draft checkbox follow-up (new-skills.md) deferred — user wants to observe template behavior first.
 
 ## In Progress — pick up next session
 
-- Confirm v2 hook is live in the harness: `jq -e '.hooks.PreToolUse[] | select(.matcher == "Bash") | .hooks[] | .command' .claude/settings.json`, then check it appears in `/hooks` (restart the session if not).
+- Uncommitted on `main`: v2 (settings, hook, doc), pr-draft skill refactor, doc updates.
 - Shelved by user (no push at all for now): push deny→ask, branch-guard PreToolUse hook, pr-draft/pr-publish skill split for actual PR creation.

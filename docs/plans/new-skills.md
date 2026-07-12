@@ -9,7 +9,8 @@ new ones.
 
 - `pr-draft`: `.github/PULL_REQUEST_TEMPLATE.md` has a checklist and the skill
   has no checkbox rule — add "leave a box unchecked unless the session
-  actually did it".
+  actually did it". Deferred 2026-07-12: user wants to observe how the
+  template behaves before writing the rule.
 
 ## Polish criteria
 
