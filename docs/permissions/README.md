@@ -24,3 +24,4 @@ Copy the JSON block from the version file into the `permissions` key of `.claude
 ## Versions
 
 - [v0 — baseline strict](v0-baseline-strict.md): `status`/`diff` allowed silently, `add`/`commit` prompt, all remote and branch operations hard-blocked. Captured 2026-07-12.
+- [v1 — allow git reads and scoped add](v1-allow-git-reads.md): v0 plus silent `git log`/`show`/`rev-parse`/`ls-remote` and explicit-path `git add`; bulk and force add forms hard-denied. Commit stays at ask, push stays denied. Designed 2026-07-12.
