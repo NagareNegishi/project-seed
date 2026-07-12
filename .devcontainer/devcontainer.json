@@ -11,7 +11,9 @@
 		// Node.js for frontend tooling and Claude Code
 		"ghcr.io/devcontainers/features/node:1": {},
 		// Claude Code
-		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+		// GitHub CLI
+		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 
 	// Configure tool-specific properties.
