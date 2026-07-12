@@ -4,11 +4,15 @@
     "allow": [
       "Bash(git status)",
       "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git rev-parse *)",
+      "Bash(git ls-remote *)",
+      "Bash(git add *)",
       "Write(/.comment-audit/processed.json)",
       "Edit(/.comment-audit/processed.json)"
     ],
     "ask": [
-      "Bash(git add *)",
       "Bash(git commit *)"
     ],
     "deny": [
@@ -21,6 +25,19 @@
       "Read(**/.env.*.local)",
       "Read(**/appsettings.*.json)",
       "Read(**/*secret*)",
+      "Bash(git add .)",
+      "Bash(git add . *)",
+      "Bash(git add ./)",
+      "Bash(git add -A)",
+      "Bash(git add -A *)",
+      "Bash(git add --all)",
+      "Bash(git add --all *)",
+      "Bash(git add -u)",
+      "Bash(git add -u *)",
+      "Bash(git add --update)",
+      "Bash(git add --update *)",
+      "Bash(git add -f *)",
+      "Bash(git add --force *)",
       "Bash(git push *)",
       "Bash(git pull *)",
       "Bash(git fetch *)",
