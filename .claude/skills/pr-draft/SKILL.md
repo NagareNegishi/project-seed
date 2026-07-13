@@ -1,6 +1,6 @@
 ---
 name: pr-draft
-description: Use this skill whenever the user wants a pull request title and description drafted from the current branch — including when they ask to "create/open/make a PR" (drafting the text is this skill's step) or want text to paste into GitHub's PR form. Drafts only: never push, never create a PR, never use `gh` or the GitHub API.
+description: Use this skill whenever the user wants a pull request title and description drafted from the current branch — including when they ask to "create/open/make a PR" (drafting the text is this skill's step). Drafts only: never push, create a PR, or use `gh` or the GitHub API.
 ---
 
 # PR Draft
@@ -9,7 +9,7 @@ Produce a PR title and body from local git history and write them to a draft fil
 
 ## Hard limits
 
-- Read-only git only. Never `git push`, never `git pull`, never `gh`. Allowed network calls: `git ls-remote`, and `git fetch origin main` in that exact form — no other fetch. Never diff against a base of unconfirmed freshness — stop instead (step 2).
+- Read-only git, never `gh`. Allowed network calls: `git ls-remote` and `git fetch origin main` in that exact form — never push, pull, or any other fetch.
 - Draft only: never create, update, or comment on a pull request.
 
 ## Gather input
@@ -30,7 +30,7 @@ Follow the `human-writing` skill for the body text.
 
 Title: under 70 characters, imperative mood. Use a `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` prefix when the branch's commits already use that convention.
 
-Labels: draw only from `.claude/skills/label-setup/labels.yml` — that preset is the only vocabulary allowed; never suggest a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`, `refactor`), optionally paired with one `priority:` label. Don't stack overlapping types. Use an empty list when none apply.
+Labels: draw only from the preset `.claude/skills/label-setup/labels.yml` — never a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`, `refactor`), optionally paired with one `priority:` label. Don't stack overlapping types. Use an empty list when none apply.
 
 Default body structure (when there is no PR template):
 
