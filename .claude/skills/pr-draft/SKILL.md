@@ -5,7 +5,7 @@ description: Use this skill whenever the user wants a pull request title and des
 
 # PR Draft
 
-Produce a paste-ready PR title and body from local git history; the user pastes it into the GitHub web UI.
+Produce a PR title and body from local git history and write them to a draft file the user reviews before publishing.
 
 ## Hard limits
 
@@ -30,6 +30,8 @@ Follow the `human-writing` skill for the body text.
 
 Title: under 70 characters, imperative mood. Use a `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` prefix when the branch's commits already use that convention.
 
+Labels: draw only from `.claude/skills/label-setup/labels.yml` — that preset is the only vocabulary allowed; never suggest a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`, `refactor`), optionally paired with one `priority:` label. Don't stack overlapping types. Use an empty list when none apply.
+
 Default body structure (when there is no PR template):
 
 - **Summary** — what changed and why, two to five sentences. Lead with the user-facing effect.
@@ -47,9 +49,20 @@ File format:
 ```markdown
 ---
 title: "feat: share validation between create and update endpoints"
+base: main
+labels: [feature, refactor]
 ---
 
 <body, ready to paste into the GitHub PR form>
 ```
 
-After writing the file, show the rendered draft in chat and give the file path.
+`base` is the base branch confirmed in step 2.
+
+## After writing
+
+Do not render the draft in chat — the user reviews the file in their editor. Show the file path and ask them to choose:
+
+1. **Happy, publish** — hand off to the `pr-publish` skill.
+2. **Needs change** — revise the draft, rewrite the file, and ask again.
+3. **Happy, but don't publish now** — stop; the draft file stays for later.
+4. **Something else** — open-ended.
