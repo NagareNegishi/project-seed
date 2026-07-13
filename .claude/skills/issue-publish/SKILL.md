@@ -1,22 +1,22 @@
 ---
 name: issue-publish
 description: >
-  Publish a reviewed issue draft to GitHub with `gh`: create or edit an issue
-  from `.github/drafts/issue-draft.md`. Use only when that draft exists and the
-  user asks to publish, open, or file it live — typically handed off from
-  `github-issue-creator`. Assigns every issue to the user; never comments,
+  Create or edit a GitHub issue with `gh` from the reviewed draft at
+  `.github/drafts/issue-draft.md`. Use only when that draft exists and the
+  user asks to publish, open, or file it — typically handed off from
+  `github-issue-creator`. Assigns the issue to the user; never comments,
   closes, or reopens.
 ---
 
 # Issue Publish
 
-Publish the issue draft at `.github/drafts/issue-draft.md` by running the steps below in order.
+Publish the issue draft by running the steps below in order.
 
 ## Hard limits
 
 - GitHub issue writes only, and only `gh issue create` / `gh issue edit`. Never comment, close, or reopen an issue.
-- Never edit the draft or any tracked file. The only file you may write is the temporary body file in step 8.
-- No git or codebase changes of any kind. Read-only `gh` for every precondition.
+- No git or codebase changes of any kind — the draft included. The only file you may write is the temporary body file in step 8.
+- Read-only `gh` for every precondition.
 
 ## Read the draft
 
@@ -39,7 +39,7 @@ Publish the issue draft at `.github/drafts/issue-draft.md` by running the steps 
 
 ## Assemble, confirm, run
 
-8. Write the body (everything after the closing `---`) to a temporary file outside the repo with `mktemp`. Pass it as `--body-file`.
+8. Write the body to a temporary file outside the repo with `mktemp`. Pass it as `--body-file`.
 9. Assemble the exact command. Apply the constant the draft does not carry: `--assignee @me` on create.
    - Create:
      ```
