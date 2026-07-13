@@ -1,16 +1,16 @@
 ---
 name: pr-publish
 description: >
-  Publish a reviewed PR draft to GitHub with `gh`: create or edit a pull request
-  from `.github/drafts/pr-draft.md`. Use only when that draft exists and the user
-  asks to publish, open, or push it live — typically handed off from `pr-draft`.
-  Opens the PR in draft state assigned to the user; never merges and never
-  pushes commits.
+  Create or edit a GitHub pull request with `gh` from the reviewed draft at
+  `.github/drafts/pr-draft.md`. Use only when that draft exists and the user
+  asks to publish, open, or push it live — typically handed off from
+  `pr-draft`. Opens the PR in draft state assigned to the user; never merges
+  or pushes commits.
 ---
 
 # PR Publish
 
-Publish the PR draft at `.github/drafts/pr-draft.md` by running the steps below in order.
+Publish the PR draft by running the steps below in order.
 
 ## Hard limits
 
@@ -27,7 +27,7 @@ Publish the PR draft at `.github/drafts/pr-draft.md` by running the steps below 
 
 ## Preconditions
 
-Run these before assembling any command. Any failure stops the skill with no PR written.
+Any failure here stops the skill with no PR written.
 
 4. **Branch is on the remote.** `git ls-remote --heads origin <branch>` must return a line. If it is empty, stop and tell the user to push the branch first — never push it yourself.
 5. **Nothing local is unpushed.** Take the remote SHA from step 4's output and confirm the remote branch contains local `HEAD`: `git merge-base --is-ancestor HEAD <remote-sha>`. Exit 0 means the remote holds everything local. Any other result (including an unknown object) means local is ahead or unconfirmed — stop and tell the user to push first.
@@ -45,7 +45,7 @@ Run these before assembling any command. Any failure stops the skill with no PR 
 
 ## Assemble, confirm, run
 
-9. Write the body (everything after the closing `---`) to a temporary file outside the repo with `mktemp`. Pass it as `--body-file`.
+9. Write the body to a temporary file outside the repo with `mktemp`. Pass it as `--body-file`.
 10. Assemble the exact command. Apply the constants the draft does not carry: `--draft` and `--assignee @me` on create.
     - Create:
       ```
