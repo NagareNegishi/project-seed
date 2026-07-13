@@ -149,16 +149,62 @@ questions" section and must not be treated as agreed.
 - The repo's live label list is deliberately not used as the vocabulary, because
   it includes GitHub's default labels the user does not want.
 
+### The label skill: `label-setup`
+
+- Name: `label-setup`. Avoids `label-sync`, which would imply two-way
+  reconciliation including deletion.
+- Scope is reconcile, never delete:
+  - Create any preset label missing from the repo.
+  - Update the color and description of an existing preset label to match the
+    preset (matched by name).
+  - A repo label not in the preset is ignored — never edited, never deleted.
+- No stored state file, as above: the skill checks its own preset names live via
+  `gh` at run time.
+
+### Preset file: `labels.yml`
+
+- Path: `.claude/skills/label-setup/labels.yml`. Committed, so it ships with the
+  seed and each project edits its own copy.
+- Format: YAML, one block per label with `name`, `color`, `description`. Colors
+  are quoted so an all-digit hex is never read as a number.
+- YAML over a Markdown table for accuracy: a table's one quiet failure is column
+  drift (a stray or missing `|` silently shifts every later field); YAML's named
+  keys break visibly instead. It is also the easiest machine format to append to.
+- This is the single shared source: `label-setup` creates/reconciles from it, and
+  the draft skills draw their `labels` vocabulary from it.
+
+### Initial preset label set
+
+Fifteen labels. Colors are the conventional values; a few repeat across labels,
+which is cosmetic only and left as-is for now.
+
+| name | color | description |
+|------|-------|-------------|
+| bug | d73a4a | Something isn't working |
+| documentation | 0075ca | Improvements or additions to documentation |
+| feature | 0e8a16 | Brand-new capability |
+| enhancement | a2eeef | Improvement to existing functionality |
+| refactor | fbca04 | Code change, no behavior change |
+| maintenance | ededed | Upkeep / tooling, no product change |
+| test | c5def5 | Tests |
+| style | c2e0c6 | Formatting, no logic change |
+| security | b60205 | Security-relevant |
+| dependencies | 0366d6 | Dependency updates |
+| planning | d4c5f9 | Planning / design work |
+| on-hold | ededed | Paused |
+| priority: high | b60205 | High priority |
+| priority: medium | fbca04 | Medium priority |
+| priority: low | 0e8a16 | Low priority |
+
+- `feature` and `enhancement` are kept as a deliberate split: new capability vs
+  improvement to something that exists.
+- `maintenance` is the single upkeep label; `chore` was dropped as a duplicate.
+- `development` was considered and dropped as too vague.
+
 ## Open questions
 
-Not decided. Do not build from these.
-
-### Label sub-decisions
-
-- Label skill name and scope (create-only, or create-and-reconcile).
-- Path and format of the preset label list file, and whether it is committed or
-  gitignored.
-- The initial preset label set (the actual labels).
+None. All label sub-decisions are settled above; the build order below can
+proceed.
 
 ## Reference: what `gh` accepts
 
@@ -186,31 +232,44 @@ Reading preconditions without writing:
 - Repo reachable for issues: `gh repo view`.
 - Existing PR for a branch: `gh pr view <branch>` or `gh pr list --head <branch>`.
 
-## Build order (once the label sub-decisions close)
+## Build order
 
-Core design is complete. The label sub-decisions above still need answers before
-step 2. When building:
+Core design is complete and the label sub-decisions are settled. Steps 1–5 are
+done (2026-07-13); **next session starts at step 6, the `gh` settings decision.**
+When building:
 
 1. Read `docs/plans/new-skills.md` first (CLAUDE.md requires it before adding or
    polishing a skill), and the target skill's `SKILL.md`.
-2. Build the label skill first — the draft and publish skills depend on it:
-   preset label list file; creates labels with `gh label create`; checks its own
-   preset names live via `gh` (no stored state file). Name, path, and preset set
-   come from the label sub-decisions.
-3. Polish the draft skills to emit the settled front-matter and the new ending:
-   - `pr-draft`: front-matter `title` + `base` + `labels` + body; drop the
-     in-chat render; add the four-option menu.
-   - `github-issue-creator`: front-matter `title` + `labels` + body; same menu
-     ending.
-   Both draw `labels` only from the preset list.
-4. Build `pr-publish`: preconditions (branch on remote, no unpushed commits),
-   create-vs-edit lookup, apply labels (flag and stop if any is missing),
-   assemble `gh` command, confirm gate, run. Constants `--draft` and
-   `--assignee @me`. Model-invocable with a tightly scoped `description`; also
-   `/pr-publish`.
-5. Build `issue-publish`: precondition (`gh repo view`; issue number for edit),
-   apply labels (flag and stop if any is missing), assemble `gh` command, confirm
-   gate, run. Constant `--assignee @me`.
+2. ✅ Done. Built `label-setup` — the draft and publish skills depend on it:
+   `labels.yml` preset file (the fifteen labels above); creates missing preset
+   labels with `gh label create` and reconciles existing ones with
+   `gh label edit`; never deletes. Checks its own preset names live via `gh`
+   (no stored state file).
+3. ✅ Done. Polished the draft skills to emit the settled front-matter and the
+   new ending:
+   - `pr-draft`: front-matter `title` + `base` + `labels` + body; dropped the
+     in-chat render; added the four-option menu. Fixed the stale intro (was
+     "paste into the web UI"). Menu option 1 hands off to `pr-publish`.
+   - `github-issue-creator`: front-matter `title` + `labels` + body (dropped
+     `assignees` — it becomes the publish-time `--assignee @me` constant); same
+     menu ending, option 1 hands off to `issue-publish`.
+   Both draw `labels` only from the preset list, kept to a small type +
+   optional `priority:` set.
+4. ✅ Done. Built `pr-publish`: reads `.github/drafts/pr-draft.md`; preconditions
+   (branch on remote via `git ls-remote --heads`, no unpushed commits via
+   `git merge-base --is-ancestor HEAD <remote-sha>`); create-vs-edit via
+   `gh pr list --head --base --state open`; label existence check (stop + point
+   to `/label-setup` if any missing, never creates); body written to a `mktemp`
+   file outside the repo for `--body-file`; confirm gate; run. Constants `--draft`
+   + `--assignee @me` on create only (edit uses `--add-label`, no `--draft`).
+   Model-invocable with a tightly scoped `description`; also `/pr-publish`.
+5. ✅ Done. Built `issue-publish`: reads `.github/drafts/issue-draft.md`;
+   precondition `gh repo view`; create by default, edit only when the user names
+   an issue number (confirmed with `gh issue view <n>` before editing); label
+   existence check (stop + point to `/label-setup` if any missing); body via
+   `mktemp` `--body-file`; confirm gate; run. Constant `--assignee @me` on create
+   only (edit uses `--add-label`). Model-invocable with a tightly scoped
+   `description`; also `/issue-publish`.
 6. If `gh` write commands should skip the harness permission prompt, that is a
    `.claude/settings.json` change: cite code.claude.com docs and get sign-off
    first (CLAUDE.md rule). Not yet decided.
