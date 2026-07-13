@@ -1,0 +1,65 @@
+# Preset label vocabulary for label-setup.
+# label-setup creates and reconciles these labels in a repo; the pr-draft and
+# github-issue-creator skills draw their `labels` suggestions only from this set.
+# One block per label. Colors are quoted six-digit hex, no leading '#'.
+# Edit this file to change the vocabulary; label-setup never writes to it.
+
+- name: bug
+  color: "d73a4a"
+  description: Something isn't working
+
+- name: documentation
+  color: "0075ca"
+  description: Improvements or additions to documentation
+
+- name: feature
+  color: "0e8a16"
+  description: Brand-new capability
+
+- name: enhancement
+  color: "a2eeef"
+  description: Improvement to existing functionality
+
+- name: refactor
+  color: "fbca04"
+  description: Code change, no behavior change
+
+- name: maintenance
+  color: "ededed"
+  description: Upkeep / tooling, no product change
+
+- name: test
+  color: "c5def5"
+  description: Tests
+
+- name: style
+  color: "c2e0c6"
+  description: Formatting, no logic change
+
+- name: security
+  color: "b60205"
+  description: Security-relevant
+
+- name: dependencies
+  color: "0366d6"
+  description: Dependency updates
+
+- name: planning
+  color: "d4c5f9"
+  description: Planning / design work
+
+- name: on-hold
+  color: "ededed"
+  description: Paused
+
+- name: "priority: high"
+  color: "b60205"
+  description: High priority
+
+- name: "priority: medium"
+  color: "fbca04"
+  description: Medium priority
+
+- name: "priority: low"
+  color: "0e8a16"
+  description: Low priority
