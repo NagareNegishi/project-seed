@@ -1,15 +1,15 @@
 ---
 name: github-issue-creator
-description: Use this skill whenever the user wants to create a GitHub issue, write up a task or bug report for GitHub, or turn a conversation or rough explanation into a structured GitHub issue. Triggers include phrases like "make an issue", "create a GitHub issue", "write this up as an issue", "turn this into a ticket", "I need an issue for this", or any request that involves producing a title and body suitable for pasting into GitHub's issue form. Also trigger when the user describes a feature, bug, or task and asks you to formalize or structure it. This skill is GitHub-only. Do NOT use for Jira, Linear, Asana, or other issue trackers.
+description: Use this skill whenever the user wants to create a GitHub issue, write up a task or bug report for GitHub, or turn a conversation or rough explanation into a structured GitHub issue — including a described feature, bug, or task the user asks to formalize. Drafts only: writes a local draft file, never posts to GitHub, never runs `gh`.
 ---
 
 # GitHub Issue Creator
 
-Produce a GitHub issue draft from conversation context or rough input. This skill drafts only, it never posts to GitHub.
+Produce a GitHub issue draft from conversation context or rough input.
 
 ## Output
- 
-Write the draft to `.github/drafts/issue-draft.md`, overwriting any existing file at that path. Create the `.github/drafts/` directory if it does not exist. Always use this exact path and filename.
+
+Write the draft to `.github/drafts/issue-draft.md` — always this exact path — creating the directory if needed and overwriting any existing file.
 
 ## File format — follow this exactly
 
@@ -35,11 +35,11 @@ Allow admins to export user activity logs as CSV for compliance auditing. No cur
 ## Rules
 
 - Title: use `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` prefix when obvious. Keep under 70 chars.
-- Labels: draw only from `.claude/skills/label-setup/labels.yml` — the only vocabulary allowed; never suggest a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`), optionally paired with one `priority:` label. Use an empty list when none apply.
+- Labels: draw only from the preset `.claude/skills/label-setup/labels.yml` — never a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`), optionally paired with one `priority:` label. Use an empty list when none apply.
 - Each checkbox = a coherent unit of work. Not micro-steps, not mega-tasks.
 - Keep checkboxes between 4–20. If exceeding 20, consolidate first. If still over 20, split into separate issues — produce the first one, suggest follow-up titles with one-line descriptions, and ask the user if they want those written out.
 - Add `### Context` or `### Notes` only when there's genuinely useful background. Otherwise omit entirely.
-- Never post to GitHub. Never run `gh`, `git`, or any network call. This skill only writes a local file.
+- Never post to GitHub; never run `gh`, `git`, or any network call.
 
 ## After writing
 
