@@ -33,3 +33,17 @@ in any of them; delete the volume to reset.
 `.devcontainer/project-firewall.sh` allows GitHub (dynamic IP ranges),
 `api.anthropic.com`, `registry.npmjs.org`, and `api.osv.dev` (owasp-* skills).
 Add stack domains at the marked insertion point — examples ship ready-made blocks.
+
+## Claude attribution
+
+Claude must never appear as a contributor in projects built from this seed. The
+seed ships three layers, and all of them carry over on instantiation — keep them:
+
+1. `.claude/settings.json` sets `attribution.commit` to `""`, so Claude Code
+   does not generate the `Co-Authored-By` trailer.
+2. `CLAUDE.md` states the rule (top block, "Attribution").
+3. A PreToolUse hook (`.claude/hooks/coauthor-guard.sh`) blocks any command
+   carrying a co-author trailer or the Claude author identity, as a backstop
+   for the known cases where the setting alone fails.
+
+Policy and verification: `docs/permissions/v3-no-coauthor.md`.

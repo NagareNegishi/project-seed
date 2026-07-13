@@ -25,3 +25,5 @@ Copy the JSON block from the version file into the `permissions` key of `.claude
 
 - [v0 — baseline strict](v0-baseline-strict.md): `status`/`diff` allowed silently, `add`/`commit` prompt, all remote and branch operations hard-blocked. Captured 2026-07-12.
 - [v1 — allow git reads and scoped add](v1-allow-git-reads.md): v0 plus silent `git log`/`show`/`rev-parse`/`ls-remote` and explicit-path `git add`; bulk and force add forms hard-denied. Commit stays at ask, push stays denied. Designed 2026-07-12.
+- [v2 — exact-match fetch of origin main](v2-fetch-origin-main.md): v1 plus the exact command `git fetch origin main` allowed silently; every other fetch form hard-denied by the first PreToolUse hook (`fetch-guard.sh`). Designed 2026-07-12.
+- [v3 — no Claude co-author attribution](v3-no-coauthor.md): v2 permissions unchanged; second PreToolUse hook (`coauthor-guard.sh`) denies any command carrying a `Co-Authored-By` trailer or the Claude author identity, so Claude never appears as a contributor. Designed 2026-07-13.

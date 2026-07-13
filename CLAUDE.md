@@ -7,6 +7,10 @@
 **Config work**: changes to `.claude/settings.json` (permissions, hooks) must cite
 the relevant code.claude.com docs and get user sign-off before writing.
 
+**Attribution**: never add Claude as author, co-author (`Co-Authored-By`), or
+contributor in anything that goes to git — commits, merges, tags, PRs. Enforced
+by a PreToolUse hook; policy: `docs/permissions/v3-no-coauthor.md`.
+
 **Session notes**: record observations worth remembering as one-line entries in
 `docs/notes.md` (gitignored) — not auto-memory; promote to CLAUDE.md or a skill
 only with user review.
