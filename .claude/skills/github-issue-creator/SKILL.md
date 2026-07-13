@@ -10,18 +10,15 @@ Produce a GitHub issue draft from conversation context or rough input. This skil
 ## Output
  
 Write the draft to `.github/drafts/issue-draft.md`, overwriting any existing file at that path. Create the `.github/drafts/` directory if it does not exist. Always use this exact path and filename.
- 
-After writing the file, show the rendered draft in chat so the user can review without opening the file, and tell them the file path so they know where to copy from.
 
 ## File format — follow this exactly
 
-The file has YAML frontmatter for the title followed by the issue body.
+The file has YAML frontmatter for the title and labels, followed by the issue body.
 
 ```markdown
 ---
 title: "feat: add bulk export for user activity logs"
-labels: []
-assignees: []
+labels: [feature]
 ---
  
 Allow admins to export user activity logs as CSV for compliance auditing. No current way to extract this data without direct DB access.
@@ -38,7 +35,17 @@ Allow admins to export user activity logs as CSV for compliance auditing. No cur
 ## Rules
 
 - Title: use `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` prefix when obvious. Keep under 70 chars.
+- Labels: draw only from `.claude/skills/label-setup/labels.yml` — the only vocabulary allowed; never suggest a label outside it. Keep the set small: usually one type label (e.g. `feature`, `bug`), optionally paired with one `priority:` label. Use an empty list when none apply.
 - Each checkbox = a coherent unit of work. Not micro-steps, not mega-tasks.
 - Keep checkboxes between 4–20. If exceeding 20, consolidate first. If still over 20, split into separate issues — produce the first one, suggest follow-up titles with one-line descriptions, and ask the user if they want those written out.
 - Add `### Context` or `### Notes` only when there's genuinely useful background. Otherwise omit entirely.
 - Never post to GitHub. Never run `gh`, `git`, or any network call. This skill only writes a local file.
+
+## After writing
+
+Do not render the draft in chat — the user reviews the file in their editor. Show the file path and ask them to choose:
+
+1. **Happy, publish** — hand off to the `issue-publish` skill.
+2. **Needs change** — revise the draft, rewrite the file, and ask again.
+3. **Happy, but don't publish now** — stop; the draft file stays for later.
+4. **Something else** — open-ended.
