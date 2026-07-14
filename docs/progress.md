@@ -27,5 +27,5 @@
 - Shelved by user (no push at all for now): push deny→ask, branch-guard PreToolUse hook, pr-draft/pr-publish skill split for actual PR creation.
 
 ### PR/Issue publish skills (2026-07-13 session)
-- Steps 1–5 done: `label-setup` (+`labels.yml`), draft skills repolished, `pr-publish` and `issue-publish` built. See `docs/plans/pr-issue-publish.md` build order.
+- Steps 1–5 done: `label-setup` (+`labels.yml`), draft skills repolished, `pr-publish` and `issue-publish` built. See `docs/skills/pr-issue-publish.md` build order.
 - Next: step 6 (settings sign-off — `gh *` is currently in the deny list, so publish skills can't run `gh` until that's resolved; needs docs citation + user sign-off per CLAUDE.md).

@@ -2,7 +2,7 @@
      Delete sections that do not apply. -->
 
 **Skill work**: before polishing or adding a skill in `.claude/skills/`, read
-`docs/plans/new-skills.md` (authoring and polish guide).
+`docs/skills/new-skills.md` (authoring and polish guide).
 
 **Config work**: changes to `.claude/settings.json` (permissions, hooks) must cite
 the relevant code.claude.com docs and get user sign-off before writing.
@@ -29,7 +29,8 @@ The dev environment runs in a Dev Container (`.devcontainer/`).
 ## Docs
 
 - `docs/progress.md` — read at session start; update after each major feature completes.
-- `docs/plans/` — per-feature plan/decision files; read only the relevant file when working on a feature.
+- `docs/plans/` — per-feature product plan/decision files; read only the relevant file when working on a feature.
+- `docs/skills/` — plan/decision docs for the `.claude/skills/` tooling itself (authoring guide + per-skill decision logs). Kept out of `docs/plans/` so product plans don't mix with tooling meta-docs.
 
 ## Commands
 
