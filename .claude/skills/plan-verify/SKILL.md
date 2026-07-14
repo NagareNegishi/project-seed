@@ -1,23 +1,18 @@
 ---
 name: plan-verify
 description: >
-  Harden the rough implementation plan at `docs/plans/<slug>/impl.md` into a
-  verified one — expand each step and attach real proof, promoting confirmed
-  steps to `🔗 verified`. Command-only: run only when the user asks, once the
-  product doc is settled and stable, because it spends the real verification
-  budget. Drafts docs only: its single write is `impl.md`; it reads source and
-  external docs but never changes code, runs git, or posts anything.
+  Harden a rough implementation plan into a verified one — expand each step and
+  attach real proof, promoting confirmed steps to `🔗 verified`. Command-only,
+  run once the product doc is settled and stable: it spends the real
+  verification budget. Drafts a doc only.
 disable-model-invocation: true
 ---
 
 # Plan Verify
 
-Take the rough `impl.md` from `plan-impl` and verify it, step by step, against
-source code and current external documentation. Attach proof to every claim and
-promote confirmed steps to `🔗 verified`. Stage 2 of two, and the only stage that
-spends real verification effort — which is why it runs only on command.
-
-Last skill in the chain: `plan-product` → `plan-impl` → **`plan-verify`**.
+Verify the rough `impl.md` from `plan-impl` step by step against source code and
+current external documentation, attaching proof to every claim. Last skill in the
+chain: `plan-product` → `plan-impl` → **`plan-verify`**.
 
 ## Input and output
 
@@ -29,7 +24,7 @@ Last skill in the chain: `plan-product` → `plan-impl` → **`plan-verify`**.
 
 ## The verification mark
 
-This skill's whole job is the verification axis. Every step ends at one of:
+Every step ends at one of:
 
 ```
 🔗 verified → src: path/to/file.ts:42          internal: the code exists / behaves as claimed
@@ -57,7 +52,7 @@ honest unknown into a fake `🔗 verified`.
 ## Maturity is a separate axis
 
 The maturity mark (`🌱`/`🤖`/`👤`/`✅`) is independent of verification. You may
-advance a step to `🤖 ai-audited(<model>)` as you refine it, and no further —
+advance a step to `🤖 ai-audited(<model>)` and no further —
 `👤 human-ok` and `✅ settled` remain the user's alone. A step can be
 `🔗 verified` against source while still `🤖 ai-audited` on maturity; that is a
 valid, expected combination.

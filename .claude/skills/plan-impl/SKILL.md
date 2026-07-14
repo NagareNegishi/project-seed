@@ -1,16 +1,13 @@
 ---
 name: plan-impl
-description: Use this skill whenever the user wants a rough implementation plan — the "how" — from a product plan that already exists at `docs/plans/<slug>/product.md`. Trigger when the user asks to plan the build, break a feature into steps, or scope the work after the product doc is drafted, or hands off from `plan-product`. Drafts docs only: writes `docs/plans/<slug>/impl.md`, never touches code, git, or the network. Deep verification is a separate skill, `plan-verify`.
+description: Use this skill whenever the user wants a rough implementation plan — the "how", e.g. breaking a feature into build steps — from an existing product plan, or hands off from `plan-product`. Drafts a doc only; deep verification is the separate `plan-verify` skill.
 ---
 
 # Plan Impl
 
-Turn a mature product doc into a rough implementation plan: structure and
-high-level steps that surface unknowns and feasibility risks early. Stage 1 of
-two — cheap and regenerated freely as the product doc matures. Deep verification
-is `plan-verify` (stage 2), run later against a settled doc.
-
-Middle skill in the chain: `plan-product` → **`plan-impl`** → `plan-verify`.
+Turn a mature product doc into a rough implementation plan — structure and
+high-level steps. Middle skill in the chain: `plan-product` → **`plan-impl`** →
+`plan-verify`.
 
 ## Input, output, and the handoff gate
 
@@ -21,8 +18,8 @@ Middle skill in the chain: `plan-product` → **`plan-impl`** → `plan-verify`.
   tell the user to run an audit pass in `plan-product`. Do not rescan every entry
   to decide, and do not audit `product.md` yourself here.
 - Write to `docs/plans/<slug>/impl.md` — always this path. Regenerating it
-  overwrites freely; that is expected at this stage. Docs only: never change
-  code, run git, or make a network call.
+  overwrites freely. Docs only: never change code, run git, or make a network
+  call.
 
 ## Two marks per step, kept separate
 
@@ -38,7 +35,7 @@ Maturity — same axis and same rules as `plan-product`:
 You may advance a step to `🤖 ai-audited(<model>)` and no further; `👤` and `✅`
 are the user's alone.
 
-Verification — this skill leaves almost everything unverified; that is the point:
+Verification — this skill leaves almost everything unverified:
 
 ```
 ❔ unverified (not checked)   step names existing code/tools but nothing was opened
@@ -85,8 +82,8 @@ verified later, not now.>
 
 ## Rules
 
-- **Stay rough.** High-level steps, not line-by-line instructions. The goal is to
-  expose unknowns and feasibility risks, not to write the code on paper.
+- **Stay rough.** High-level steps that expose unknowns and feasibility risks,
+  not line-by-line instructions or code on paper.
 - **`Risks & unknowns` is required** — never omit it. If a step depends on
   something you are unsure exists or works, say so there and mark the step
   `(not checked)`.
@@ -94,9 +91,8 @@ verified later, not now.>
   not a mega-task.
 - **Header can't drift.** Update the `## Maturity` header in the same pass as any
   entry. Counts cover every marked entry (Overview, Risks, and each step).
-- Never assert a file, function, or library API exists as fact — that is exactly
-  what `plan-verify` checks. Phrase such steps as intent, and leave them
-  unverified.
+- Never assert a file, function, or library API exists as fact. Phrase such
+  steps as intent, and leave them unverified.
 
 ## human-writing
 
