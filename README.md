@@ -34,6 +34,23 @@ in any of them; delete the volume to reset.
 `api.anthropic.com`, `registry.npmjs.org`, and `api.osv.dev` (owasp-* skills).
 Add stack domains at the marked insertion point — examples ship ready-made blocks.
 
+## GitHub issue & PR skills
+
+The seed ships paired skills for drafting and publishing GitHub issues and PRs:
+`github-issue-creator` + `issue-publish`, `pr-draft` + `pr-publish`, and
+`label-setup`. Two one-time steps per project before first use:
+
+1. Authenticate `gh` yourself with `gh auth login`. No skill runs it, and the
+   publish and label skills stop with a reminder if `gh` isn't authenticated.
+2. Run `/label-setup` once. It creates the preset labels from
+   `.claude/skills/label-setup/labels.yml` in the repo. Publishing a draft that
+   names a label the repo lacks stops, because the publish skills never create
+   labels. Edit `labels.yml` first if you want a different set.
+
+Then the flow is draft (`/pr-draft` or `/github-issue-creator`), review the file,
+publish (`/pr-publish` or `/issue-publish`). Design notes:
+`docs/skills/pr-issue-publish.md`.
+
 ## Claude attribution
 
 Claude must never appear as a contributor in projects built from this seed. The
