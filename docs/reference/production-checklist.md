@@ -1,8 +1,8 @@
 # Production Checklist
 
-Generic step order for taking an app to production. Extracted from the
-Job-Application-Tracker production build; details for a worked .NET/AWS example
-live in that repo's `docs/plans/production-build.md`.
+Generic step order for taking an app to production. A worked .NET/AWS example
+covering these steps in full detail lives in `project-specific/stack-decisions.md`
+— project-specific, not a template to follow verbatim.
 
 1. **Auth** — token strategy, refresh flow, email verification.
 2. **Infrastructure** — compute, database, object storage, DNS. Record choices in `docs/stack-decisions`-style doc.
