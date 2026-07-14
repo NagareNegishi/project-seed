@@ -56,6 +56,10 @@ Reference issues in a footer line: `Refs #<n>` (related) or `Closes #<n>` (this 
 
 Never add a `Co-Authored-By` trailer or any Claude author identity to a commit — policy `docs/permissions/v3-no-coauthor.md`, enforced by a hook.
 
+## Words banned in message text
+
+`gh` + word · `Co-Authored-By` · `git fetch`
+
 ## Procedure
 
 1. Survey the tree: `git status`, `git diff`, and `git diff --staged`.
