@@ -85,4 +85,6 @@ Path aliases.>
 ## Skills
 
 - When writing or editing code: follow: `.claude/skills/code-commenting/SKILL.md`
+- When committing: follow `.claude/skills/git-commit/SKILL.md` — Conventional
+  Commits, atomic commits, `feat`/`fix` need an issue ref.
 <other skill pointers>
