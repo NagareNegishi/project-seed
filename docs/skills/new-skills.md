@@ -53,5 +53,6 @@ Per section:
 
 ## Future skill candidates
 
-`dead-code-audit`, `a11y-audit`, `todo-triage`, `feature-plan` — below the cut
-line in the 2026-07-04 selection, not rejected. Revisit when adding skills.
+`dead-code-audit`, `a11y-audit`, `todo-triage` — below the cut line in the
+2026-07-04 selection, not rejected. Revisit when adding skills. `feature-plan`
+is now designed as three skills; see [feature-plan.md](feature-plan.md).

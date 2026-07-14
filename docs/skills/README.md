@@ -25,6 +25,9 @@ a skill drove them (see `../permissions/v4-gh-allowlist.md`).
   follow-ups and polish criteria.
 - [pr-issue-publish.md](pr-issue-publish.md): design ledger for the `pr-publish`
   and `issue-publish` skills and the `label-setup` preset they depend on.
+- [feature-plan.md](feature-plan.md): design ledger for the `plan-product`,
+  `plan-impl`, and `plan-verify` skills that turn an idea into a verified plan.
+  Designed, not yet built.
 - [github-issue-creator-decisions.md](github-issue-creator-decisions.md):
   decision log for the `github-issue-creator` skill (draft-only scope, output
   format, structure).
