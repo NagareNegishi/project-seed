@@ -128,9 +128,9 @@ race.
 
 ### Researchers cannot write, by construction
 
-- Researcher `tools`: `WebSearch, WebFetch, Read` (possibly `Grep, Glob`). No
-  `Write`, no `Edit`, and deliberately no `Bash`, since a shell writes files
-  through redirection. The harness never offers the missing tools, so the
+- Researcher `tools`: `WebSearch, WebFetch` — no file tools, since no workspace is
+  mounted. No `Write`, no `Edit`, and deliberately no `Bash`, since a shell writes
+  files through redirection. The harness never offers the missing tools, so the
   no-write rule is enforced, not requested.
 
 ### Doc-editing authority stays in the main session

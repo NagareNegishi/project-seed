@@ -15,6 +15,11 @@ by a PreToolUse hook; policy: `docs/permissions/v3-no-coauthor.md`.
 `docs/notes.md` (gitignored) — not auto-memory; promote to CLAUDE.md or a skill
 only with user review.
 
+**Doc voice**:
+- Planning or exploring options: keep intention and reasoning.
+- Settling, or writing for a future session or reader: cut to the minimum.
+- Docs addressed to Claude: write directives, not prose.
+
 ## Project Overview
 
 <One paragraph: what the app does.>

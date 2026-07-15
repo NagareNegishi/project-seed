@@ -60,9 +60,9 @@ is `docker compose run research`.
 ### Step 2: Write the researcher agent definition
 🤖 ai-audited(opus-4.8) · ❔ unverified (net-new)
 
-`researcher.md` in the tool's own repo. `tools`: `WebSearch, WebFetch, Read`
-(possibly `Grep, Glob`), with no `Write`, `Edit`, or `Bash`, so the no-write rule
-is structural. `model: sonnet`. The body holds the claim-with-evidence contract:
+`researcher.md` in the tool's own repo. `tools`: `WebSearch, WebFetch` — no file
+tools, since no workspace is mounted; no `Write`, `Edit`, or `Bash`, so the
+no-write rule is structural. `model: sonnet`. The body holds the claim-with-evidence contract:
 every claim carries a source URL and a quoted excerpt that supports it, and the
 researcher never asserts what it did not fetch.
 
