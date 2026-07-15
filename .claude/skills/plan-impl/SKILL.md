@@ -32,8 +32,11 @@ Maturity — same axis and same rules as `plan-product`:
 🌱 idea   🤖 ai-audited(<model>)   👤 human-ok   ✅ settled
 ```
 
-You may advance a step to `🤖 ai-audited(<model>)` and no further; `👤` and `✅`
-are the user's alone.
+Advance a step to `🤖 ai-audited(<model>)` on your own. Stamp `👤 human-ok` or
+`✅ settled` only when the user explicitly instructs you to set that mark on a
+named step: ask, wait for the instruction, then stamp — one step per instruction.
+Never stamp either mark on your own initiative, and never reuse one step's
+instruction for another.
 
 Verification — this skill leaves almost everything unverified:
 

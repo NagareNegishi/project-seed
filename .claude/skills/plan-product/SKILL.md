@@ -36,9 +36,11 @@ Every entry carries exactly one maturity mark:
 ```
 
 - Fresh dictation is `🌱 idea`.
-- You may advance an entry from `🌱 idea` to `🤖 ai-audited(<model>)` and **no
-  further**. `👤 human-ok` and `✅ settled` are the user's alone — never stamp
-  them yourself, even if the user says the entry is fine (tell them to mark it).
+- Advance an entry to `🤖 ai-audited(<model>)` on your own. Stamp `👤 human-ok`
+  or `✅ settled` only when the user explicitly instructs you to set that mark on
+  a named entry: ask, wait for the instruction, then stamp — one entry per
+  instruction. Never stamp either mark on your own initiative, and never reuse
+  one entry's instruction for another.
 - Stamp the running model's short id per entry, e.g. `🤖 ai-audited(opus-4.8)`.
 
 An audit pass on an entry means: read it, tighten the wording, flag

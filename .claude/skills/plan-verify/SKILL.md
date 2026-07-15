@@ -51,11 +51,13 @@ honest unknown into a fake `🔗 verified`.
 
 ## Maturity is a separate axis
 
-The maturity mark (`🌱`/`🤖`/`👤`/`✅`) is independent of verification. You may
-advance a step to `🤖 ai-audited(<model>)` and no further —
-`👤 human-ok` and `✅ settled` remain the user's alone. A step can be
-`🔗 verified` against source while still `🤖 ai-audited` on maturity; that is a
-valid, expected combination.
+The maturity mark (`🌱`/`🤖`/`👤`/`✅`) is independent of verification. Advance a
+step to `🤖 ai-audited(<model>)` on your own. Stamp `👤 human-ok` or `✅ settled`
+only when the user explicitly instructs you to set that mark on a named step:
+ask, wait for the instruction, then stamp — one step per instruction. Never stamp
+either mark on your own initiative, and never reuse one step's instruction for
+another. A step can be `🔗 verified` against source while still `🤖 ai-audited` on
+maturity; that is a valid, expected combination.
 
 ## Workflow
 
