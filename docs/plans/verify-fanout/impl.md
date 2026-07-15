@@ -2,7 +2,7 @@
 
 ## Maturity
 lowest: 🤖 ai-audited
-🌱 idea 0 · 🤖 ai-audited 8 · 👤 human-ok 0 · ✅ settled 0
+🌱 idea 0 · 🤖 ai-audited 5 · 👤 human-ok 0 · ✅ settled 3
 
 ## Overview
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
@@ -10,11 +10,11 @@ lowest: 🤖 ai-audited
 The build is three new pieces plus the container that runs two of them. A
 standalone Docker image runs headless Claude Code outside the project's dev
 container, where a research-manager agent dispatches researcher subagents,
-verifies their cited sources, and drops verified sections into a shared results
-folder. Inside the project, a `verify-fanout` trigger skill writes briefs from
-an `impl.md`'s `doc:` entries and reads the verified sections back. The main
-session and the tool meet only at a shared bind mount, so neither reaches across
-the firewall.
+verifies their cited sources, drops verified sections into a shared results
+folder, and appends run telemetry to a history log it owns. Inside the project, a
+`verify-fanout` trigger skill writes briefs from an `impl.md`'s `doc:` entries and
+reads the verified sections back. The main session and the tool meet only at a
+shared bind mount, so neither reaches across the firewall.
 
 ## Risks & unknowns
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
@@ -36,17 +36,23 @@ the firewall.
 - Key/hash routing. The content-hash key that routes a result to its impl entry
   and flags a stale one is new. Drift in what goes into the hash could misroute a
   section.
+- History that outlives the exchange. `history/` must persist across runs while
+  `briefs/` and `results/` are wiped every run, so it is a separate durable mount
+  (a named volume, not the reset-each-run exchange) that the main-owned reset must
+  never touch. That split is untested here.
 - Token cost of parallel researchers is real and bounded only by the prompt-level
   concurrency cap.
 
 ## Steps
 
 ### Step 1: Stand up the research container with firewall as code
-🤖 ai-audited(opus-4.8) · ❔ unverified (net-new)
+✅ settled · ❔ unverified (net-new)
 
 Build the standalone Docker image and its compose entry, as its own project
 rather than a service in `.devcontainer/docker-compose.yml`. Mount no workspace;
-mount `briefs/` read-only and `results/` writable. Ship an iptables allowlist
+mount `briefs/` read-only and `results/` writable, plus a persistent `history/`
+store the manager owns and the main session never touches — a durable mount that
+survives the per-run reset, unlike the wiped exchange. Ship an iptables allowlist
 script, versioned and PR-reviewable, that permits only the curated doc hosts plus
 the Anthropic API. The entry point runs headless Claude Code and exits, so a run
 is `docker compose run research`.
@@ -64,18 +70,21 @@ researcher never asserts what it did not fetch.
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
 
 `research-manager.md`, tools including `Agent`, `SendMessage`, `WebFetch`,
-`Read`, and `Write` (writable path is `results/` only, by mount). The body
-carries the whole protocol: audit each brief for answerability before spawning;
-one researcher per claim up to the concurrency cap; fetch and check every cited
-source; reject a whole section with a specific reason; return a rejection to the
-same researcher via `SendMessage` for up to 3 attempts; on the third failure
-spawn a fresh researcher with a failure dossier; write each verified section to
-`results/` as its own keyed file before moving on; keep the run table in context
-only. Leans on nested-subagent behavior, so it stays unverified until
-`plan-verify`.
+`Read`, and `Write` (writable paths are `results/` and `history/` only, by
+mount). The body carries the whole protocol: audit each brief for answerability
+before spawning; one researcher per claim up to the concurrency cap; fetch and
+check every cited source; reject a whole section with a specific reason; return a
+rejection to the same researcher via `SendMessage` for up to 3 attempts; on the
+third failure spawn a fresh researcher with a failure dossier; write each verified
+section to `results/` as its own keyed file before moving on; keep the run table
+in context only. Alongside that, record run telemetry to `history/`: the count of
+researchers deployed and totals for verified, failed, and fired, plus one
+free-form entry per failure holding the brief, the instruction to that researcher,
+and a concise account of how it failed — no full transcript. Leans on
+nested-subagent behavior, so it stays unverified until `plan-verify`.
 
 ### Step 4: Define the brief template and the key scheme
-🤖 ai-audited(opus-4.8) · ❔ unverified (net-new)
+✅ settled · ❔ unverified (net-new)
 
 The four researcher-facing fields (`claim`, `motivation`, `constraints`,
 `acceptance`, with a default acceptance the main session can sharpen) plus the
@@ -88,20 +97,21 @@ mismatch as stale.
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
 
 `.claude/skills/verify-fanout`, `disable-model-invocation: true`, command only,
-living in this repo. On trigger: empty `briefs/` and `results/` (the main-owned
-reset), read the `impl.md` `doc:` entries, project `stack` / `platform` /
-`constraints` from `product.md` and `claim` + `acceptance` from each entry into
-one brief per entry, and write them to `briefs/`. After the run returns, read
-`results/` and let the user pick which sections get stamped `🔗 verified → doc:`
-on their impl entries. `plan-verify` still handles the `src:` entries. Leans on
-the existing `impl.md` / `product.md` mark formats.
+living in this repo. On trigger: empty `briefs/` and `results/` — the main-owned
+reset, which never touches the manager's `history/` — read the `impl.md` `doc:`
+entries, project `stack` / `platform` / `constraints` from `product.md` and
+`claim` + `acceptance` from each entry into one brief per entry, and write them to
+`briefs/`. After the run returns, read `results/` and let the user pick which
+sections get stamped `🔗 verified → doc:` on their impl entries. `plan-verify`
+still handles the `src:` entries. Leans on the existing `impl.md` / `product.md`
+mark formats.
 
 ### Step 6: Wire the headless run and the file-drop handoff
-🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
+✅ settled · ❔ unverified (not checked)
 
 The container entry point runs the manager via `claude -p` against `briefs/` and
-writes to `results/`. The main session and the tool share only the bind mount,
-and the returning `docker compose run` is the done-signal, so main reads
-`results/` only after it returns and there is no partial-read race. Document the
-manual foreground launch as the one out-of-repo command. Leans on `claude -p` and
-`docker compose run` behavior.
+writes to `results/` and `history/`. The main session and the tool share only the
+bind mount, and the returning `docker compose run` is the done-signal, so main
+reads `results/` only after it returns and there is no partial-read race. Document
+the manual foreground launch as the one out-of-repo command. Leans on `claude -p`
+and `docker compose run` behavior.
