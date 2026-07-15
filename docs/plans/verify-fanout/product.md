@@ -1,11 +1,11 @@
 # Product plan: verify-fanout
 
 ## Maturity
-lowest: 🤖 ai-audited
-🌱 idea 0 · 🤖 ai-audited 10 · 👤 human-ok 0 · ✅ settled 0
+lowest: ✅ settled
+🌱 idea 0 · 🤖 ai-audited 0 · 👤 human-ok 0 · ✅ settled 10
 
 ## about
-🤖 ai-audited(opus-4.8) — matches ledger; the src:/doc: split with plan-verify made explicit
+✅ settled — human-confirmed against the approved ledger
 
 A managed multi-agent research workflow that verifies the external claims in an
 implementation plan. When the user runs it against an `impl.md`, a manager agent
@@ -15,7 +15,7 @@ and returns only the sections whose sources hold up. It is the sibling of
 `plan-verify` keeps the internal (`src:`) half.
 
 ## problem / motivation
-🤖 ai-audited(opus-4.8) — faithful to ledger; the benefit stays unquantified (see open questions)
+✅ settled — human-confirmed against the approved ledger
 
 Research done inline by the main session floods the planning conversation with
 search results and half-checked claims, and nothing forces a claim to carry a
@@ -27,21 +27,21 @@ both: researchers produce claims with evidence, a manager independently checks
 the evidence, and the main session only sees what survived.
 
 ## goal
-🤖 ai-audited(opus-4.8) — outcome-framed, no mechanism leaked in
+✅ settled — human-confirmed against the approved ledger
 
 Every external claim that lands in a plan doc is backed by a live source that a
 second agent has independently opened and confirmed, and the checking happens
 without filling the planning conversation with search noise.
 
 ## audience
-🤖 ai-audited(opus-4.8) — confirmed against the plan-chain flow
+✅ settled — human-confirmed against the approved ledger
 
 Developers working the plan skill chain in a repo built from this seed. They run
 `/verify-fanout` against an `impl.md` after `plan-impl`, in the same flow where
 they would reach for `plan-verify`.
 
 ## requirements
-🤖 ai-audited(opus-4.8) — added the rejection-with-finding behavior from the ledger's scope section
+✅ settled — logging requirement added and locked by user this session; the rest confirmed against the approved ledger
 
 - When the user runs `/verify-fanout` against an `impl.md`, the system shall
   write one brief per `doc:`-marked entry and hand the briefs to the research
@@ -70,9 +70,17 @@ they would reach for `plan-verify`.
   or the briefs; agents research, and the main session edits the doc.
 - Researcher egress shall be limited to a curated allowlist, and a blocked
   domain shall surface as a proposed allowlist addition for user sign-off.
+- When a run executes, the manager shall record run telemetry to a `history/` log it owns —
+  separate from the `briefs/`/`results/` exchange, and neither written, reset, nor
+  read by the main session as part of the verify flow: the count of researchers
+  deployed, and totals for verified results, failed attempts, and fired
+  researchers. For each failure it shall log an entry holding the brief, the
+  manager's instruction to that researcher, and a concise summary of how it failed
+  — enough to characterize the failure, in no fixed format since the failure modes
+  are not yet known, without retaining the full research output.
 
 ## stack
-🤖 ai-audited(opus-4.8) — confirmed; SDK-swap path and sonnet pin preserved
+✅ settled — human-confirmed against the approved ledger
 
 Headless Claude Code (`claude -p`) driving the `Agent` / `SendMessage`
 machinery, packaged as a standalone Docker container with its own iptables
@@ -84,7 +92,7 @@ since the prompts, brief template, file-drop boundary, container, and allowlist
 are all runner-independent.
 
 ## target device / platform
-🤖 ai-audited(opus-4.8) — confirmed; standalone-and-reusable framing kept
+✅ settled — human-confirmed against the approved ledger
 
 CLI and developer tooling. A standalone container run outside the project's dev
 container, launched manually and in the foreground with `docker compose run
@@ -92,7 +100,7 @@ research`. It needs no repo content, so it is reusable across every repo built
 from this seed rather than tied to one project.
 
 ## constraints
-🤖 ai-audited(opus-4.8) — added the dev-container firewall blocker that drives the whole separate-container design, plus the credential boundary
+✅ settled — concurrency cap (3) settled this session; rest human-confirmed against the approved ledger
 
 - The project's dev container runs an egress firewall (`project-firewall.sh`)
   that blocks `WebFetch` to non-allowlisted domains, so source verification
@@ -104,8 +112,10 @@ from this seed rather than tied to one project.
   injection blast radius.
 - Researchers cannot write files or run a shell, enforced by their tool list
   rather than by instruction.
-- The manager can write only to `results/`. `briefs/` is mounted read-only and
-  no workspace is mounted, so claims pass through verbatim by construction.
+- The manager can write only to `results/` and its own `history/` log; `briefs/`
+  is mounted read-only and no workspace is mounted, so claims pass through
+  verbatim by construction. `history/` is manager-owned — the main session never
+  writes it.
 - Egress is a curated allowlist, never open. Official docs only, which also
   matches the manager's reject rule. The Claude credential lives inside the
   tool's relaxed-network boundary for headless auth, so the allowlist is the
@@ -114,9 +124,11 @@ from this seed rather than tied to one project.
   sign-off (CLAUDE.md rule; the firewall script is treated the same).
 - v1 handoff is a shared file-drop bind mount. No firewall hole, and no Docker
   access from the dev container.
+- The manager caps concurrent researchers at 3 — a prompt-level rule like the
+  3-attempt retry, followed but not harness-enforced.
 
 ## non-goals
-🤖 ai-audited(opus-4.8) — confirmed; the four scope exclusions all trace to the ledger
+✅ settled — human-confirmed against the approved ledger
 
 - Discovery. A brief confirms an already-chosen approach, not an open "which of
   five should we pick". Option-comparison stays with the interactive
@@ -130,19 +142,9 @@ from this seed rather than tied to one project.
   relays, and does nothing more.
 
 ## open questions
-🤖 ai-audited(opus-4.8) — added the unquantified-benefit question; the rest are the ledger's settled-as-proposed items
+✅ settled — four items resolved this session; only the failure-mode taxonomy stays genuinely open
 
-- No metric yet for whether the workflow earns its token cost. The ledger argues
-  the payoff qualitatively (no self-audit, no dead-link claims) but sets no bar
-  for how often inline research actually let a bad claim through.
-- Concurrency cap for parallel researchers (proposed: 3). Parallel researchers
-  multiply token cost, and the cap lives in the manager's prompt, so it is
-  followed but not harness-enforced.
-- Whether the prompt-level caps (3-attempt rule, researcher-only spawning,
-  concurrency) prove too loose in practice. If so, graduate the runner to the
-  Agent SDK, which can enforce them in code.
-- When to build the planned v2 Unix-socket endpoint. It buys a warm server and
-  live progress at the cost of a server loop and a small request/response
-  protocol. The trigger is the per-run cold-start starting to grate.
-- The manual `docker compose run` on the host cannot become pure repo-code.
-  Open whether that one out-of-repo command is acceptable long-term.
+- The failure-mode taxonomy for the manager's `history/` log. v1 records each
+  failure free-form because the modes aren't mapped yet; whether they settle into
+  a stable set worth a structured schema is answerable only once real runs
+  produce failures.

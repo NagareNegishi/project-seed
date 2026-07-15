@@ -69,9 +69,10 @@ intact.
   topic), verifies every cited source by fetching it, and writes each verified
   section as its own keyed file into the shared `results/` folder as it passes.
   Its `tools` include `Write`, but the container mounts no workspace and
-  `briefs/` is mounted read-only, so the only path it can write is `results/` —
-  never the briefs it is checking, never the plan docs. Its definition body
-  carries the whole protocol below.
+  `briefs/` is mounted read-only, so the only paths it can write are `results/`
+  and its own `history/` store (see run history below) — never the briefs it is
+  checking, never the plan docs. Its definition body carries the whole protocol
+  below.
 - A trigger skill, `verify-fanout` — explicit command only,
   `disable-model-invocation: true` per the authoring guide. A sibling to
   `plan-verify`: the user runs it against an `impl.md` whose `doc:`-marked
@@ -293,8 +294,10 @@ prompt-level caps (see honest limits) prove too loose.
 
 ### Layout: a main-owned briefs / results exchange
 
-The shared mount is a transient exchange, not a history store — the durable
-record is the project's `impl.md`. It holds two subfolders:
+The shared mount is a transient exchange — its durable counterpart is the
+project's `impl.md`. (The manager keeps a durable record of its own too, in
+`history/`, separate from this exchange; see run history below.) It holds two
+subfolders:
 
 - `briefs/` — main writes one brief per `doc:` entry here. Mounted **read-only**
   into the tool, so the manager can read a claim but never rewrite the thing it is
@@ -310,10 +313,26 @@ in the brief template above); computing the hash is a local one-shot, no network
 clear the exchange: on each trigger main empties `briefs/` and `results/` and
 writes the fresh briefs. The tool keeps nothing between runs.
 
-**No persistent ledger.** The manager's run table lives in its context only (see
-incremental delivery); `results/` is itself the record of what passed, so there
-is nothing else to persist. Per-section files need no manifest — the key on each
-file does the routing a manifest would have.
+**No persistent ledger in the exchange.** The manager's run table lives in its
+context only (see incremental delivery); `results/` is itself the record of what
+passed, so nothing else in the exchange persists between runs. Per-section files
+need no manifest — the key on each file does the routing a manifest would have.
+The one durable record the manager keeps lives outside the exchange, in
+`history/` (see run history below).
+
+### Run history: the record kept across runs
+
+The briefs / results exchange is wiped each run; `history/` is not. The manager
+owns it — separate from the exchange, main never touches it — and it accumulates
+across runs. `history/` joins `results/` as the manager's only writable paths, so
+claims still pass through verbatim.
+
+Each run it records the run's shape — researchers deployed, and totals for
+verified, failed, and fired — plus one entry per failure: the brief, the
+instruction to that researcher, and a concise, free-form account of how it failed
+(the modes aren't mapped yet), without the full transcript. This is the workflow's
+measure: each rejection is a bad claim caught, and only an accumulating record
+shows how often.
 
 ### Researcher model: sonnet, changed only by manual config
 
