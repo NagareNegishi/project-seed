@@ -9,18 +9,8 @@ in-session `dev-research` call that `plan-verify` makes for external claims: a
 sibling command, scoped to verifying an already-chosen approach. See
 [feature-plan.md](feature-plan.md) for the plan skills it plugs into.
 
-Status: designed, not yet built — every decision below is settled. Settled:
-option 4 (a separate reusable tool with its own container), run headless
-on-demand with a manual launch; the trigger skill named `verify-fanout`;
-verification-only scope, coupled to `plan-verify` as a sibling command whose
-topics are the `doc:`-marked entries of `impl.md`; the verification protocol,
-context-by-brief and its brief template, the allowlist stance, incremental
-section-durable delivery, and the handoff (file-drop for v1, Unix-socket
-endpoint planned); the runner (headless Claude Code, swappable later), the
-shared-folder layout (a main-owned `briefs/` + `results/` exchange, reset per
-trigger, with run tracking kept only in the manager's context), and the
-researcher model (`sonnet`, changed only by manual config). What remains is to
-build it.
+Status: designed, not yet built. Every decision below is settled; what remains
+is to build it.
 
 ## The problem
 
@@ -107,11 +97,9 @@ only piece living here.
 - Only sections the manager verified return to the main session, which merges
   them into the plan doc. The manager never rewrites what it relays: claims from
   main and researcher evidence pass through verbatim — it verifies, accepts,
-  rejects, and composes, nothing more. Its only writes are verified sections into
-  `results/`; `briefs/` is mounted read-only, so it cannot alter the claims it
-  checks, and the container mounts no workspace, so nothing it writes can reach
-  the plan docs — the same structural bar that stops researchers writing at all
-  (see runtime and layout).
+  rejects, and composes, nothing more. The read-only `briefs/` mount and absent
+  workspace make that structural, not just requested (see the manager bullet
+  above and layout below).
 
 ### Incremental delivery, durable by section
 
@@ -296,14 +284,12 @@ rule for `.claude/settings.json`; the firewall script is treated the same).
 
 Headless Claude Code, not an Agent SDK app. Least to build, and it reuses the
 `Agent` / `SendMessage` machinery the protocol is already written against. The
-3-attempt and concurrency-3 caps live in the manager's prompt — reliable but not
-harness-enforced (see honest limits). The swap stays cheap if that proves too
-loose: the manager/researcher prompts, the brief template, the file-drop
-boundary, the container, and the allowlist are all runner-independent, and the
-main session and trigger skill only ever touch the shared folder — so graduating
-to the SDK rewrites just the orchestration layer, mostly wrapping the existing
-prompts in code-enforced caps. Do it only if prompt-level enforcement proves too
-loose.
+swap to the SDK stays cheap: the manager/researcher prompts, the brief template,
+the file-drop boundary, the container, and the allowlist are all
+runner-independent, and the main session and trigger skill only ever touch the
+shared folder — so graduating rewrites just the orchestration layer, mostly
+wrapping the existing prompts in code-enforced caps. Do it only if the
+prompt-level caps (see honest limits) prove too loose.
 
 ### Layout: a main-owned briefs / results exchange
 
@@ -317,10 +303,8 @@ record is the project's `impl.md`. It holds two subfolders:
   per entry, and only verified ones ever appear), each carrying its brief's key
   and a verify timestamp. Main reads them back.
 
-Every brief carries a **key** = `entry-ref` + a short content hash of the
-claim + acceptance (a local one-shot hash — no network, negligible cost). Results
-echo the key, so main routes each section to its impl entry and treats a result
-whose hash no longer matches the current entry as outdated.
+Each result file carries its brief's **key** (`entry-ref` + content hash, defined
+in the brief template above); computing the hash is a local one-shot, no network.
 
 **Main owns the reset.** Because `briefs/` is read-only to the tool, only main can
 clear the exchange: on each trigger main empties `briefs/` and `results/` and
