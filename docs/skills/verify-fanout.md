@@ -3,8 +3,8 @@
 Design for a managed multi-agent research workflow: when a plan reaches
 implementation stage, the main session hands the plan's external-verification
 items — the `doc:`-marked entries in `impl.md` — to a manager agent that
-dispatches researcher subagents, verifies their cited sources, and returns only
-verified sections. It is the industrialized replacement for the single-agent,
+dispatches researcher subagents, verifies their cited sources, and returns each
+brief's outcome — verified, failed, or needs clarification. It is the industrialized replacement for the single-agent,
 in-session `dev-research` call that `plan-verify` makes for external claims: a
 sibling command, scoped to verifying an already-chosen approach. See
 [feature-plan.md](feature-plan.md) for the plan skills it plugs into.
@@ -66,8 +66,9 @@ intact.
 - `.claude/agents/researcher.md` — produces claims with evidence. Every claim
   carries a source URL plus a quoted excerpt that supports it.
 - `.claude/agents/research-manager.md` — dispatches researchers (one per
-  topic), verifies every cited source by fetching it, and writes each verified
-  section as its own keyed file into the shared `results/` folder as it passes.
+  topic), verifies every cited source by fetching it, and writes each brief's
+  terminal outcome as its own keyed file into the shared `results/` folder as it
+  resolves.
   Its `tools` include `Write`, but the container mounts no workspace and
   `briefs/` is mounted read-only, so the only paths it can write are `results/`
   and its own `history/` store (see run history below) — never the briefs it is
@@ -90,13 +91,17 @@ only piece living here.
   not support the claim, rejects the whole section with a specific reason
   ("your second source 404s", "the quoted page never mentions X").
 - Rejection goes back to the same researcher via `SendMessage`, so it sees its
-  own prior attempt. Each researcher gets 3 attempts.
-- After the third rejection the researcher is dropped and the manager spawns a
-  fresh one with a failure dossier in its prompt: what the previous researchers
-  claimed and why each attempt failed. The manager holds this history in its own
-  context.
-- Only sections the manager verified return to the main session, which merges
-  them into the plan doc. The manager never rewrites what it relays: claims from
+  own prior attempt. Each researcher gets 2 attempts — the initial claim plus one
+  correction.
+- After the second rejection the researcher is dropped and the manager spawns one
+  fresh researcher with a failure dossier: what the previous researcher claimed and
+  why each attempt failed. That researcher is the last generation; if it too fails,
+  the claim is terminally failed. Retry is bounded at 2 researchers × 2 attempts.
+  The manager holds this history in its own context.
+- Every brief returns exactly one terminal outcome — a verified section, a
+  terminally failed claim (reason plus alternative), or a needs-clarification
+  bounce — but only verified sections merge into the plan doc. The manager never
+  rewrites what it relays: claims from
   main and researcher evidence pass through verbatim — it verifies, accepts,
   rejects, and composes, nothing more. The read-only `briefs/` mount and absent
   workspace make that structural, not just requested (see the manager bullet
@@ -108,13 +113,14 @@ Main hands over the whole list of claims at once. The manager allocates one
 researcher per claim (concurrency capped, see honest limits) and keeps an
 internal table — claim, assigned researcher, status — of what is still open,
 what passed, and what was rejected. That table lives in the manager's context for
-the run only; nothing about it is persisted. The moment a section verifies, the
-manager writes it as its own keyed file into `results/` before moving on.
+the run only; nothing about it is persisted. The moment a brief reaches a terminal
+outcome — verified, failed, or needs-clarification — the manager writes it as its
+own keyed file into `results/` before moving on.
 
 The point is durability. If the run dies partway — token exhaustion, a killed
-container, a crash — every section already verified is a file in `results/`; only
-the in-flight claims are lost, and main re-triggers those on the next run. The
-`results/` folder is itself the record of what passed, so no separate ledger is
+container, a crash — every brief already resolved is a file in `results/`; only
+the in-flight ones are lost, and main re-triggers those on the next run. The
+`results/` folder is itself the record of what resolved, so no separate ledger is
 kept. Batching every section into one final message would forfeit the whole run
 to any mid-flight failure. Main reads `results/` only after the done-signal (the
 returning `docker compose run`), so writing incrementally adds no partial-read
@@ -272,7 +278,7 @@ rule for `.claude/settings.json`; the firewall script is treated the same).
 
 ### Honest limits
 
-- The verification protocol and the 3-attempt rule live in the manager's system
+- The verification protocol and the 2-attempt rule live in the manager's system
   prompt. Prompt-level rules are followed reliably but are not harness-enforced
   the way tool lists are.
 - The `Agent(agent_type)` allowlist syntax is ignored inside subagent
@@ -302,9 +308,10 @@ subfolders:
 - `briefs/` — main writes one brief per `doc:` entry here. Mounted **read-only**
   into the tool, so the manager can read a claim but never rewrite the thing it is
   checking — structural backing for "claims pass through verbatim".
-- `results/` — the manager writes each verified section here as its own file (one
-  per entry, and only verified ones ever appear), each carrying its brief's key
-  and a verify timestamp. Main reads them back.
+- `results/` — the manager writes each brief's terminal outcome here as its own
+  file (one per entry): a verified section, a failed claim, or a needs-clarification
+  bounce, each carrying its brief's key, outcome type, and a timestamp. Main reads
+  them back.
 
 Each result file carries its brief's **key** (`entry-ref` + content hash, defined
 in the brief template above); computing the hash is a local one-shot, no network.
@@ -315,7 +322,7 @@ writes the fresh briefs. The tool keeps nothing between runs.
 
 **No persistent ledger in the exchange.** The manager's run table lives in its
 context only (see incremental delivery); `results/` is itself the record of what
-passed, so nothing else in the exchange persists between runs. Per-section files
+resolved, so nothing else in the exchange persists between runs. Per-outcome files
 need no manifest — the key on each file does the routing a manifest would have.
 The one durable record the manager keeps lives outside the exchange, in
 `history/` (see run history below).
@@ -351,7 +358,8 @@ takes the `doc:`-marked entries and writes a brief per entry (projecting `stack`
 / `platform` / `constraints` from `product.md`, and the claim plus acceptance
 from the entry); (3) the briefs go to the tool via the shared folder; (4) the
 tool's manager audits each brief, spawns researchers, and verifies sources; (5)
-only verified sections come back; (6) the user decides which get stamped
+each brief's terminal outcome comes back — verified, failed, or needs-clarification;
+(6) the user decides which verified sections get stamped
 `🔗 verified → doc:` on their impl entries. Steps 1-2 and 6 run in the project;
 steps 3-5 are the settled protocol above.
 

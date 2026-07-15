@@ -41,31 +41,36 @@ Developers working the plan skill chain in a repo built from this seed. They run
 they would reach for `plan-verify`.
 
 ## requirements
-✅ settled — logging requirement added and locked by user this session; the rest confirmed against the approved ledger
+✅ settled — retry budget (2 attempts, one fresh researcher, then terminal fail) and typed-outcome read-back revised and locked by user this session; the rest confirmed against the approved ledger
 
 - When the user runs `/verify-fanout` against an `impl.md`, the system shall
   write one brief per `doc:`-marked entry and hand the briefs to the research
   tool.
 - When a brief reaches the tool, the manager shall audit it for answerability
-  before spawning any researcher, and bounce an underspecified brief back to the
-  main session as a clarification request rather than guess.
+  before spawning any researcher, handling each brief independently: an
+  underspecified brief bounces back to the main session as a clarification request
+  rather than a guess, and does not hold up the other briefs.
 - When a researcher returns a claim, the manager shall fetch each cited source
   itself and reject the whole section if a link is dead or its content does not
   support the claim.
 - When the manager rejects a section, the system shall return the rejection to
-  the same researcher with a specific reason, allowing 3 attempts.
-- When a researcher fails its third attempt, the manager shall drop it and spawn
-  a fresh researcher carrying a dossier of what the prior attempts claimed and
-  why each failed.
+  the same researcher with a specific reason, allowing 2 attempts — the initial
+  claim plus one correction.
+- When a researcher fails its final attempt, the manager shall drop it and spawn
+  one fresh researcher carrying a dossier of what the prior attempts claimed and
+  why each failed. That fresh researcher is the last: if it too exhausts its
+  attempts, the claim is terminally failed and returned as such. The retry is
+  bounded at two researchers of two attempts each, so no claim loops indefinitely.
 - When a claim fails verification, the returned section shall carry the reason
   plus the current alternative the researcher found: a bounded finding anchored
   to that failed claim, not open exploration.
 - When a section passes verification, the manager shall write it to `results/`
   as its own keyed file before continuing, so a run that dies partway keeps
   every section already verified.
-- When the run finishes, the main session shall read back only the verified
-  sections, and the user shall decide which get stamped `🔗 verified → doc:` on
-  their impl entries.
+- When the run finishes, the main session shall read back every returned outcome
+  — verified sections, terminally failed claims, and clarification requests — and
+  the user shall decide which of the verified sections get stamped
+  `🔗 verified → doc:` on their impl entries.
 - The system shall never let a researcher or the manager write to the plan docs
   or the briefs; agents research, and the main session edits the doc.
 - Researcher egress shall be limited to a curated allowlist, and a blocked

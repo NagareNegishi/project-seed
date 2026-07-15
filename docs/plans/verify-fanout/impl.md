@@ -71,17 +71,25 @@ researcher never asserts what it did not fetch.
 
 `research-manager.md`, tools including `Agent`, `SendMessage`, `WebFetch`,
 `Read`, and `Write` (writable paths are `results/` and `history/` only, by
-mount). The body carries the whole protocol: audit each brief for answerability
-before spawning; one researcher per claim up to the concurrency cap; fetch and
-check every cited source; reject a whole section with a specific reason; return a
-rejection to the same researcher via `SendMessage` for up to 3 attempts; on the
-third failure spawn a fresh researcher with a failure dossier; write each verified
-section to `results/` as its own keyed file before moving on; keep the run table
-in context only. Alongside that, record run telemetry to `history/`: the count of
-researchers deployed and totals for verified, failed, and fired, plus one
-free-form entry per failure holding the brief, the instruction to that researcher,
-and a concise account of how it failed — no full transcript. Leans on
-nested-subagent behavior, so it stays unverified until `plan-verify`.
+mount). The body carries the whole protocol as a per-entry state machine: handle
+each brief on its own, up to the concurrency cap in flight. Audit the brief for
+answerability; if it fails, write a `needs-clarification` outcome to `results/`
+(keyed, naming the failed check) and move on, so one thin brief never stalls the
+others. If it passes, spawn a researcher, fetch and check every cited source, and
+reject a whole section with a specific reason back to the same researcher via
+`SendMessage` for up to 2 attempts — the initial claim plus one correction. On the
+second failure, drop it and spawn one fresh researcher with a failure dossier;
+that researcher is the last generation, so if it too exhausts its attempts the
+manager writes a `failed` outcome (keyed, carrying the reason plus the current
+alternative found). A verified section is written as a `verified` outcome the
+moment it passes. Every brief thus resolves to exactly one terminal keyed file in
+`results/` — verified, failed, or needs-clarification — and the run ends once all
+briefs have resolved; the run table lives in context only. Alongside that, record
+run telemetry to `history/`: the count of researchers deployed and totals for
+verified, failed, and fired, plus one free-form entry per failure holding the
+brief, the instruction to that researcher, and a concise account of how it failed
+— no full transcript. Leans on nested-subagent behavior, so it stays unverified
+until `plan-verify`.
 
 ### Step 4: Define the brief template and the key scheme
 ✅ settled · ❔ unverified (net-new)
@@ -101,10 +109,14 @@ living in this repo. On trigger: empty `briefs/` and `results/` — the main-own
 reset, which never touches the manager's `history/` — read the `impl.md` `doc:`
 entries, project `stack` / `platform` / `constraints` from `product.md` and
 `claim` + `acceptance` from each entry into one brief per entry, and write them to
-`briefs/`. After the run returns, read `results/` and let the user pick which
-sections get stamped `🔗 verified → doc:` on their impl entries. `plan-verify`
-still handles the `src:` entries. Leans on the existing `impl.md` / `product.md`
-mark formats.
+`briefs/`. After the run returns, read every keyed outcome in `results/` and route
+by type: offer the `verified` sections for the user to stamp `🔗 verified → doc:`,
+surface `failed` ones with their reason and alternative, and turn each
+`needs-clarification` into a prompt to sharpen that brief. Detect completion by
+matching outcome keys against the briefs written — any brief with no outcome file
+means the run died mid-flight, and those are re-triggered on the next run.
+`plan-verify` still handles the `src:` entries. Leans on the existing `impl.md` /
+`product.md` mark formats.
 
 ### Step 6: Wire the headless run and the file-drop handoff
 ✅ settled · ❔ unverified (not checked)
