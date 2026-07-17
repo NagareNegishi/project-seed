@@ -37,6 +37,12 @@ The dev environment runs in a Dev Container (`.devcontainer/`).
 - `docs/plans/` — per-feature product plan/decision files; read only the relevant file when working on a feature.
 - `docs/skills/` — plan/decision docs for the `.claude/skills/` tooling itself (authoring guide + per-skill decision logs). Kept out of `docs/plans/` so product plans don't mix with tooling meta-docs.
 
+## Reusables
+
+`reusables/` holds portable React/TypeScript pieces to copy into projects:
+`component/` (app components), `shadcn/` (shadcn/ui primitives), `util/` (helpers
+and hooks). Check here before writing a new component or util; not part of any build.
+
 ## Commands
 
 ### Backend (from `<backend-dir>/`)

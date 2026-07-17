@@ -13,6 +13,7 @@ reference docs. New projects start from this repo (GitHub → "Use this template
   (real domain, real AWS decisions) — read for ideas, don't carry into a new
   project; delete it during instantiation if you don't want it.
 - `examples/<stack>/` — real files from working projects; the stack-specific pieces the seed leaves out.
+- `reusables/` — portable React/TypeScript pieces carried between projects: `component/` (app components), `shadcn/` (shadcn/ui primitives), `util/` (helpers and hooks). Copy what a new project needs; not wired into any build.
 
 ## Instantiation checklist
 
