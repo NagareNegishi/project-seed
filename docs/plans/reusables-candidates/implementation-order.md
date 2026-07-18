@@ -7,15 +7,15 @@ Done:
 - Test infra: `reusables/package.json` (vitest, jsdom, typescript, react,
   @testing-library/react — installed), `vitest.config.ts` (jsdom env),
   `tsconfig.json`, `.gitignore` (node_modules). `npm test` from `reusables/`.
-- Entries 1–6, each with source + test in `util/`: result, safeJsonParse,
-  retry, debounce (contains both debounce and throttle), arrayUtils,
-  stringUtils. Verified: `npm test` passes (6 files, 39 tests).
+- Phase 1 complete — entries 1–9, each with source + test in `util/`: result,
+  safeJsonParse, retry, debounce (contains both debounce and throttle),
+  arrayUtils, stringUtils, formatNumber (number/currency/compact/bytes),
+  relativeTime, downloadFile (jsdom test stubs `URL.createObjectURL` /
+  `revokeObjectURL`). Verified: `npm test` passes (9 files, 63 tests).
 
 Not done:
 
-- Entries 7–9 (formatNumber, relativeTime, downloadFile), then phases 2–4.
-  downloadFile test needs `URL.createObjectURL` / `revokeObjectURL` stubbed —
-  jsdom does not implement them.
+- Phases 2–4 (entries 10–31), starting with PagedResult (10).
 - Nothing committed yet; everything above is uncommitted working tree.
 
 Conventions below are settled and in use — match the existing six files.
