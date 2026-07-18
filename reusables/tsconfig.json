@@ -7,7 +7,12 @@
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/components/ui/*": ["./shadcn/*"],
+      "@/lib/utils": ["./util/cn.ts"],
+      "@/utils/*": ["./util/*"]
+    }
   },
   "include": ["component", "shadcn", "util", "vitest.config.ts"]
 }
