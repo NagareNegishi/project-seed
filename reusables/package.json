@@ -1,0 +1,20 @@
+{
+  "name": "reusables-dev",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only test harness for the reusable snippets. Consumers copy source files, never this package.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^29.1.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
