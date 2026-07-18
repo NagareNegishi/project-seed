@@ -12,13 +12,26 @@ Done:
   arrayUtils, stringUtils, formatNumber (number/currency/compact/bytes),
   relativeTime, downloadFile (jsdom test stubs `URL.createObjectURL` /
   `revokeObjectURL`). Verified: `npm test` passes (9 files, 63 tests).
+- Phase 2 complete — pagedResult (type + pageCount/hasPrevPage/hasNextPage,
+  page is 1-based), apiError (ApiErrorBody contract + parseApiErrorBody;
+  `apiFetch.ts` ApiError/throwApiError adapted to it, ApiError now carries
+  optional code/fieldErrors).
+- Phase 3 complete — entries 12–20, each with source + test in `util/`:
+  useAsync, useDebouncedValue, useLocalStorage, useCopyToClipboard,
+  useOnClickOutside (SuggestionInput refactored onto it, imported as
+  `@/utils/useOnClickOutside`), useMediaQuery, useKeyboardShortcut
+  (Escape fires even in inputs), useInterval (contains useTimeout),
+  useIntersectionObserver. Tests stub matchMedia, navigator.clipboard,
+  and IntersectionObserver. Verified: `npm test` passes (20 files,
+  130 tests).
 
 Not done:
 
-- Phases 2–4 (entries 10–31), starting with PagedResult (10).
-- Nothing committed yet; everything above is uncommitted working tree.
+- Phase 4 (entries 21–31), starting with Spinner / PageLoader (21).
+- Uncommitted: phase 3 hooks + tests, the SuggestionInput refactor, and this
+  doc's status update. Phases 1–2 are committed.
 
-Conventions below are settled and in use — match the existing six files.
+Conventions below are settled and in use — match the existing `util/` files.
 
 All round-1 entries accepted (boxes ticked in `proposal.md`). Implement in the
 order below. One entry = one work unit: source file + intro header + test file
