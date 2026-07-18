@@ -1,8 +1,9 @@
 // Single-value text input with optional type-ahead suggestions dropdown.
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { matchesSuggestion } from "@/utils/matchSuggestion"
+import { useOnClickOutside } from "@/utils/useOnClickOutside"
 
 type Props = {
   value: string
@@ -26,13 +27,7 @@ export default function SuggestionInput({
   )
   const showDropdown = open && filtered.length > 0
 
-  useEffect(() => {
-    function onMouseDown(e: MouseEvent) {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener("mousedown", onMouseDown)
-    return () => document.removeEventListener("mousedown", onMouseDown)
-  }, [])
+  useOnClickOutside(containerRef, () => setOpen(false))
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (!showDropdown) return
