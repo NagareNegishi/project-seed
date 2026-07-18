@@ -25,11 +25,32 @@ Done:
   and IntersectionObserver. Verified: `npm test` passes (20 files,
   130 tests).
 
+- Component test infra: vitest `resolve.alias` + tsconfig `paths` map the
+  consumer-style imports onto this repo (`@/components/ui/*` → `shadcn/`,
+  `@/lib/utils` → `util/cn.ts`, `@/utils/*` → `util/`); `vitest.setup.ts`
+  registers RTL cleanup (no vitest globals, so auto-cleanup doesn't run);
+  devDeps added: lucide-react, radix-ui, class-variance-authority, clsx,
+  tailwind-merge.
+- Phase 4 complete — entries 21–31 in `component/`: Spinner (contains
+  PageLoader), EmptyState, FormField, ErrorBoundary, PasswordInput,
+  SearchInput, CopyButton, ThemeToggle, PaginationBar (takes a `PagedResult`;
+  exports the `getPageItems` windowing helper), SortableHeader (exports
+  `SortState`), FileDropzone (exports `isAcceptedType` and `FileRejection`).
+  Layout-only entries (Spinner, EmptyState, FormField) have no tests per
+  convention; the other eight have `.test.tsx`. ThemeToggle stays two-state:
+  tri-state needs a useTheme rewrite plus menu UI, declined for round 1.
+  Verified: `npm test` passes (28 files, 172 tests).
+
 Not done:
 
-- Phase 4 (entries 21–31), starting with Spinner / PageLoader (21).
-- Uncommitted: phase 3 hooks + tests, the SuggestionInput refactor, and this
-  doc's status update. Phases 1–2 are committed.
+- Round 1 implementation is complete.
+- Uncommitted: phase 3 hooks + tests, the SuggestionInput refactor, all of
+  phase 4 + component test infra, and this doc's status updates. Phases 1–2
+  are committed.
+- Pre-existing `tsc --noEmit` errors in copied snippets (DatePicker/calendar/
+  command need date-fns, react-day-picker, cmdk; DeleteConfirmDialog imports
+  ConfirmDialog from a consumer path; one tuple quirk in downloadFile.test) —
+  not part of round 1, left as is.
 
 Conventions below are settled and in use — match the existing `util/` files.
 
