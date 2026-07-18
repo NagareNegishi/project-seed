@@ -12,13 +12,21 @@
 // Project-agnostic: no base URL, no maintenance window, no hardcoded routes.
 // Pass full URLs to `apiFetch`; supply endpoints and callbacks via config.
 
+import { parseApiErrorBody } from "./apiError"
+
 /** Error carrying the HTTP status alongside a message. */
 export class ApiError extends Error {
   public status: number
-  constructor(status: number, message: string) {
+  /** Machine-readable code from the ApiErrorBody contract, when the server sent one. */
+  public code?: string
+  /** Validation messages keyed by field name, when the server sent them. */
+  public fieldErrors?: Record<string, string[]>
+  constructor(status: number, message: string, code?: string, fieldErrors?: Record<string, string[]>) {
     super(message)
     this.name = "ApiError"
     this.status = status
+    this.code = code
+    this.fieldErrors = fieldErrors
   }
 }
 
@@ -109,20 +117,18 @@ function genericFallbackMessage(status: number): string {
   return "Something went wrong. Please try again."
 }
 
-// Extracts a message from the response body, then throws ApiError. Never returns.
-// Handles: { message }, an array of { description } (e.g. ASP.NET Identity errors),
-// a bare string body, else a generic fallback.
+// Parses the body per the ApiErrorBody contract (see apiError.ts — also covers
+// legacy shapes), then throws ApiError with status, message (generic fallback
+// when none), and any code / field errors. Never returns.
 async function throwApiError(response: Response): Promise<never> {
   const body = await response.json().catch(() => null)
+  const { message, code, fieldErrors } = parseApiErrorBody(body)
 
   throw new ApiError(
     response.status,
-    body?.message ??
-    (Array.isArray(body)
-      ? body.map((e: { description?: string }) => e.description).filter(Boolean).join(". ")
-      : null) ??
-    (typeof body === "string" ? body : null) ??
-    genericFallbackMessage(response.status)
+    message ?? genericFallbackMessage(response.status),
+    code,
+    fieldErrors,
   )
 }
 
