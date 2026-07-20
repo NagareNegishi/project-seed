@@ -4,3 +4,7 @@
 # Claude session notes — local observation list; promoted to CLAUDE.md or a
 # skill only after user review, never committed
 docs/notes.md
+
+# Local issue/PR drafts — github-issue-creator, pr-draft, and their publish
+# skills write here; drafts are ephemeral working files, never committed
+.github/drafts/
