@@ -12,6 +12,37 @@ new ones.
   actually did it". Deferred 2026-07-12: user wants to observe how the
   template behaves before writing the rule.
 
+- `label-setup` → convert to a script, like `scripts/protect-main.sh`. The logic
+  is a pure reconcile (diff preset against `gh label list`, create/edit, never
+  delete) with no judgment, so it scripts cleanly. Blocker: the preset is YAML
+  and `yq` is not installed. Preferred path: convert `labels.yml` → `labels.json`
+  and parse with `jq` (already present); move the format comments to the script
+  header. Alternative: add `yq` to the devcontainer and firewall allowlist.
+  Deferred 2026-07-20.
+
+## Skill-as-script / combine audit
+
+Opened 2026-07-20. A skill earns its keep only when the task needs an agent's
+judgment. Deterministic reconcile/fetch work belongs in a committed script:
+fixed reviewable commands, nothing improvised per run (the reasoning behind
+`scripts/protect-main.sh`). Revisit these when touching the skills:
+
+- Convert candidates (mechanical, no per-run judgment):
+  - `label-setup` — see the follow-up above.
+  - `owasp-update` — language detect + SHA compare + `curl` sheets + write cache.
+    Moderate effort; the only soft step is language detection from file signals,
+    which is a fixed heuristic.
+- Keep as skills: everything judgment-driven — drafting (`*-draft`,
+  `github-issue-creator`, `plan-*`, `release-notes`), research, design,
+  debugging, review, `code-commenting`, `comment-audit`, `session-wrapup`.
+- Do NOT combine the draft→publish pairs (`github-issue-creator`+`issue-publish`,
+  `pr-draft`+`pr-publish`). The split is a deliberate safety boundary: draft
+  skills never touch the network, publish skills run `gh`.
+- Open: `code-commenting` and `comment-audit` restate the same comment standard.
+  Factor the standard into one shared reference both point at — dedupe the
+  standard, do not merge the skills (write-time vs audit-pass are distinct
+  triggers).
+
 ## Polish criteria
 
 Polish means making the skill effective for Claude Code as the reader, not
