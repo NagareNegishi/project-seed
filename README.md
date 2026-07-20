@@ -25,8 +25,8 @@ reference docs. New projects start from this repo (GitHub → "Use this template
    delete it if this project is closed-source or licensed differently.
 5. Open in the dev container ("Reopen in Container"). The firewall runs on every start; only allowlisted domains are reachable.
 6. Set up GitHub for the repo (one-time) — see "GitHub issue & PR skills" below:
-   authenticate `gh`, run `/label-setup`, and protect `main` with
-   `/branch-protection`. The publish and label skills stop until `gh` is
+   authenticate `gh`, run `/label-setup`, and protect the default branch with
+   `scripts/protect-main.sh`. The publish and label skills stop until `gh` is
    authenticated.
 7. After the first feature, start updating `docs/progress.md`.
 
@@ -46,7 +46,7 @@ Add stack domains at the marked insertion point — examples ship ready-made blo
 
 The seed ships paired skills for drafting and publishing GitHub issues and PRs:
 `github-issue-creator` + `issue-publish`, `pr-draft` + `pr-publish`, and
-`label-setup`. Two one-time steps per project before first use:
+`label-setup`. Three one-time steps per project before first use:
 
 1. Authenticate `gh` yourself with `gh auth login`. No skill runs it, and the
    publish and label skills stop with a reminder if `gh` isn't authenticated.
@@ -54,6 +54,11 @@ The seed ships paired skills for drafting and publishing GitHub issues and PRs:
    `.claude/skills/label-setup/labels.yml` in the repo. Publishing a draft that
    names a label the repo lacks stops, because the publish skills never create
    labels. Edit `labels.yml` first if you want a different set.
+3. Run `scripts/protect-main.sh` once to protect the default branch: require a
+   PR to merge, block force-push and deletion. It shows the plan and asks before
+   applying (`-y` skips the prompt); re-running updates the same ruleset. Needs
+   admin on the repo. Required status checks are off by default — flip on
+   `REQUIRED_CHECKS` in the script once this project has CI.
 
 Then the flow is draft (`/pr-draft` or `/github-issue-creator`), review the file,
 publish (`/pr-publish` or `/issue-publish`). Design notes:
