@@ -24,7 +24,11 @@ reference docs. New projects start from this repo (GitHub → "Use this template
    Review `LICENSE` — the seed ships MIT under the seed author's name; replace or
    delete it if this project is closed-source or licensed differently.
 5. Open in the dev container ("Reopen in Container"). The firewall runs on every start; only allowlisted domains are reachable.
-6. After the first feature, start updating `docs/progress.md`.
+6. Set up GitHub for the repo (one-time) — see "GitHub issue & PR skills" below:
+   authenticate `gh`, run `/label-setup`, and protect `main` with
+   `/branch-protection`. The publish and label skills stop until `gh` is
+   authenticated.
+7. After the first feature, start updating `docs/progress.md`.
 
 ## Claude credentials volume
 
