@@ -7,9 +7,10 @@ It is the seed-repo, stack-agnostic descendant of site-factory's
 `docs/plans/site-factory/orchestration.md`, lifted out of a plan doc and into a
 reusable skill.
 
-Status: planning, decisions settled 2026-07-21 (one still open — see below).
-Provisional skill name `build-orchestration`. Nothing is built yet; next step is
-to write `SKILL.md` per [new-skills.md](new-skills.md).
+Status: v1 drafted 2026-07-21. Skill at
+`.claude/skills/build-orchestration/SKILL.md`; record dirs (`docs/build-log/`,
+`docs/prompt-log/`) and gitignore rule in place. One decision still open (the
+`verify-fanout` relationship — see below). Not yet exercised on a real session.
 
 ## Why a skill, not a doc
 
@@ -134,7 +135,8 @@ discoverable without the weight.
 
 ## Next step
 
-Decisions above are settled (except the `verify-fanout` relationship, which does
-not block a v1). Write `SKILL.md` per [new-skills.md](new-skills.md), and do the
-record-setup from decision 2 (create `docs/build-log/`, `docs/prompt-log/` +
-its README, gitignore `docs/prompt-log/`) as part of building the skill.
+The skill is built but cannot run until its required workers are promoted from
+[../agents/](../agents/) drafts into `.claude/agents/`: `blackbox-tester`,
+`whitebox-tester`, `security-critic`, `design-critic`. Promotion is
+user-sign-off only (see the agents README). After promotion, exercise the skill
+on a real session and record what the flow gets wrong.
