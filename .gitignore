@@ -8,3 +8,8 @@ docs/notes.md
 # Local issue/PR drafts — github-issue-creator, pr-draft, and their publish
 # skills write here; drafts are ephemeral working files, never committed
 .github/drafts/
+
+# Subagent prompt captures from build-orchestration sessions — capture only,
+# never committed; the README stays tracked to hold the rules
+docs/prompt-log/*
+!docs/prompt-log/README.md
