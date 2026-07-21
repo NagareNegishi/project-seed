@@ -24,6 +24,8 @@ Only with user sign-off:
 
 ## Drafts
 
+- [blackbox-tester](blackbox-tester.md) — writes tests from the spec alone, never reading the implementation; spawned at session start.
+- [whitebox-tester](whitebox-tester.md) — after code lands, adds tests for internal branches, boundaries, and error paths, then runs the suite.
 - [researcher](researcher.md) — executes one research task, reports back with a verifiable reference on every claim.
 - [verifier](verifier.md) — adversarially checks a researcher report, pass/fail per claim with its own evidence.
 - [security-critic](security-critic.md) — finds security risks and holes in an idea or implementation; problems only, no fixes.
