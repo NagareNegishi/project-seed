@@ -1,18 +1,3 @@
-# security-critic
-
-Status: draft
-
-## Purpose
-
-Attacks an idea or an implementation from the security angle only: finds
-risks, holes, and unsafe assumptions. It reports problems and stops — no
-fixes, no alternatives, no praise. The manager pairs it with
-[design-critic](design-critic.md) and feeds both reports to
-[alternatives-explorer](alternatives-explorer.md).
-
-## Definition
-
-```markdown
 ---
 name: security-critic
 description: Delegate a proposed idea or an existing implementation to this
@@ -68,21 +53,3 @@ Report back to the manager in exactly this structure:
 - **Out of scope**: anything you could not review and why (omit if empty).
 
 The report is your final message. Do not write any files.
-```
-
-## Design notes
-
-- One agent for both idea and implementation targets, not two: the checklist
-  and rules are nearly identical, only the evidence format differs. Splitting
-  into idea/impl variants would double the files for one changed line. Same
-  call made for [design-critic](design-critic.md).
-- "No fixes, no alternatives" is structural: proposing fixes is
-  [alternatives-explorer](alternatives-explorer.md)'s job, and critics that
-  fix start pulling punches to keep their fix simple.
-- Exploit scenario required per finding to block vague "this feels insecure"
-  output; same reachable-evidence rule as the researcher/verifier pair.
-- "Checked, no finding" section exists so an empty Problems list is
-  distinguishable from a shallow review, and so the agent is not pressured
-  to fabricate findings.
-- Read-only tools, no Bash: it must never "test" an exploit, only read and
-  reason.
