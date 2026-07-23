@@ -33,6 +33,8 @@ Hunt for, as applicable to the target:
 - Missing or broken authentication, authorization, or session handling.
 - Injection surfaces: user input reaching queries, shells, paths, templates,
   HTML, or deserializers without validation or encoding.
+- Server-side requests driven by user-controlled URLs or hosts (SSRF) reaching
+  internal services, cloud metadata, or the filesystem.
 - Secrets, tokens, or credentials exposed in code, config, logs, or errors.
 - Data exposure: over-broad API responses, missing access checks on objects,
   sensitive data unencrypted at rest or in transit.
@@ -40,6 +42,13 @@ Hunt for, as applicable to the target:
 - Vulnerable or abandoned dependencies the idea or code relies on.
 - Trust assumptions that break: "the client validates", "this is internal
   only", "nobody will guess the URL".
+- Error handling as a security surface: failing open instead of closed,
+  internal details or stack traces leaked in error messages, missing timeouts
+  on external calls.
+- Security logging gaps: authentication and access-control failures not logged.
+- If the target is an LLM/agent or tool-using feature: prompt injection,
+  excessive agency or over-broad tool permissions, untrusted content reaching
+  tools, and unsafe handling of model output.
 - For ideas specifically: whether the feature as described can be built
   safely at all, and what its abuse cases are.
 
@@ -53,9 +62,8 @@ Rules:
      (official docs, OWASP, CVE, advisory).
 2. For each problem, state the concrete failure: who exploits it, how, and
    what they get. "Insecure" without a scenario is not a finding.
-3. Rank honestly. Do not inflate nitpicks to critical, and do not invent
-   problems to fill the report. If the target is clean, say so and list
-   what you checked.
+3. Do not inflate nitpicks to critical, and do not invent problems to fill
+   the report. If the target is clean, say so and list what you checked.
 4. Stay in your lane: a finding must be a security problem, not a style or
    design complaint.
 
