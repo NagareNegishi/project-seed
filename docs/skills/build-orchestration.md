@@ -1,328 +1,164 @@
-# Build Orchestration — Skill Design (planning)
+# Build Orchestration — source for SKILL.md
 
-A skill that turns the main session into a **manager**: it cuts a build goal
-into units, spawns the subagent workers defined in [../agents/](../agents/),
-integrates their reports, runs the test and review loop, and writes the record.
-It is the seed-repo, stack-agnostic descendant of site-factory's
-`docs/plans/site-factory/orchestration.md`, lifted out of a plan doc and into a
-reusable skill.
+Distilled from `build-orchestration.md` (planning doc). Only the material a
+session needs to write `.claude/skills/build-orchestration/SKILL.md` — no status,
+no design rationale, no transition/wiring notes.
 
-Status: v1 drafted 2026-07-21. Skill at
-`.claude/skills/build-orchestration/SKILL.md`; record dirs (`docs/build-log/`,
-`docs/prompt-log/`) and gitignore rule in place. Several decisions still open
-(see "Still open"). Not yet exercised on a real session.
+## What it is
 
-## Next session — start here
+A skill that turns the main session into a **manager**: it cuts a build goal into
+units, spawns the subagent workers in `.claude/agents/`, integrates their reports,
+runs the test and review loop, and writes the record. The manager is the main
+session; the workers are subagents.
 
-The built SKILL.md is still v1 and has drifted from this v2 design (only
-`security`+`design` critics; no escalation ladder; missing Lever 1 rules; no
-`debugger`/`mcdc`). Bringing it up to v2 is blocked on open decisions. Resolve
-them in this dependency order (forks detailed in "Still open"), then wire:
+## Roster (what it orchestrates)
 
-1. **Singleton critics vs. one broad `code-reviewer`** — most upstream; sets the
-   step-4 critic roster and which agents to promote. Decision 2 folds into it.
-2. **`change-discipline-critic` always-on vs. on-demand** — rider on 1.
-3. **Pre-build vs. post-code critic gate** — needs the roster from 1; places the
-   review layer in the flow.
-4. **Escalation strike count** — not a real blocker; wire the ladder with a
-   "once or twice" placeholder and tune after a real run.
-
-Critical path: 1 (+2) → 3.
-
-Already decided, apply without re-opening: promote `debugger` as an agent (drop
-the stale "agent or skill" line under "Still open") and `mcdc-tester` as the
-optional whitebox specialisation. Not blocking: the `verify-fanout` relationship.
-
-Then update SKILL.md: wire the resolved critic fan-out into step 4, add Lever 1's
-two spawning rules, replace the step-2 thrash loop with the Lever 2 ladder +
-`debugger`, add the optional `mcdc` slot, and refresh Prerequisites.
-
-## Why a skill, not a doc
-
-The orchestration is a *procedure* — "cut into units → spawn → integrate →
-test → review → loop → record" — not reference material. That makes it
-skill-shaped, for three reasons:
-
-- **It self-triggers.** A skill's `description` ("running a multi-agent build
-  session") pulls it in when the work starts. A doc in `docs/` only helps if
-  the session remembers to open it.
-- **It loads only when needed.** Build sessions are a fraction of sessions, so
-  the flow should not sit in `CLAUDE.md` costing context every time. A skill
-  stays out until triggered.
-- **The manager is the main session.** Skill instructions land in the current
-  session — exactly where the manager lives. The *workers* need isolation and
-  scoped tools, which is why they are subagents (`.claude/agents/`), not skill
-  text. Skill for the manager, agents for the workers: the split matches what
-  each one is.
-
-`CLAUDE.md` keeps only a one-line pointer to the skill, so it stays
-discoverable without the weight.
-
-## What it orchestrates
-
-- **Manager** — the main session, running this skill. Cuts units, spawns and
+- **Manager** — the main session running this skill. Cuts units, spawns and
   tracks workers, integrates, decides, writes the record. Its own edits are
   limited to docs, config, and merge glue — it does not implement features.
-- **Workers** — the subagent drafts in [../agents/](../agents/):
+- **Workers** — subagents in `.claude/agents/`:
   - `implementer` — one bounded unit each; spawn as `general-purpose`.
-  - **Testers** — [blackbox-tester](../agents/blackbox-tester.md) (spec-derived,
-    spawned at session start alongside implementers),
-    [whitebox-tester](../agents/whitebox-tester.md) (internal-path tests after
-    code lands), and [mcdc-tester](../agents/mcdc-tester.md) (optional;
-    decision-coverage tests for units with dense boolean logic).
-  - **Review layer (critics)** — one axis each, spawned over the merged code
-    (and, per the open decision below, optionally over the unit spec before
-    build): [correctness-critic](../agents/correctness-critic.md),
-    [security-critic](../agents/security-critic.md),
-    [design-critic](../agents/design-critic.md),
-    [simplicity-critic](../agents/simplicity-critic.md),
-    [performance-critic](../agents/performance-critic.md),
-    [docs-critic](../agents/docs-critic.md),
-    [legal-critic](../agents/legal-critic.md),
-    [change-discipline-critic](../agents/change-discipline-critic.md) (judges
-    the diff against its mandate — see the guardrails section).
-  - **Advisory** — [researcher](../agents/researcher.md) /
-    [verifier](../agents/verifier.md) /
-    [alternatives-explorer](../agents/alternatives-explorer.md) /
-    [debugger](../agents/debugger.md), spawned per-unit when a unit needs
-    research, a critique follow-up, or root-cause diagnosis of a failure.
+  - **Testers**: `blackbox-tester` (spec-derived, spawned at session start
+    alongside implementers), `whitebox-tester` (internal-path tests after code
+    lands), `mcdc-tester` (optional; decision-coverage tests for units with dense
+    boolean logic).
+  - **Critics** (one axis each, spawned over the merged code): `correctness-critic`,
+    `security-critic`, `design-critic`, `simplicity-critic`, `performance-critic`,
+    `docs-critic`, `legal-critic`, `change-discipline-critic` (judges the diff
+    against its mandate — see Guardrails).
+  - **Advisory**: `researcher`, `verifier`, `alternatives-explorer`, `debugger` —
+    spawned per-unit when a unit needs research, a critique follow-up, or
+    root-cause diagnosis of a failure.
 
-## Session flow (proposed, adapted from site-factory)
+## Session flow
 
-1. Manager establishes the goal from three inputs together: the feature's plan
-   doc (`docs/plans/<feature>/`, esp. `impl.md`), the progress tracker
+1. Establish the goal from three inputs together: the feature's plan doc
+   (`docs/plans/<feature>/`, esp. `impl.md`), the progress tracker
    (`docs/progress.md`) for where work left off, and the user's in-session
-   direction — which entry point to continue from, plus any added requirements.
-   Then cuts the work into units with explicit file boundaries.
-2. Spawn blackbox tester + implementers in parallel, one unit each.
+   direction (which entry point to continue from, plus any added requirements).
+   Then cut the work into units with explicit file boundaries. Do not refuse on a
+   thin plan doc — the in-session direction fills the gap.
+2. Spawn `blackbox-tester` and, for a unit carrying real design or security
+   surface, the allocated pre-build gate (`security-critic` + `design-critic`
+   over the unit *spec*) — both read the spec, in parallel. Fold gate findings
+   into the spec, then spawn implementers, one unit each.
 3. As implementer reports arrive: integrate, run the build and the blackbox
-   suite. On failure, follow the escalation ladder (Guardrails, Lever 2) —
-   bounded re-attempts, then stop and diagnose; never loop indefinitely on
+   suite. On failure, follow the escalation ladder (Guardrails, Lever 2):
+   bounded re-attempts, then stop and diagnose — never loop indefinitely on
    "make it green".
-4. Units merged and green → spawn the whitebox tester.
-5. Both suites pass → spawn the reviewer (security + design critics) over code
-   plus tests.
-6. Per reviewer finding: fix unit to an implementer, rerun the suites. Loop
-   until clean or the remaining findings are recorded as accepted risk.
+4. Units merged and green → spawn `whitebox-tester`.
+5. Both suites pass → spawn the post-code review layer: **allocate** critics from
+   the eight-axis roster per unit (not all, always), plus `change-discipline-critic`
+   when the diff smells. Record the allocation and its deferred grade in
+   `docs/prompt-log/allocation.md`.
+6. Per reviewer finding: fix unit to an implementer, rerun the suites. Loop until
+   clean or the remaining findings are recorded as accepted risk.
 7. Write the record, close out.
 
-## Spawning rules (carry over from site-factory, unchanged in intent)
+## Spawning rules
 
-- Subagents start cold. Every prompt carries: exact file paths, the spec
-  extract for the unit, the applicable `CLAUDE.md` constraints (code-commenting
-  skill, no Claude attribution), and the report format.
+- Subagents start cold. Every prompt carries: exact file paths, the spec extract
+  for the unit, the applicable `CLAUDE.md` constraints (code-commenting skill, no
+  Claude attribution), and the report format.
 - Parallel implementers get disjoint file sets. Overlap → sequence them or give
   each a worktree.
-- Background by default; run synchronously only when the next allocation
-  depends on the result.
-- Do not spawn for a fix the manager can already see in full; batch small
-  findings into one fix unit, not one agent each.
-- **An implementer fix unit's file set excludes the test files.** The fixer
-  cannot edit the check that judges it (Guardrails, Lever 1). A fix that
-  requires a test to change is a spec/test disagreement — a manager escalation,
-  never a silent edit.
-- **No visibility widening for test convenience.** Implementer and tester
-  prompts forbid making a private symbol public, or otherwise expanding the API
-  surface, just to test it. An untestable-through-the-public-surface private is
-  a Finding, not a licence to widen it.
+- Background by default; run synchronously only when the next allocation depends
+  on the result.
+- Do not spawn for a fix the manager can already see in full; batch small findings
+  into one fix unit, not one agent each.
+- **An implementer fix unit's file set excludes the test files.** The fixer cannot
+  edit the check that judges it (Guardrails, Lever 1). A fix that requires a test
+  to change is a spec/test disagreement — a manager escalation, never a silent
+  edit.
+- **No visibility widening for test convenience.** Implementer and tester prompts
+  forbid making a private symbol public, or otherwise expanding the API surface,
+  just to test it. An untestable-through-the-public-surface private is a Finding,
+  not a licence to widen it.
 
-## Settled decisions
+## Review axes
 
-1. **Session input — plan doc + progress doc + in-session direction, together.**
-   No `sessions.md` like site-factory. When the project follows the established
-   pattern it already has a plan doc (`docs/plans/<feature>/`) and a progress
-   tracker (`docs/progress.md`); each session the user states or asks where to
-   continue and may add requirements. The manager reads all three and reconciles
-   them into the unit cut. No single canonical input file, and no refusal when a
-   plan doc is thin — the in-session direction fills the gap.
-2. **The record — adopt site-factory's full setup.** One
-   `docs/build-log/<date>-<slug>.md` per session, committed with the work, plus
-   a gitignored `docs/prompt-log/` capturing every subagent's exact prompt (both
-   directories, the `docs/prompt-log/README.md` capture rules, and the gitignore
-   entry are in place). The build-log keeps only what a later session needs
-   (option chosen and why, decisions with reasoning, how pieces connect, accepted
-   risk); the prompt-log is capture-only, never a decision input.
-3. **Unpromoted agents — assume promoted, list as prerequisites.** Claude Code
-   loads only `.claude/agents/`; the workers are still drafts in
-   `docs/agents/`. The skill names the agents it needs as prerequisites and
-   stops with a clear message if one is absent. It never auto-promotes:
-   promotion is user-sign-off-only per [../agents/README.md](../agents/README.md).
-4. **Stack-agnostic references.** The skill refers to "the project's test
-   command / test dir" via `<placeholder>` markers, never a concrete runner —
-   per the seed conventions in [new-skills.md](new-skills.md).
-5. **Report format — defer to each agent, factor the shared shape into the
-   agents README.** The agent drafts already define their own report
-   structures; the skill does not re-impose one. The common shape (severity
-   line, evidence-required, "Checked, no finding") belongs in
-   [../agents/README.md](../agents/README.md) so agents and skill cite one
-   source.
-6. **Trigger — explicit command.** `disable-model-invocation: true`; the user
-   runs the skill to open a build session. A build session is deliberate, and
-   the authoring guide flags explicit-command skills.
-7. **Scope — seed-portable.** Ships in the seed, holds to stack-agnostic
-   conventions, carries no project specifics.
-8. **Review roster — eight singleton critics, one axis each.** Not one broad
-   `code-reviewer`. Eight atomic single-axis designs compose cheaply later
-   (merge some into a bundle, or spin a new multi-aspect agent); splitting a
-   bundle back into clean axes is a rewrite. Keep the axes atomic, compose on
-   top. (Resolved 2026-07-23.)
-9. **Allocation is selective, recorded, and graded.** Eight critics *existing*
-   ≠ eight firing every unit — the manager allocates per unit by judgment (a
-   pure-logic unit skips `security`/`legal`; a config diff skips `performance`).
-   Not-all-always is the default. For that judgment to improve across versions,
-   each session records the allocation and grades it in a deferred pass:
-   `allocation.md` (below) captures which critics were deployed vs skipped and
-   why, then judges *waste* (spawned, found nothing on this unit-shape) and
-   *miss* (skipped, a defect slipped its axis). `change-discipline-critic` is
-   just another allocated critic — spawned on suspicion (diff touched more than
-   scoped, a test moved), not blanket always-on; this resolves the old
-   always-on-vs-on-demand question. (Resolved 2026-07-23.)
-10. **Record format — port site-factory's prompt-log trio; allocation in the
-    analysis tree.** The seed's `docs/prompt-log/` READMEs were reconstructed
-    from assumption and were thinner than site-factory's real spec. Ported:
-    `README.md` (rules, `S<N>-<role>-<n>` id scheme, files), `_template.md`
-    (verbatim per-spawn capture), and the gitignored rolling `evaluations.md`
-    (deferred per-spawn prompt judgment → `fix:` to the SKILL rules or an agent
-    draft). The new per-unit allocation grade lives beside it as gitignored
-    `allocation.md` — same species as `evaluations.md` (deferred judgment,
-    never live, output is a fix to the orchestration rules), one level up
-    (per-unit, not per-spawn). Roles extended for our roster: `impl`,
-    `blackbox`, `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`,
-    `altex`. (Resolved 2026-07-23.)
+Each critic owns one axis; allocated per unit, not all-always (Session flow, step 5).
 
-## Review layer — axes and gaps (added 2026-07-21)
+| Axis | Agent |
+| --- | --- |
+| Correctness (logic, edge cases, contract) | `correctness-critic` |
+| Security risk | `security-critic` |
+| Design / architecture | `design-critic` |
+| Redundancy, over-complication | `simplicity-critic` |
+| Performance, efficiency | `performance-critic` |
+| Documentation, comments | `docs-critic` |
+| Legal, licensing, compliance | `legal-critic` |
+| Change discipline (diff vs. its mandate) | `change-discipline-critic` |
+| Decision-coverage testing (optional) | `mcdc-tester` |
+| Root-cause diagnosis on failure | `debugger` |
 
-The v1 review layer had two critics, `security` and `design`. That covers two
-of the quality axes the build is meant to guarantee and silently drops the
-rest. The bar is: every unit is designed well, tested, checked for risk and
-performance, stripped of redundancy and over-complication, documented, and
-reviewed — so security and legal exposure is caught, and when a bug does slip
-through its cause is fast to find. Mapped to agents, one axis each:
+Critics find problems in their lane with evidence per finding; they never fix.
+Fixes go to an implementer or `alternatives-explorer`.
 
-| Axis | Agent | v1 |
-| --- | --- | --- |
-| Correctness (logic, edge cases, contract) | `correctness-critic` | new |
-| Security risk | `security-critic` | had |
-| Design / architecture | `design-critic` | had |
-| Redundancy, over-complication | `simplicity-critic` | new |
-| Performance, efficiency | `performance-critic` | new |
-| Documentation, comments | `docs-critic` | new |
-| Legal, licensing, compliance | `legal-critic` | new |
-| Change discipline (diff vs. its mandate) | `change-discipline-critic` | new |
-| Decision-coverage testing | `mcdc-tester` | new (optional) |
-| Root-cause diagnosis on failure | `debugger` | new (may stay a skill) |
+## Guardrails against thrashing and spec-gaming
 
-Rationale for the shape:
+When an agent gets stuck it stops optimising for "solve the problem" and starts
+optimising for "make the check turn green" — editing the test to pass, exposing a
+private to test it, over-complicating to compile, a large refactor for a small
+bug. A post-hoc critic catches this only after the wasted loops. Prevention sits
+in the loop and the prompts. Two levers plus one backstop critic.
 
-- **Correctness was the biggest hole.** The only v1 defence against a logic
-  bug was the two test agents; nothing read the merged code hunting for the
-  edge case the tests never encoded. `correctness-critic` is the direct answer
-  to "ideally the bug does not exist because of process".
-- **One axis per critic, following the existing critic pattern.** Each new
-  critic mirrors [security-critic](../agents/security-critic.md): find problems
-  in its lane, evidence per finding, no fixes — fixes stay with
-  [alternatives-explorer](../agents/alternatives-explorer.md) or an implementer.
-- **`mcdc-tester` is a `whitebox-tester` specialisation, kept optional.** MC/DC
-  (each condition independently affecting a decision) earns its combinatorial
-  test cost only on decision-dense units — auth rules, pricing, validation,
-  state machines. It has a tooling caveat: most stacks cannot *measure* MC/DC
-  coverage out of the box, so the agent designs cases by analysing conditions
-  and states where it cannot verify the coverage number.
-- **`debugger` may not need to be an agent.** The `systematic-debugging` skill
-  already owns root-cause discipline; an isolated agent is worth it only if the
-  manager wants diagnosis off its own context when the loop stalls. Drafted so
-  the decision can be made on a real draft, not in the abstract. It is also the
-  teeth of the escalation ladder below.
+**Lever 1 — freeze the acceptance check (separation of duties).** Once the manager
+accepts the spec-derived blackbox suite, the thing being judged cannot edit the
+judge. Enforced by the two spawning rules above (fix units exclude test files; no
+visibility widening). A required test change is a spec disagreement escalated to
+the manager, never a silent implementer edit.
 
-## Guardrails against thrashing and spec-gaming (added 2026-07-21)
+**Lever 2 — the escalation ladder (stuck circuit-breaker).** No unbounded "make it
+green" loop; the manager may not just re-attempt:
 
-The critics above judge code *quality*. They do not stop a distinct failure
-mode: when an agent gets stuck, it stops optimising for "solve the problem" and
-starts optimising for "make the check turn green". Observed shapes — changing
-source or the test itself to make a test pass, exposing a private method to
-test it, over-complicating logic just to compile, a large pointless refactor for
-a small bug. These are specification gaming, and a post-hoc critic catches them
-only after the wasted loops and the corrupted tests already happened. Prevention
-sits in the loop and the prompts, not in another reviewer. Two levers, plus one
-backstop critic.
+1. Attempt fails → feed the exact failure back to the same implementer (context
+   intact). At most once or twice.
+2. Still failing → **stop changing code. Spawn `debugger` for the root cause.** No
+   further edit until the cause is named.
+3. Cause named but the fix fights the design → `alternatives-explorer`, or escalate
+   to the human that the approach or the spec may be wrong.
 
-**Lever 1 — freeze the acceptance check (separation of duties).** The
-spec-derived blackbox suite is the contract; once the manager accepts it, the
-thing being judged cannot edit the judge. Enforced by the two spawning rules
-above (fix units exclude the test files; no visibility widening for test
-convenience), which kill "change src/test to make it pass" and "expose a private
-for the test". A required test change is a spec disagreement escalated to the
-manager, never a silent implementer edit. The bones already exist
-(blackbox-tester never reads code; testers never fix) — this hardens the fix
-loop so the fixer cannot reach the checker.
+The rule: N strikes and you diagnose, you do not re-attempt. (Strike count: "once
+or twice" — tune after a real run.)
 
-**Lever 2 — the escalation ladder (stuck circuit-breaker).** The v1 loop had no
-stop condition: "send failures back, spawn fresh if wedged" is where thrashing
-lives. Replace it with a bounded ladder, and forbid the manager from just
-re-attempting:
+**Backstop — `change-discipline-critic`.** Judges the *diff against its mandate*,
+which no quality critic does. Checks: the change does only what the task asked (no
+refactor riding along), no acceptance test was weakened/skipped/deleted, no
+visibility widened for testing, the fix targets a diagnosed cause not a papered-over
+symptom, and the diff size is proportionate to the task.
 
-1. Attempt fails → feed the exact failure back to the same implementer (its
-   context is intact). At most once or twice.
-2. Still failing → **stop changing code. Spawn `debugger` for the root cause.**
-   No further edit until the cause is named. Over-complication and pointless
-   refactors are what a thrashing agent does *instead* of diagnosing; this
-   replaces the thrash with diagnosis.
-3. Cause named but the fix fights the design → `alternatives-explorer`, or
-   escalate to the human that the approach or the spec itself may be wrong.
+## Record
 
-The rule that matters: N strikes and you diagnose, you do not re-attempt. Strike
-count is a still-open number (see below).
+- **Build-log** — one `docs/build-log/<date>-<slug>.md` per session, committed with
+  the work. Keeps only what a later session needs: option chosen and why, decisions
+  with reasoning, how pieces connect, accepted risk.
+- **Prompt-log** — gitignored `docs/prompt-log/`, capture-only (never a decision
+  input): `README.md` (capture rules, `S<N>-<role>-<n>` id scheme), `_template.md`
+  (verbatim per-spawn capture), and rolling `evaluations.md` (deferred per-spawn
+  prompt judgment → a `fix:` to the SKILL rules or an agent draft).
+- **Allocation grade** — gitignored `docs/prompt-log/allocation.md`, per-unit
+  (deferred, never live): which critics were deployed vs skipped and why, judged for
+  *waste* (spawned, found nothing on this unit-shape) and *miss* (skipped, a defect
+  slipped its axis). Output is a fix to the allocation rules.
+- Roles for the id scheme: `impl`, `blackbox`, `whitebox`, `mcdc`, `critic`,
+  `debug`, `research`, `verify`, `altex`.
 
-**Backstop — `change-discipline-critic`.** For what slips the levers, this
-critic judges the *diff against its mandate*, which no quality critic does
-(they judge the code in the absolute; none is handed the diff paired with the
-task). It checks: the change does only what the task asked (no refactor riding
-along), no acceptance test was weakened/skipped/deleted, no visibility widened
-for testing, the fix targets a diagnosed cause rather than a papered-over
-symptom, and the diff size is proportionate to the task. It is a separate agent
-rather than the manager's own check because the manager is under the same
-"just ship this unit and move on" pressure that produces the gaming — an
-independent reviewer that never feels that pressure is more honest, the same
-reason the quality critics do not fix their own findings.
+## Prerequisites
 
-## Still open
+The skill names the agents it needs and stops with a clear message if one is absent.
+It never auto-promotes — promotion from `docs/agents/` drafts into `.claude/agents/`
+is user-sign-off only. Minimum to run: `blackbox-tester`, `whitebox-tester`,
+`security-critic`, `design-critic`; the full roster for the full flow.
 
-- **Pre-build gate.** The critics run post-code in the v1 flow. "Risk
-  considered" and "designed well" are cheapest to fix before an implementer
-  writes code, so the critics (at least `design`, `security`, `correctness`)
-  could also gate the unit *spec* before build — the way `blackbox-tester`
-  already runs pre-code. Decide whether the review layer runs pre-build,
-  post-code, or both.
-- **`debugger`: agent or skill.** See the review-layer note above; settle once
-  the draft exists.
-- **Escalation-ladder strike count.** How many failed implementer attempts
-  before the manager must stop and spawn `debugger` (Guardrails, Lever 2). One
-  or two is the starting guess; tune it once the skill runs a real session —
-  too low wastes a diagnosis spawn on a typo, too high lets the thrash back in.
-- **`change-discipline-critic` — always-on or on-demand.** Whether it runs on
-  every unit's diff or only when the manager suspects gaming (a fix that touched
-  more than expected, a test that changed). Always-on is safer against a biased
-  manager; on-demand is cheaper. Decide with the singleton-vs-broad-reviewer
-  question, since it may fold into that reviewer.
-- **Relationship to `verify-fanout`.** Kept **separate for now**: build uses the
-  inline `researcher`/critic agents; `verify-fanout` stays its own
-  planning-time external-verification path. Whether the manager can *offer*
-  `verify-fanout` as an option inside a build session depends on how that
-  workflow lands — not finalized. Revisit once `verify-fanout` is built.
+## Conventions
 
-## Relationship to existing pieces
-
-- [../agents/](../agents/) — the worker definitions and their promotion path;
-  this skill is the manager that spawns them.
-- [verify-fanout.md](verify-fanout.md) — sibling multi-agent workflow, scoped
-  to external verification; overlap to resolve (see open decisions).
-- [new-skills.md](new-skills.md) — the conventions this skill must follow:
-  stack-agnostic, `<placeholder>` markers, trigger-phrase discipline.
-
-## Next step
-
-The skill is built but cannot run until its required workers are promoted from
-[../agents/](../agents/) drafts into `.claude/agents/`: `blackbox-tester`,
-`whitebox-tester`, `security-critic`, `design-critic`. Promotion is
-user-sign-off only (see the agents README). After promotion, exercise the skill
-on a real session and record what the flow gets wrong.
+- **Stack-agnostic.** Refer to the project's test command / test dir via
+  `<placeholder>` markers, never a concrete runner. Seed-portable: no project
+  specifics.
+- **Trigger — explicit command.** `disable-model-invocation: true`; the user runs
+  the skill to open a build session.
+- **Report format — defer to each agent.** The skill does not re-impose one; each
+  agent defines its own. The shared shape (severity line, evidence-required,
+  "Checked, no finding") lives in the agents `README.md` so agents and skill cite
+  one source.
