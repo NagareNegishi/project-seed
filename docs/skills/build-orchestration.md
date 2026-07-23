@@ -9,8 +9,8 @@ reusable skill.
 
 Status: v1 drafted 2026-07-21. Skill at
 `.claude/skills/build-orchestration/SKILL.md`; record dirs (`docs/build-log/`,
-`docs/prompt-log/`) and gitignore rule in place. One decision still open (the
-`verify-fanout` relationship — see below). Not yet exercised on a real session.
+`docs/prompt-log/`) and gitignore rule in place. Several decisions still open
+(see "Still open"). Not yet exercised on a real session.
 
 ## Why a skill, not a doc
 
@@ -71,11 +71,9 @@ discoverable without the weight.
    Then cuts the work into units with explicit file boundaries.
 2. Spawn blackbox tester + implementers in parallel, one unit each.
 3. As implementer reports arrive: integrate, run the build and the blackbox
-   suite. On failure, follow the escalation ladder (Guardrails section): feed
-   the failure back to the same implementer once or twice; if it is still
-   failing, stop re-attempting and spawn `debugger` for the root cause before
-   any further code change. Never let a unit loop indefinitely on "make it
-   green".
+   suite. On failure, follow the escalation ladder (Guardrails, Lever 2) —
+   bounded re-attempts, then stop and diagnose; never loop indefinitely on
+   "make it green".
 4. Units merged and green → spawn the whitebox tester.
 5. Both suites pass → spawn the reviewer (security + design critics) over code
    plus tests.
@@ -114,13 +112,11 @@ discoverable without the weight.
    plan doc is thin — the in-session direction fills the gap.
 2. **The record — adopt site-factory's full setup.** One
    `docs/build-log/<date>-<slug>.md` per session, committed with the work, plus
-   a gitignored `docs/prompt-log/` capturing every subagent's exact prompt.
-   Setup this pulls in, to do when the skill is built: create both directories,
-   add a `docs/prompt-log/README.md` with the capture rules, and add
-   `docs/prompt-log/` to `.gitignore`. The build-log keeps only what a later
-   session needs (option chosen and why, decisions with reasoning, how pieces
-   connect, accepted risk); the prompt-log is capture-only, never a decision
-   input.
+   a gitignored `docs/prompt-log/` capturing every subagent's exact prompt (both
+   directories, the `docs/prompt-log/README.md` capture rules, and the gitignore
+   entry are in place). The build-log keeps only what a later session needs
+   (option chosen and why, decisions with reasoning, how pieces connect, accepted
+   risk); the prompt-log is capture-only, never a decision input.
 3. **Unpromoted agents — assume promoted, list as prerequisites.** Claude Code
    loads only `.claude/agents/`; the workers are still drafts in
    `docs/agents/`. The skill names the agents it needs as prerequisites and
@@ -200,12 +196,12 @@ backstop critic.
 **Lever 1 — freeze the acceptance check (separation of duties).** The
 spec-derived blackbox suite is the contract; once the manager accepts it, the
 thing being judged cannot edit the judge. Enforced by the two spawning rules
-added above: a fix unit's file set excludes the test files, and no agent widens
-visibility or the API surface for test convenience. A required test change is a
-spec disagreement escalated to the manager, never a silent implementer edit.
-This kills "change src/test to make it pass" and "expose a private for the
-test". The bones already exist (blackbox-tester never reads code; testers never
-fix) — this hardens the fix loop so the fixer cannot reach the checker.
+above (fix units exclude the test files; no visibility widening for test
+convenience), which kill "change src/test to make it pass" and "expose a private
+for the test". A required test change is a spec disagreement escalated to the
+manager, never a silent implementer edit. The bones already exist
+(blackbox-tester never reads code; testers never fix) — this hardens the fix
+loop so the fixer cannot reach the checker.
 
 **Lever 2 — the escalation ladder (stuck circuit-breaker).** The v1 loop had no
 stop condition: "send failures back, spawn fresh if wedged" is where thrashing

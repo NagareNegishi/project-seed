@@ -56,6 +56,8 @@ Should return nothing.
 
 - Create creds.json in your project folder with the new JSON, then:
 
+(Project root with comand prompt)
+
 ```bash
 docker run --rm -v claude-credentials:/home/vscode/.claude -v %CD%:/tmp/source alpine sh -c "cp /tmp/source/creds.json /home/vscode/.claude/.credentials.json"
 ```

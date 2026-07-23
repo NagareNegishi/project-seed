@@ -1,55 +1,42 @@
 # Agent drafts — review findings (2026-07-22)
 
-Pre-promotion review of the 15 agent drafts in this directory. Purpose: a future
-session promotes from this doc without re-reading every draft. Review order
-followed the notes.md handoff (correctness-critic anchor → critics → testers →
-advisory). Nothing is promoted yet.
+Pre-promotion review of the 15 agent drafts in this directory, so a future session
+can promote from this doc without re-reading every draft. Nothing is promoted yet
+(`.claude/agents/` does not exist).
 
 ## Environment facts `[VERIFIED 2026-07-22, filesystem]`
 
 - `.claude/agents/` does **not** exist — promotion must create it. Claude Code
   only loads agents from there; the drafts are inert until copied.
 - `docs/skills/build-orchestration.md` **exists** — `change-discipline-critic`'s
-  reference to it (Purpose + design notes, outside the Definition) is valid.
+  reference to it (outside its Definition) is valid.
 - `.claude/skills/` has `code-commenting` and `systematic-debugging` (referenced
   by `docs-critic` and `debugger`). `/simplify` and `/code-review` are built-in
-  Claude Code skills, not project skills — design-note references to them are
-  outside the Definition blocks, so they don't affect promoted agents.
+  Claude Code skills, not project skills — referenced only in design notes, so
+  they don't affect promoted agents.
 
-## Spec verification — does the design work? `[VERIFIED 2026-07-22]`
+## Spec verification `[VERIFIED 2026-07-22]`
 
-Sources (official): `code.claude.com/docs/en/sub-agents.md` (fetched + spot-checked
-directly, line refs below) and `code.claude.com/docs/en/skills.md`. Verdict:
-**the manager→worker design is valid per spec.** Re-verify only if Claude Code
-changes the subagent/skill spec; line numbers may drift, the facts are stable.
+Sources (official): `code.claude.com/docs/en/sub-agents.md` and `.../skills.md`.
+**Verdict: the manager→worker design is valid per spec.** Re-verify only if Claude
+Code changes the subagent/skill spec. Conclusions specific to our drafts:
 
-- Required agent fields: **only `name` + `description`** ("Only `name` and
-  `description` are required" — sub-agents.md:271). All 15 drafts have both → valid.
-- `tools` omitted → inherits all tools (sub-agents.md:277). Our drafts restrict
-  deliberately. **An unresolvable tool name makes the agent fail to launch**
-  (sub-agents.md:277) — checked: all drafts use valid names (Read, Grep, Glob,
-  Bash, WebSearch, WebFetch, Write, Edit).
-- `model` omitted → defaults to `inherit` (sub-agents.md:279). No `model:` line
-  needed; matches "inherit by default".
-- Manager→worker spawning works: the main session always has the `Agent` tool and
-  spawns workers; nesting allowed to depth 5 (sub-agents.md:843). We are at depth 1.
-- Workers can't fan out: "If `Agent` is omitted from the `tools` list entirely,
-  the agent can't spawn any subagents" (sub-agents.md:389). No worker lists
-  `Agent` → intended posture.
-- Fresh context confirmed. **But CLAUDE.md auto-loads into custom subagents**
-  (only Explore/Plan skip it — sub-agents.md:878), so the skill re-passing CLAUDE.md
-  constraints is redundant-but-harmless, not required.
-- Skill: `disable-model-invocation` is real/documented (skills.md); our SKILL.md
-  uses it correctly for the explicit `/build-orchestration` trigger.
+- All 15 drafts have `name`+`description` (the only required fields) and use valid
+  tool names → all launch-valid. (An unresolvable tool name fails the launch.)
+- Manager→worker works: the main session (depth 0) spawns workers via `Agent`; no
+  worker lists `Agent`, so none can fan out — the intended posture.
+- CLAUDE.md auto-loads into custom subagents (only Explore/Plan skip it), so the
+  skill re-passing CLAUDE.md constraints is redundant-but-harmless, not required.
+- Skill `disable-model-invocation` is used correctly for the explicit
+  `/build-orchestration` trigger.
 
-**Correction to watch:** do NOT add `context: fork` to `build-orchestration`.
-That pattern runs the skill (the manager) itself as a subagent, contradicting
-"the manager IS the main session". Keep the skill non-forked; the main session
-spawns workers via the `Agent` tool. Supported and correct as-is.
+**Do NOT add `context: fork` to `build-orchestration`.** That runs the skill (the
+manager) itself as a subagent, contradicting "the manager IS the main session".
+Keep the skill non-forked; the main session spawns workers via the `Agent` tool.
 
-**Remaining (empirical, needs sign-off + fresh session):** a live end-to-end run
-— promote an agent, open a NEW session (agents load only at session start), have
-the manager spawn it. Cannot be exercised mid-conversation.
+**Remaining (empirical, needs sign-off + fresh session):** a live end-to-end run —
+promote an agent, open a NEW session (agents load only at session start), have the
+manager spawn it. Cannot be exercised mid-conversation.
 
 ### Reference facts `[VERIFIED 2026-07-22, sub-agents.md]` (banked so this isn't re-researched)
 
@@ -60,17 +47,16 @@ the manager spawn it. Cannot be exercised mid-conversation.
   (preload into context, :282), `mcpServers` (:283), `hooks` (:284), `memory`
   (:285), `background` (default true as of v2.1.198, :745), `effort`
   (`low|medium|high|xhigh|max`, :287), `isolation` (:288), `color` (:289),
-  `initialPrompt` (main-thread only, :290).
-- **`tools` accepts** comma-separated string OR YAML list; both valid (:251).
+  `initialPrompt` (main-thread only, :290). `tools` accepts a comma-separated
+  string OR a YAML list (:251).
 - **Agent-file load precedence** (highest→lowest): managed settings → `--agents`
   CLI flag → project `.claude/agents/` → user `~/.claude/agents/` → plugin
   `agents/` (:160-168). Project wins over user on a `name` clash. Keep names
   unique across the whole project tree — same-dir duplicates load only one by
   filesystem order (:178).
 - **Nesting**: subagents CAN spawn subagents as of v2.1.172 (:837), fixed max
-  **depth 5** (:843); the `Agent` tool gates it — list `Agent` in `tools` to
-  allow, omit/deny to forbid (:389, :847). Our manager is the main session
-  (depth 0); workers are depth 1 and omit `Agent`.
+  **depth 5** (:843); the `Agent` tool gates it — list it in `tools` to allow,
+  omit/deny to forbid (:389, :847).
 - **Context load into a custom subagent**: system prompt, task message, CLAUDE.md,
   git status, preloaded `skills`, sibling-agent roster (v2.1.206+). NOT loaded:
   parent conversation, parent's non-listed skills, parent system prompt. Only the
@@ -79,16 +65,14 @@ the manager spawn it. Cannot be exercised mid-conversation.
   recommended): `name`, `description`, `when_to_use`, `argument-hint`,
   `arguments`, `disable-model-invocation`, `user-invocable`, `allowed-tools`,
   `disallowed-tools`, `model`, `effort`, `context`, `agent`, `hooks`, `paths`,
-  `shell`. `context: fork` runs the skill itself in a forked subagent (default
-  `general-purpose`, or the `agent` field) — the pattern build-orchestration must
-  NOT use (see correction below).
+  `shell`. `context: fork` runs the skill itself in a forked subagent — the
+  pattern build-orchestration must NOT use (see above).
 
-## Usage gap — validate before promoting (added 2026-07-22, second pass)
+## Usage gap — validate before promoting (second pass)
 
-These agents exist to be **used by** the `build-orchestration` skill (the
-manager/worker split: skill = manager in the main session, agents = workers).
-Promotion is only worthwhile once each agent has a valid invocation point in
-that skill. It currently does not.
+These agents exist to be **used by** the `build-orchestration` skill (skill =
+manager in the main session, agents = workers). Promotion is only worthwhile once
+each agent has a valid invocation point in that skill. It currently does not.
 
 **The built skill has drifted from its design doc.** `.claude/skills/build-orchestration/SKILL.md`
 (2026-07-21) still runs the **v1 flow**; `docs/skills/build-orchestration.md`
@@ -135,13 +119,12 @@ D. Flow-dependent + optional:
 
 ## Verdict per draft
 
-Ready = promote as written. Fix = defect to resolve first. Decide = open
-agent-vs-skill / scope call (see Open decisions).
+Ready = promote as written. Fix = defect to resolve first.
 
 | Draft | Verdict |
 | --- | --- |
 | correctness-critic | Ready (anchor; conventions cascade from it) |
-| security-critic | Ready (see finding 5, minor scope edge) |
+| security-critic | Ready (see finding 4, minor scope edge) |
 | design-critic | Ready |
 | simplicity-critic | Ready |
 | performance-critic | Ready |
@@ -156,36 +139,30 @@ agent-vs-skill / scope call (see Open decisions).
 | mcdc-tester | **Promote** (decided); wire optional slot (finding 3) |
 | debugger | **Promote** (decided); wire escalation ladder (finding 3) |
 
-11 ready, 1 accept-caveat, 1 fix-then-promote, 2 promote-with-usage-wiring.
-All 15 are slated to promote; none held.
+11 ready, 1 accept-caveat, 1 fix-then-promote, 2 promote-with-usage-wiring. All
+15 are slated to promote; none held.
 
 ## Findings (worst first)
 
 1. **alternatives-explorer — stale constraint-id scheme.** Its Definition hardcodes
    constraint ids to `S1/S2` (security) and `D1/D2` (design) — written when v1
-   review was only those two critics. README now lists 8. **DECIDED (user):
-   generalize the id scheme to any critic** (per-critic prefix) so a
-   correctness/perf/legal/etc. finding can be referenced. Apply when the critic
-   set is final (phase D).
+   review was only those two critics. README now lists 8. **Decided (user):
+   generalize the id scheme to any critic** (per-critic prefix). Apply when the
+   critic set is final (phase D).
 
-2. **blackbox-tester — "never read the implementation" is prompt-only.** Toolset
-   (`Read`, `Bash`) can reach any source file; no tool restriction can scope
-   `Read` to spec files. The guarantee rests on the prompt + the **Spec basis**
-   report line, not enforcement. Design note flags this. Promotion = accept the
-   caveat. Tighter enforcement (sandbox / path allowlist) is a future option.
+2. **blackbox-tester — "never read the implementation" is prompt-only.** Its
+   toolset (`Read`, `Bash`) can reach any source file; no tool restriction can
+   scope `Read` to spec files. The guarantee rests on the prompt + the **Spec
+   basis** report line, not enforcement. Promotion = accept the caveat. Tighter
+   enforcement (sandbox / path allowlist) is a future option.
 
 3. **Two borderline drafts** (their own design notes asked "worth a standing
-   agent?"). **DECIDED (user): promote both.** Usage must be wired:
-   - `mcdc-tester` — promote as optional whitebox specialization; wire its
-     optional slot in the flow.
-   - `debugger` — promote; wire it as the escalation-ladder teeth (Lever 2) in
-     SKILL.md, which currently lacks the ladder.
+   agent?"). **Decided (user): promote both.** Usage must be wired:
+   - `mcdc-tester` — optional whitebox specialization; wire its optional slot.
+   - `debugger` — wire it as the escalation-ladder teeth (Lever 2) in SKILL.md,
+     which currently lacks the ladder.
 
-4. **No `model:` field on any agent** — all inherit the session model.
-   **DECIDED (user): set per-agent when writing each file; inherit by default**
-   (omit the line). Spec confirms omitted `model` = `inherit` (sub-agents.md:279).
-
-5. **security-critic — minor scope edge.** Lists "vulnerable or abandoned
+4. **security-critic — minor scope edge.** Lists "vulnerable or abandoned
    dependencies" as a hunt item but has no Bash, so it can Read manifests and
    WebFetch advisories but not run `npm audit`. `legal-critic` (has Bash) covers
    the manifest angle. Acceptable; noted so it isn't mistaken for an omission.
@@ -202,13 +179,12 @@ All 15 are slated to promote; none held.
 
 ## Decisions (all resolved with user)
 
-- **"Promote to agents + skills" scope** → the agents are *used by* the
-  `build-orchestration` skill; validate/define each agent's usage in that skill
-  first, then promote (see "Usage gap" above). Not agents-in-isolation.
-- **Borderline drafts** → promote all 15; none held. `mcdc-tester` and `debugger`
-  included, with usage wired.
-- **Model field** → set per-agent when writing each file; inherit by default.
-- **alternatives-explorer constraint-ids** → generalize to any critic (phase D).
+- **Scope** → the agents are *used by* the `build-orchestration` skill; validate
+  and define each agent's usage in that skill first, then promote (see "Usage
+  gap"). Not agents-in-isolation.
+- **Borderline drafts** → promote all 15; none held (findings 1, 3).
+- **Model field** → no agent sets `model:`; set it per-agent when writing each
+  file, inherit by default (omit the line). Spec confirms omitted = `inherit`.
 - **Role** → user drives the review; this session supports with source-backed
   verification and doc-keeping.
 
