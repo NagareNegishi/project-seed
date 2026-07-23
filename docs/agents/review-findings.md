@@ -198,8 +198,11 @@ change-discipline always-on vs on-demand (see `docs/skills/build-orchestration.m
 Per agent, with user sign-off:
 1. Create `.claude/agents/` if absent, copy the Definition code block to
    `.claude/agents/<agent-name>.md` (Definition only — status/design notes dropped).
-2. Confirm the agent appears in the available-agents list in a new session.
-3. Update the draft's `Status:` line to `promoted <date>`.
+2. Polish the live file section by section (`description` first) against
+   `../skills/new-skills.md` "Polish criteria" + `definition-template.md`
+   "Promotion check"; edit live only, leave it ahead of the draft.
+3. Confirm the agent appears in the available-agents list in a new session.
+4. Update the draft's `Status:` line to `promoted <date>` — after polish.
 
 Fix `alternatives-explorer` (finding 1) before its copy. Resolve the two open
 decisions before touching `mcdc-tester` / `debugger`.

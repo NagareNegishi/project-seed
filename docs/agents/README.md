@@ -16,11 +16,17 @@ agents from `.claude/agents/`, so files in this directory are reference only.
 
 ## Promotion
 
-Only with user sign-off:
+Only with user sign-off, per agent:
 
 1. Copy the Definition code block to `.claude/agents/<agent-name>.md`.
-2. Verify the agent appears in the available-agents list in a new session.
-3. Update the draft's status line to `promoted <date>`.
+2. Polish the live file — section by section, `description` first — against the
+   "Polish criteria" in [../skills/new-skills.md](../skills/new-skills.md) and the
+   section walk in [definition-template.md](definition-template.md) "Promotion
+   check". Edit the live file only; leave it ahead of its draft, and carry the
+   refinements it demonstrates into the next draft promoted. Drafts are synced to
+   live in one final pass after every agent is promoted — never one at a time.
+3. Verify the agent appears in the available-agents list in a new session.
+4. Update the draft's status line to `promoted <date>` — after polish, not before.
 
 ## Drafts
 
