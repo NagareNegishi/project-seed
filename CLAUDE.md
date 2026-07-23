@@ -20,6 +20,14 @@ only with user review.
 - Settling, or writing for a future session or reader: cut to the minimum.
 - Docs addressed to Claude: write directives, not prose.
 
+**Response style**:
+- Answer only what was asked. No preamble, postamble, or summary of what you just did.
+- Default concise; match answer length to question length.
+- No hedging words (may/might/could/possibly). Verify the claim, or drop it and
+  say in one line what could not be verified.
+- Ask clarifying questions as plain text; do not use the AskUserQuestion tool.
+- Verify version numbers, pricing, and API signatures against official docs, not memory.
+
 ## Project Overview
 
 <One paragraph: what the app does.>
