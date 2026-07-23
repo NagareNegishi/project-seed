@@ -12,6 +12,31 @@ Status: v1 drafted 2026-07-21. Skill at
 `docs/prompt-log/`) and gitignore rule in place. Several decisions still open
 (see "Still open"). Not yet exercised on a real session.
 
+## Next session — start here
+
+The built SKILL.md is still v1 and has drifted from this v2 design (only
+`security`+`design` critics; no escalation ladder; missing Lever 1 rules; no
+`debugger`/`mcdc`). Bringing it up to v2 is blocked on open decisions. Resolve
+them in this dependency order (forks detailed in "Still open"), then wire:
+
+1. **Singleton critics vs. one broad `code-reviewer`** — most upstream; sets the
+   step-4 critic roster and which agents to promote. Decision 2 folds into it.
+2. **`change-discipline-critic` always-on vs. on-demand** — rider on 1.
+3. **Pre-build vs. post-code critic gate** — needs the roster from 1; places the
+   review layer in the flow.
+4. **Escalation strike count** — not a real blocker; wire the ladder with a
+   "once or twice" placeholder and tune after a real run.
+
+Critical path: 1 (+2) → 3.
+
+Already decided, apply without re-opening: promote `debugger` as an agent (drop
+the stale "agent or skill" line under "Still open") and `mcdc-tester` as the
+optional whitebox specialisation. Not blocking: the `verify-fanout` relationship.
+
+Then update SKILL.md: wire the resolved critic fan-out into step 4, add Lever 1's
+two spawning rules, replace the step-2 thrash loop with the Lever 2 ladder +
+`debugger`, add the optional `mcdc` slot, and refresh Prerequisites.
+
 ## Why a skill, not a doc
 
 The orchestration is a *procedure* — "cut into units → spawn → integrate →
@@ -136,6 +161,34 @@ discoverable without the weight.
    the authoring guide flags explicit-command skills.
 7. **Scope — seed-portable.** Ships in the seed, holds to stack-agnostic
    conventions, carries no project specifics.
+8. **Review roster — eight singleton critics, one axis each.** Not one broad
+   `code-reviewer`. Eight atomic single-axis designs compose cheaply later
+   (merge some into a bundle, or spin a new multi-aspect agent); splitting a
+   bundle back into clean axes is a rewrite. Keep the axes atomic, compose on
+   top. (Resolved 2026-07-23.)
+9. **Allocation is selective, recorded, and graded.** Eight critics *existing*
+   ≠ eight firing every unit — the manager allocates per unit by judgment (a
+   pure-logic unit skips `security`/`legal`; a config diff skips `performance`).
+   Not-all-always is the default. For that judgment to improve across versions,
+   each session records the allocation and grades it in a deferred pass:
+   `allocation.md` (below) captures which critics were deployed vs skipped and
+   why, then judges *waste* (spawned, found nothing on this unit-shape) and
+   *miss* (skipped, a defect slipped its axis). `change-discipline-critic` is
+   just another allocated critic — spawned on suspicion (diff touched more than
+   scoped, a test moved), not blanket always-on; this resolves the old
+   always-on-vs-on-demand question. (Resolved 2026-07-23.)
+10. **Record format — port site-factory's prompt-log trio; allocation in the
+    analysis tree.** The seed's `docs/prompt-log/` READMEs were reconstructed
+    from assumption and were thinner than site-factory's real spec. Ported:
+    `README.md` (rules, `S<N>-<role>-<n>` id scheme, files), `_template.md`
+    (verbatim per-spawn capture), and the gitignored rolling `evaluations.md`
+    (deferred per-spawn prompt judgment → `fix:` to the SKILL rules or an agent
+    draft). The new per-unit allocation grade lives beside it as gitignored
+    `allocation.md` — same species as `evaluations.md` (deferred judgment,
+    never live, output is a fix to the orchestration rules), one level up
+    (per-unit, not per-spawn). Roles extended for our roster: `impl`,
+    `blackbox`, `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`,
+    `altex`. (Resolved 2026-07-23.)
 
 ## Review layer — axes and gaps (added 2026-07-21)
 
@@ -234,14 +287,6 @@ reason the quality critics do not fix their own findings.
 
 ## Still open
 
-- **Singleton critics vs. one broad reviewer.** Seven single-axis critics give
-  the sharpest signal and the most parallelism but balloon the fan-out and
-  per-spawn context cost. The alternative is a broad `code-reviewer` running a
-  checklist (correctness + simplicity + performance + docs), with `security`,
-  `design`, and `legal` kept separate for needing distinct expertise — matching
-  how the `/code-review` skill already bundles correctness with
-  reuse/simplification/efficiency. Drafting them as singletons first because
-  merging drafts later is cheaper than splitting one. Resolve at review.
 - **Pre-build gate.** The critics run post-code in the v1 flow. "Risk
   considered" and "designed well" are cheapest to fix before an implementer
   writes code, so the critics (at least `design`, `security`, `correctness`)
