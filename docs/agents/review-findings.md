@@ -151,10 +151,13 @@ Ready = promote as written. Fix = defect to resolve first.
    critic set is final (phase D).
 
 2. **blackbox-tester — "never read the implementation" is prompt-only.** Its
-   toolset (`Read`, `Bash`) can reach any source file; no tool restriction can
-   scope `Read` to spec files. The guarantee rests on the prompt + the **Spec
-   basis** report line, not enforcement. Promotion = accept the caveat. Tighter
-   enforcement (sandbox / path allowlist) is a future option.
+   toolset (`Read`, `Bash`) can reach any source file; the `tools` allowlist
+   works at tool-name granularity and cannot scope `Read` to spec files. The
+   guarantee rests on the prompt + the **Spec basis** report line, not
+   enforcement. Promotion shipped accepting the caveat. **System-level
+   enforcement IS possible** via a per-subagent `PreToolUse` path-jail hook —
+   see "Enforcing tester confinement" below; deferred to a fresh session
+   because hook config only loads at session start.
 
 3. **Two borderline drafts** (their own design notes asked "worth a standing
    agent?"). **Decided (user): promote both.** Usage must be wired:
@@ -166,6 +169,52 @@ Ready = promote as written. Fix = defect to resolve first.
    dependencies" as a hunt item but has no Bash, so it can Read manifests and
    WebFetch advisories but not run `npm audit`. `legal-critic` (has Bash) covers
    the manifest angle. Acceptable; noted so it isn't mistaken for an omission.
+
+## Enforcing tester confinement (finding 2 — verified mechanism + deferred test)
+
+Goal: the write-capable testers (`blackbox`, `whitebox`) reach only the files the
+manager permits that spawn, enforced by the system, not the prompt.
+
+**Verified `[2026-07-23, code.claude.com]`:**
+
+- **Sandbox (`/sandbox`) confines Bash subprocesses only.** Built-in `Read`/`Edit`/
+  `Write` go through the permission system, not the sandbox (`sandboxing.md`,
+  "Scope"). So a temp-dir copy + sandbox does **not** stop the `Read` tool.
+- **No per-subagent sandbox or permissions.** Subagents share the parent's sandbox
+  and the session-wide `permissions` rules (`sandboxing.md` "Subagents";
+  `sub-agents.md` :229). A session-wide `Read(./src/**)` deny would also blind the
+  main agent and whitebox — unusable.
+- **The one per-subagent, all-tools lever is frontmatter `hooks.PreToolUse`**
+  (`sub-agents.md` :286, "scoped to this subagent"). Docs say the stdin carries
+  `tool_input` (incl. `file_path`), `cwd`, `agent_type`, and the hook can return
+  `permissionDecision: deny` / exit 2. `SubagentStart` is read-only — can't inject
+  an allowlist, so scope must be a **fixed convention**, not passed per spawn.
+- **Config loads at session start; no hot-reload** (confirmed empirically
+  2026-07-23: a `settings.local.json` hook added mid-session did not fire even for
+  the main agent). So any hook-based confinement must be present before the session
+  starts — fine for real use (committed agent file + settings), but it means the
+  mechanism can only be validated in a fresh session.
+
+**Proposed design (needs sign-off before writing — hooks/settings per CLAUDE.md):**
+
+- Fixed scope root `.agent-scope/` (gitignored). Manager stages **only** permitted
+  files in (spec-only for blackbox; spec+impl for whitebox), spawns the tester
+  pointed at it, moves results out, clears it. Blackbox and whitebox must be
+  **serialized** — they share the one fixed root.
+- Agent frontmatter: drop `Grep`/`Glob` (works from named paths, never searches);
+  add `hooks.PreToolUse` (matcher `Read|Edit|Write|Bash`) → a path-jail script that
+  `realpath -m`-resolves the target and denies (exit 2) anything outside the root.
+- Bash is the weak seam (a shell string can `cat` any file, no reliable parser):
+  either allowlist the single collect/parse command, or drop `Bash` for an airtight
+  read-only variant.
+
+**Deferred test — the real one is deny-blocks, not fires.** A logging hook only
+proves firing; the jail's premise is that exit 2 actually *blocks* an out-of-scope
+read in a subagent. In a fresh session: wire the jail hook onto the real
+`blackbox-tester`, spawn it, and confirm (a) an in-scope `Read` passes, (b) an
+out-of-scope `Read` is **blocked**, (c) the exact `tool_input` field name for the
+`Read` tool, (d) the hook still fires when the parent runs `bypassPermissions`/
+`auto` (`sub-agents.md` :465 is silent on hooks under those modes).
 
 ## Structural notes (all drafts)
 
