@@ -91,6 +91,14 @@ The report is your final message. Do not write any files.   # testers: instead r
 Every promotion walks these sections in order; the agent is copied only after each
 passes. A miss is fixed in the draft first, never patched silently on the way in.
 
+The draft's Definition and its promoted `.claude/agents/<name>.md` must end up
+identical, but do not sync them one agent at a time. While a promotion campaign is
+still running, leave each polished live agent ahead of its draft on purpose and use
+it as the reference for the next promotion — apply the refinements it demonstrates
+(e.g. the verdict field, `model: inherit`) to the draft you promote next. Only once
+every agent is promoted, make one pass forcing each draft to mirror its live agent,
+so the drafts finish as the synced record of what shipped.
+
 1. **`name`** — matches the file name, unique across the project tree.
 2. **`description`** — states the delegation trigger, not the mechanics.
 3. **`tools`** — the minimum the job needs; no `Bash`/`Write`/`Edit` on an agent that
