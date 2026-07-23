@@ -9,7 +9,9 @@ docs/notes.md
 # skills write here; drafts are ephemeral working files, never committed
 .github/drafts/
 
-# Subagent prompt captures from build-orchestration sessions — capture only,
-# never committed; the README stays tracked to hold the rules
+# Subagent prompt captures + deferred analysis from build-orchestration
+# sessions — local data, never committed; the README and the capture template
+# stay tracked to hold the rules and the copyable shape
 docs/prompt-log/*
 !docs/prompt-log/README.md
+!docs/prompt-log/_template.md
