@@ -1,8 +1,8 @@
-# Build Orchestration — source for SKILL.md
+# Build Orchestration — SKILL.md spec
 
-Distilled from `build-orchestration.md` (planning doc). Only the material a
-session needs to write `.claude/skills/build-orchestration/SKILL.md` — no status,
-no design rationale, no transition/wiring notes.
+The material a session needs to write `.claude/skills/build-orchestration/SKILL.md`.
+Design rationale, open questions, and the wiring checklist live in the companion
+`build-orchestration-design-notes.md`.
 
 ## What it is
 
@@ -113,14 +113,13 @@ the manager, never a silent implementer edit.
 green" loop; the manager may not just re-attempt:
 
 1. Attempt fails → feed the exact failure back to the same implementer (context
-   intact). At most once or twice.
+   intact). At most twice.
 2. Still failing → **stop changing code. Spawn `debugger` for the root cause.** No
    further edit until the cause is named.
 3. Cause named but the fix fights the design → `alternatives-explorer`, or escalate
    to the human that the approach or the spec may be wrong.
 
-The rule: N strikes and you diagnose, you do not re-attempt. (Strike count: "once
-or twice" — tune after a real run.)
+The rule: after 2 strikes you diagnose, you do not re-attempt.
 
 **Backstop — `change-discipline-critic`.** Judges the *diff against its mandate*,
 which no quality critic does. Checks: the change does only what the task asked (no

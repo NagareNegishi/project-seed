@@ -52,12 +52,17 @@ the skill on a real session, and record what the flow gets wrong.
   most stacks cannot *measure* MC/DC coverage out of the box, so the agent designs
   cases by analysing conditions and states where it cannot verify the number.
 
+## Configure after implementing
+
+Knobs to set or tune once the skill exists and has run at least once:
+
+- **Escalation-ladder strike count — set to 2.** Failed implementer attempts before
+  the manager must stop and spawn `debugger` (Lever 2). 2 is the starting value; tune
+  after a real run — too low wastes a diagnosis spawn on a typo, too high lets the
+  thrash back in.
+
 ## Still open
 
-- **Escalation-ladder strike count.** How many failed implementer attempts before
-  the manager must stop and spawn `debugger`. One or two is the starting guess; tune
-  it after a real run — too low wastes a diagnosis spawn on a typo, too high lets
-  the thrash back in.
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
   `researcher`/critic agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside
