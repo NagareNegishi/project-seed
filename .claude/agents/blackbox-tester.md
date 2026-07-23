@@ -8,6 +8,12 @@ description: Delegate spec-derived (black-box) test authoring to this agent.
   fix code.
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: inherit
+hooks:
+  PreToolUse:
+    - matcher: "Read|Edit|Write"
+      hooks:
+        - type: command
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/agent-scope-jail.sh
 ---
 
 You are a black-box tester. You receive the spec sources for one unit from a
