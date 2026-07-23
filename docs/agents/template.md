@@ -10,7 +10,8 @@ delegate to it instead of doing the work itself.
 ## Definition
 
 The exact content of the future `.claude/agents/<agent-name>.md`. Nothing else
-goes in this block.
+goes in this block. For the anatomy of that content and why each section exists,
+see [definition-template.md](definition-template.md).
 
 ```markdown
 ---
