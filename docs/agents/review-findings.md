@@ -150,14 +150,13 @@ Ready = promote as written. Fix = defect to resolve first.
    generalize the id scheme to any critic** (per-critic prefix). Apply when the
    critic set is final (phase D).
 
-2. **blackbox-tester — "never read the implementation" is prompt-only.** Its
-   toolset (`Read`, `Bash`) can reach any source file; the `tools` allowlist
-   works at tool-name granularity and cannot scope `Read` to spec files. The
-   guarantee rests on the prompt + the **Spec basis** report line, not
-   enforcement. Promotion shipped accepting the caveat. **System-level
-   enforcement IS possible** via a per-subagent `PreToolUse` path-jail hook —
-   see "Enforcing tester confinement" below; deferred to a fresh session
-   because hook config only loads at session start.
+2. **blackbox-tester — confinement now ENFORCED** (was prompt-only). A
+   per-subagent `PreToolUse` path-jail hook (`agent-scope-jail.sh`, wired in the
+   frontmatter) denies any `Read/Edit/Write` outside `.agent-scope/`. Verified
+   live 2026-07-23: in-scope read passed, out-of-scope `Read(CLAUDE.md)` blocked
+   with the jail's deny message, `tool_input.file_path` confirmed as the field.
+   See "Enforcing tester confinement" below. Open: Bash still passes through (weak
+   seam); mode (d) and whitebox reuse untested.
 
 3. **Two borderline drafts** (their own design notes asked "worth a standing
    agent?"). **Decided (user): promote both.** Usage must be wired:
@@ -170,12 +169,24 @@ Ready = promote as written. Fix = defect to resolve first.
    WebFetch advisories but not run `npm audit`. `legal-critic` (has Bash) covers
    the manifest angle. Acceptable; noted so it isn't mistaken for an omission.
 
-## Enforcing tester confinement (finding 2 — verified mechanism + deferred test)
+## Enforcing tester confinement (finding 2 — VERIFIED WORKING 2026-07-23)
+
+**Result `[VERIFIED 2026-07-23, live]`:** the path-jail hook blocks out-of-scope
+reads in a spawned `blackbox-tester`. In-scope `Read(.agent-scope/spec.md)`
+succeeded; out-of-scope `Read(CLAUDE.md)` was **BLOCKED** with the jail's deny
+message; `.jail.log` recorded both with `tool_input.file_path` populated. The
+prior mid-session failure was the no-hot-reload caveat only — a fresh session
+loads the frontmatter hook and it works. Confinement is enforced, not prompt-only.
+
+Still open: (d) does the hook fire under a `bypassPermissions`/`auto` parent
+(this run was default mode); the **Bash seam** — Bash passes through the jail, so
+decide allowlist-the-collect-command vs drop-Bash; whether whitebox reuses the
+same jail (spec+impl staged, serialized on the shared root).
 
 Goal: the write-capable testers (`blackbox`, `whitebox`) reach only the files the
 manager permits that spawn, enforced by the system, not the prompt.
 
-**Verified `[2026-07-23, code.claude.com]`:**
+**Mechanism `[VERIFIED 2026-07-23, code.claude.com]` — do not re-research:**
 
 - **Sandbox (`/sandbox`) confines Bash subprocesses only.** Built-in `Read`/`Edit`/
   `Write` go through the permission system, not the sandbox (`sandboxing.md`,
@@ -208,13 +219,12 @@ manager permits that spawn, enforced by the system, not the prompt.
   either allowlist the single collect/parse command, or drop `Bash` for an airtight
   read-only variant.
 
-**Deferred test — the real one is deny-blocks, not fires.** A logging hook only
-proves firing; the jail's premise is that exit 2 actually *blocks* an out-of-scope
-read in a subagent. In a fresh session: wire the jail hook onto the real
-`blackbox-tester`, spawn it, and confirm (a) an in-scope `Read` passes, (b) an
-out-of-scope `Read` is **blocked**, (c) the exact `tool_input` field name for the
-`Read` tool, (d) the hook still fires when the parent runs `bypassPermissions`/
-`auto` (`sub-agents.md` :465 is silent on hooks under those modes).
+**Plumbing on disk** (built 2026-07-23, verified working): `.claude/hooks/agent-scope-jail.sh`
+(path jail, `realpath -m` resolve, `Bash` passthrough, logs to `.agent-scope/.jail.log`);
+`blackbox-tester.md` frontmatter `hooks.PreToolUse` (matcher `Read|Edit|Write`, nested
+settings.json-style shape — confirmed correct by the live run); `.agent-scope/spec.md`
+fixture; `.agent-scope/` gitignored. Note: frontmatter `hooks` load at session start,
+no hot-reload — the jail can only be validated from a session started after it was on disk.
 
 ## Structural notes (all drafts)
 
