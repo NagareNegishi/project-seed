@@ -86,18 +86,26 @@ The report is your final message. Do not write any files.   # testers: instead r
   report is the whole deliverable. Testers invert this: they write tests and run the
   suite, and report pass/fail instead.
 
-## Promotion check
+## Promotion check — REQUIRED, follow every step
 
-Every promotion walks these sections in order; the agent is copied only after each
-passes. A miss is fixed in the draft first, never patched silently on the way in.
+Not optional, not a skim. Walk the 10 sections below **in order**; the agent is copied
+only after every one passes.
 
-The draft's Definition and its promoted `.claude/agents/<name>.md` must end up
-identical, but do not sync them one agent at a time. While a promotion campaign is
-still running, leave each polished live agent ahead of its draft on purpose and use
-it as the reference for the next promotion — apply the refinements it demonstrates
-(e.g. the verdict field, `model: inherit`) to the draft you promote next. Only once
-every agent is promoted, make one pass forcing each draft to mirror its live agent,
-so the drafts finish as the synced record of what shipped.
+For each section you MUST:
+
+- **Challenge it** — state what is wrong or weaker than it should be and what to
+  improve. Do not rubber-stamp; call it clean only when it survives that.
+- **Fix it in the live file** — surface each change with its justification; never
+  patch silently.
+- **Stay concise** — give the judgment and the change, no padding.
+
+**Do not sync to the draft in this step.** During the campaign the live file is
+intentionally ahead of its draft, so the raw draft is not a reference and not a
+justification for what you promote. Polish the live file on its own terms, carrying
+forward the already-polished live agents (not the drafts) as the pattern. Drafts are
+mirrored to live in one final pass, only after every agent is promoted.
+
+**The 10 sections** (walk in order):
 
 1. **`name`** — matches the file name, unique across the project tree.
 2. **`description`** — states the delegation trigger, not the mechanics.

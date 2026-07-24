@@ -5,10 +5,13 @@
 `docs/skills/new-skills.md` (authoring and polish guide).
 
 **Agent work** — TEMPORARY, delete this whole block once every agent is promoted and
-drafts are synced (progress tracker: `docs/notes.md` "Next-session handoff"). Before
-creating, promoting, or polishing any agent (`.claude/agents/` or `docs/agents/`
-drafts), read `docs/agents/README.md`, then `definition-template.md` + `template.md`
-in that dir, then `docs/skills/new-skills.md` "Polish criteria". Then:
+drafts are synced. Before creating, promoting, or polishing any agent (`.claude/agents/`
+or `docs/agents/` drafts), READ these in order and in full:
+1. `docs/notes.md` "Next-session handoff" — campaign state and which agent is next.
+2. `docs/agents/review-findings.md` — per-draft verdicts and findings.
+3. `docs/agents/README.md`, then `definition-template.md` + `template.md` in that dir.
+4. `docs/skills/new-skills.md` "Polish criteria".
+Then:
 - Promote one agent at a time with user sign-off; walk the 10-point "Promotion check"
   in `definition-template.md`.
 - Per item: show what would land in the target file with per-section justification,
