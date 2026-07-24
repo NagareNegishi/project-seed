@@ -4,6 +4,23 @@
 **Skill work**: before polishing or adding a skill in `.claude/skills/`, read
 `docs/skills/new-skills.md` (authoring and polish guide).
 
+**Agent work** — TEMPORARY, delete this whole block once every agent is promoted and
+drafts are synced (progress tracker: `docs/notes.md` "Next-session handoff"). Before
+creating, promoting, or polishing any agent (`.claude/agents/` or `docs/agents/`
+drafts), read `docs/agents/README.md`, then `definition-template.md` + `template.md`
+in that dir, then `docs/skills/new-skills.md` "Polish criteria". Then:
+- Promote one agent at a time with user sign-off; walk the 10-point "Promotion check"
+  in `definition-template.md`.
+- Per item: show what would land in the target file with per-section justification,
+  then STOP for the user's call before writing. No batch-apply — a go on one agent is
+  not a go on the rest.
+- Polish the LIVE `.claude/agents/<name>.md` only and leave it ahead of its draft. Do
+  NOT sync drafts one at a time; carry each live file's refinements (`model: inherit`,
+  Verdict field, …) forward into the next draft promoted. Drafts are mirrored to live
+  in ONE final pass after every agent is promoted.
+- Never leak the manager/fleet taxonomy into an agent file — a cold subagent does not
+  know the fleet exists; state each lane in the agent's own terms.
+
 **Config work**: changes to `.claude/settings.json` (permissions, hooks) must cite
 the relevant code.claude.com docs and get user sign-off before writing.
 
