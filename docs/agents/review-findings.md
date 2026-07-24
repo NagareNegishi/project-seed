@@ -178,10 +178,12 @@ message; `.jail.log` recorded both with `tool_input.file_path` populated. The
 prior mid-session failure was the no-hot-reload caveat only — a fresh session
 loads the frontmatter hook and it works. Confinement is enforced, not prompt-only.
 
-Still open: (d) does the hook fire under a `bypassPermissions`/`auto` parent
-(this run was default mode); the **Bash seam** — Bash passes through the jail, so
-decide allowlist-the-collect-command vs drop-Bash; whether whitebox reuses the
-same jail (spec+impl staged, serialized on the shared root).
+Still open: whether whitebox reuses the same jail (spec+impl staged, serialized on
+the shared root). Bash seam resolved 2026-07-24 — dropped `Bash`/`Grep`/`Glob` from
+`blackbox-tester` (now `Read, Write, Edit`); a future variant that runs its own tests
+needs `Bash` and so can't be jailed. Parent-mode gap (was item d):
+`bypassPermissions`/`acceptEdits` overrides the jail, so `build-orchestration` must
+confirm the session mode before spawning.
 
 Goal: the write-capable testers (`blackbox`, `whitebox`) reach only the files the
 manager permits that spawn, enforced by the system, not the prompt.
