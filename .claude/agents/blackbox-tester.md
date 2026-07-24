@@ -6,7 +6,7 @@ description: Delegate spec-derived (black-box) test authoring to this agent.
   looking at the implementation. Use it at session start, before or alongside
   implementation. It writes test files only; it does not modify source or
   fix code.
-tools: Read, Grep, Glob, Write, Edit, Bash
+tools: Read, Write, Edit
 model: inherit
 hooks:
   PreToolUse:
