@@ -1,6 +1,6 @@
 # performance-critic
 
-Status: copied to live 2026-07-25 — NOT yet polished, not promoted (polish round pending)
+Status: promoted 2026-07-25 (polished — 10-section walk)
 
 ## Purpose
 
