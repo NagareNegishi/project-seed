@@ -2,10 +2,10 @@
 name: whitebox-tester
 description: Delegate code-driven (white-box) test authoring to this agent
   after implementation exists. Give it the implementation files plus the
-  existing black-box tests, and it adds tests for internal branches,
-  boundaries, and error paths, then runs the suite. It writes test files and
+  existing black-box tests, and it adds tests that reach the internals the
+  spec-level suite can't — then runs the full suite. It writes test files and
   reports bugs it finds; it does not modify source or fix anything.
-tools: Read, Grep, Glob, Write, Edit, Bash
+tools: Read, Write, Edit, Bash
 model: inherit
 ---
 
