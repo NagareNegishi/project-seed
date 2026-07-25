@@ -17,9 +17,13 @@ or `docs/agents/` drafts), READ these in order and in full:
 Then:
 - Promote one agent at a time with user sign-off; walk the 10-point "Promotion check"
   in `definition-template.md`.
-- Per item: show what would land in the target file with per-section justification,
-  then STOP for the user's call before writing. No batch-apply — a go on one agent is
-  not a go on the rest.
+- One section at a time. This is a MUST, not a default: show exactly ONE section's
+  proposed text with its justification, then STOP and wait for the user's explicit go
+  on THAT section before showing the next. Presenting two or more sections in one
+  message is a violation, even as a "preview", a numbered list, or "here's the plan".
+- No batch-apply and no batch-propose: a go on one section is not a go on the next,
+  and a go on one agent is not a go on the rest. Never bundle sections or agents to
+  save round-trips — the round-trips are the point.
 - Polish the LIVE `.claude/agents/<name>.md` only and leave it ahead of its draft. Do
   NOT sync drafts one at a time; carry each live file's refinements (`model: inherit`,
   Verdict field, …) forward into the next draft promoted. Drafts are mirrored to live
