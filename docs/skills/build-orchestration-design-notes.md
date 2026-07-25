@@ -64,6 +64,10 @@ Knobs to set or tune once the skill exists and has run at least once:
   `bypassPermissions`/`acceptEdits` overrides the per-agent path-jail and can't be
   read from config. Have the manager confirm the mode with the user before spawning
   workers.
+- **whitebox-tester search tools — none for now.** Trimmed to `Read, Write, Edit, Bash`
+  (no `Grep`/`Glob`): it works from the impl files the manager stages, and `Bash` reaches
+  any file so search tools add no confinement. Re-add `Grep` if a real run shows it
+  branch-tracing a large implementation and needing to search within it.
 
 ## Still open
 

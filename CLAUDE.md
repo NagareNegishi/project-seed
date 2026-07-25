@@ -9,8 +9,11 @@ drafts are synced. Before creating, promoting, or polishing any agent (`.claude/
 or `docs/agents/` drafts), READ these in order and in full:
 1. `docs/notes.md` "Next-session handoff" — campaign state and which agent is next.
 2. `docs/agents/review-findings.md` — per-draft verdicts and findings.
-3. `docs/agents/README.md`, then `definition-template.md` + `template.md` in that dir.
-4. `docs/skills/new-skills.md` "Polish criteria".
+3. `docs/skills/build-orchestration-design-notes.md` — how the promoted agents are
+   *used* (manager IS the main session, agents are workers) and the "Configure after
+   implementing" tuning log where post-run knobs are recorded.
+4. `docs/agents/README.md`, then `definition-template.md` + `template.md` in that dir.
+5. `docs/skills/new-skills.md` "Polish criteria".
 Then:
 - Promote one agent at a time with user sign-off; walk the 10-point "Promotion check"
   in `definition-template.md`.
