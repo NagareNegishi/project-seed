@@ -15,3 +15,6 @@ docs/notes.md
 docs/prompt-log/*
 !docs/prompt-log/README.md
 !docs/prompt-log/_template.md
+
+# Per-subagent path-jail scope root (agent-scope-jail.sh); throwaway staging + log
+.agent-scope/

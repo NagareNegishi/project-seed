@@ -150,11 +150,13 @@ Ready = promote as written. Fix = defect to resolve first.
    generalize the id scheme to any critic** (per-critic prefix). Apply when the
    critic set is final (phase D).
 
-2. **blackbox-tester — "never read the implementation" is prompt-only.** Its
-   toolset (`Read`, `Bash`) can reach any source file; no tool restriction can
-   scope `Read` to spec files. The guarantee rests on the prompt + the **Spec
-   basis** report line, not enforcement. Promotion = accept the caveat. Tighter
-   enforcement (sandbox / path allowlist) is a future option.
+2. **blackbox-tester — confinement now ENFORCED** (was prompt-only). A
+   per-subagent `PreToolUse` path-jail hook (`agent-scope-jail.sh`, wired in the
+   frontmatter) denies any `Read/Edit/Write` outside `.agent-scope/`. Verified
+   live 2026-07-23: in-scope read passed, out-of-scope `Read(CLAUDE.md)` blocked
+   with the jail's deny message, `tool_input.file_path` confirmed as the field.
+   See "Enforcing tester confinement" below. Open: Bash still passes through (weak
+   seam); mode (d) and whitebox reuse untested.
 
 3. **Two borderline drafts** (their own design notes asked "worth a standing
    agent?"). **Decided (user): promote both.** Usage must be wired:
@@ -166,6 +168,65 @@ Ready = promote as written. Fix = defect to resolve first.
    dependencies" as a hunt item but has no Bash, so it can Read manifests and
    WebFetch advisories but not run `npm audit`. `legal-critic` (has Bash) covers
    the manifest angle. Acceptable; noted so it isn't mistaken for an omission.
+
+## Enforcing tester confinement (finding 2 — VERIFIED WORKING 2026-07-23)
+
+**Result `[VERIFIED 2026-07-23, live]`:** the path-jail hook blocks out-of-scope
+reads in a spawned `blackbox-tester`. In-scope `Read(.agent-scope/spec.md)`
+succeeded; out-of-scope `Read(CLAUDE.md)` was **BLOCKED** with the jail's deny
+message; `.jail.log` recorded both with `tool_input.file_path` populated. The
+prior mid-session failure was the no-hot-reload caveat only — a fresh session
+loads the frontmatter hook and it works. Confinement is enforced, not prompt-only.
+
+Still open: whether whitebox reuses the same jail (spec+impl staged, serialized on
+the shared root). Bash seam resolved 2026-07-24 — dropped `Bash`/`Grep`/`Glob` from
+`blackbox-tester` (now `Read, Write, Edit`); a future variant that runs its own tests
+needs `Bash` and so can't be jailed. Parent-mode gap (was item d):
+`bypassPermissions`/`acceptEdits` overrides the jail, so `build-orchestration` must
+confirm the session mode before spawning.
+
+Goal: the write-capable testers (`blackbox`, `whitebox`) reach only the files the
+manager permits that spawn, enforced by the system, not the prompt.
+
+**Mechanism `[VERIFIED 2026-07-23, code.claude.com]` — do not re-research:**
+
+- **Sandbox (`/sandbox`) confines Bash subprocesses only.** Built-in `Read`/`Edit`/
+  `Write` go through the permission system, not the sandbox (`sandboxing.md`,
+  "Scope"). So a temp-dir copy + sandbox does **not** stop the `Read` tool.
+- **No per-subagent sandbox or permissions.** Subagents share the parent's sandbox
+  and the session-wide `permissions` rules (`sandboxing.md` "Subagents";
+  `sub-agents.md` :229). A session-wide `Read(./src/**)` deny would also blind the
+  main agent and whitebox — unusable.
+- **The one per-subagent, all-tools lever is frontmatter `hooks.PreToolUse`**
+  (`sub-agents.md` :286, "scoped to this subagent"). Docs say the stdin carries
+  `tool_input` (incl. `file_path`), `cwd`, `agent_type`, and the hook can return
+  `permissionDecision: deny` / exit 2. `SubagentStart` is read-only — can't inject
+  an allowlist, so scope must be a **fixed convention**, not passed per spawn.
+- **Config loads at session start; no hot-reload** (confirmed empirically
+  2026-07-23: a `settings.local.json` hook added mid-session did not fire even for
+  the main agent). So any hook-based confinement must be present before the session
+  starts — fine for real use (committed agent file + settings), but it means the
+  mechanism can only be validated in a fresh session.
+
+**Proposed design (needs sign-off before writing — hooks/settings per CLAUDE.md):**
+
+- Fixed scope root `.agent-scope/` (gitignored). Manager stages **only** permitted
+  files in (spec-only for blackbox; spec+impl for whitebox), spawns the tester
+  pointed at it, moves results out, clears it. Blackbox and whitebox must be
+  **serialized** — they share the one fixed root.
+- Agent frontmatter: drop `Grep`/`Glob` (works from named paths, never searches);
+  add `hooks.PreToolUse` (matcher `Read|Edit|Write|Bash`) → a path-jail script that
+  `realpath -m`-resolves the target and denies (exit 2) anything outside the root.
+- Bash is the weak seam (a shell string can `cat` any file, no reliable parser):
+  either allowlist the single collect/parse command, or drop `Bash` for an airtight
+  read-only variant.
+
+**Plumbing on disk** (built 2026-07-23, verified working): `.claude/hooks/agent-scope-jail.sh`
+(path jail, `realpath -m` resolve, `Bash` passthrough, logs to `.agent-scope/.jail.log`);
+`blackbox-tester.md` frontmatter `hooks.PreToolUse` (matcher `Read|Edit|Write`, nested
+settings.json-style shape — confirmed correct by the live run); `.agent-scope/spec.md`
+fixture; `.agent-scope/` gitignored. Note: frontmatter `hooks` load at session start,
+no hot-reload — the jail can only be validated from a session started after it was on disk.
 
 ## Structural notes (all drafts)
 
@@ -198,8 +259,11 @@ change-discipline always-on vs on-demand (see `docs/skills/build-orchestration.m
 Per agent, with user sign-off:
 1. Create `.claude/agents/` if absent, copy the Definition code block to
    `.claude/agents/<agent-name>.md` (Definition only — status/design notes dropped).
-2. Confirm the agent appears in the available-agents list in a new session.
-3. Update the draft's `Status:` line to `promoted <date>`.
+2. Polish the live file section by section (`description` first) against
+   `../skills/new-skills.md` "Polish criteria" + `definition-template.md`
+   "Promotion check"; edit live only, leave it ahead of the draft.
+3. Confirm the agent appears in the available-agents list in a new session.
+4. Update the draft's `Status:` line to `promoted <date>` — after polish.
 
 Fix `alternatives-explorer` (finding 1) before its copy. Resolve the two open
 decisions before touching `mcdc-tester` / `debugger`.

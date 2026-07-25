@@ -60,6 +60,14 @@ Knobs to set or tune once the skill exists and has run at least once:
   the manager must stop and spawn `debugger` (Lever 2). 2 is the starting value; tune
   after a real run — too low wastes a diagnosis spawn on a typo, too high lets the
   thrash back in.
+- **Confirm permission mode before spawning.** Subagents inherit the session mode;
+  `bypassPermissions`/`acceptEdits` overrides the per-agent path-jail and can't be
+  read from config. Have the manager confirm the mode with the user before spawning
+  workers.
+- **whitebox-tester search tools — none for now.** Trimmed to `Read, Write, Edit, Bash`
+  (no `Grep`/`Glob`): it works from the impl files the manager stages, and `Bash` reaches
+  any file so search tools add no confinement. Re-add `Grep` if a real run shows it
+  branch-tracing a large implementation and needing to search within it.
 
 ## Still open
 

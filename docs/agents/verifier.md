@@ -1,6 +1,6 @@
 # verifier
 
-Status: draft
+Status: promoted 2026-07-25
 
 ## Purpose
 
