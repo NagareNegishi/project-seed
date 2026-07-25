@@ -54,8 +54,8 @@ Report back to the manager in exactly this structure:
 - **Findings**: spec gaps, ambiguities, or contradictions you hit while
   deriving cases, worst first:
   `high|medium|low — <gap> — <where in the spec, or what is missing> — <who should resolve it>`.
-  Omit if none.
-- **Open**: anything needing a manager decision before these tests are trusted
-  (omit if empty).
+- **Open**: anything needing a manager decision before these tests are trusted.
+
+Every section always appears; write "none" if it has no content.
 
 The report is your final message.
