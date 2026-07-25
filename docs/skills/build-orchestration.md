@@ -74,6 +74,15 @@ session; the workers are subagents.
   forbid making a private symbol public, or otherwise expanding the API surface,
   just to test it. An untestable-through-the-public-surface private is a Finding,
   not a licence to widen it.
+- **Audit the working tree around each write-capable spawn.** Testers and
+  implementers share the tree and can write through `Bash`, which no `PreToolUse`
+  hook can intercept. Snapshot `git status --porcelain` before the spawn; on return,
+  diff it and reject any changed path outside that unit's permitted set — a source
+  edit from a tester, a test-file edit from a fix unit. Revert the out-of-scope
+  change and report it to the user in one line: what changed, which agent, and how it
+  was handled. This is the manager-side enforcement of Lever 1: the two rules above
+  are placed in the subagent's own prompt, so an actual violation is caught here, not
+  by them.
 
 ## Review axes
 
@@ -105,9 +114,9 @@ in the loop and the prompts. Two levers plus one backstop critic.
 
 **Lever 1 — freeze the acceptance check (separation of duties).** Once the manager
 accepts the spec-derived blackbox suite, the thing being judged cannot edit the
-judge. Enforced by the two spawning rules above (fix units exclude test files; no
-visibility widening). A required test change is a spec disagreement escalated to
-the manager, never a silent implementer edit.
+judge. Enforced by the two spawning rules above and the manager's post-spawn tree
+audit (fix units exclude test files; no visibility widening). A required test change
+is a spec disagreement escalated to the manager, never a silent implementer edit.
 
 **Lever 2 — the escalation ladder (stuck circuit-breaker).** No unbounded "make it
 green" loop; the manager may not just re-attempt:
