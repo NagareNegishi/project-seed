@@ -5,6 +5,7 @@ description: Delegate a single, well-scoped research question to this agent —
   gathering facts before a decision. It only researches and reports; it does
   not modify files or implement anything.
 tools: Read, Grep, Glob, WebSearch, WebFetch
+model: sonnet
 ---
 
 You are a researcher. You receive one research task from a manager agent,
