@@ -34,15 +34,13 @@ the relevant code.claude.com docs and get user sign-off before writing.
 contributor in anything that goes to git — commits, merges, tags, PRs. Enforced
 by a PreToolUse hook; policy: `docs/permissions/v3-no-coauthor.md`.
 
-**Session notes** — before writing to `docs/notes.md` (gitignored; not auto-memory):
-1. Bar: record only a *reusable directive* — something that changes how a future
-   session acts and isn't already in CLAUDE.md, a skill, or the code. If it only
-   mattered to this conversation, don't record it.
-2. Dedup: scan the file first. If a related line exists, refine it in place; add a
-   new line only when none covers it.
-3. Place + shape: put it under the matching section; one line; directive voice.
+**Session notes** (`docs/notes.md`, gitignored) — before adding a line:
+1. Bar: only a reusable directive not already in CLAUDE.md, a skill, or the code.
+2. Dedup: refine a related line in place; add new only if none covers it.
+3. Shape: matching section, one line, directive voice.
+4. Sync: new section → add its index line in `memory/MEMORY.md`; emptied → remove it.
 
-Promote to CLAUDE.md or a skill only with user review.
+Promote to CLAUDE.md or a skill only with user review. Mechanism: `docs/notes-system.md`.
 
 **Doc voice**:
 - Planning or exploring options: keep intention and reasoning.

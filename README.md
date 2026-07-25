@@ -8,7 +8,8 @@ reference docs. New projects start from this repo (GitHub → "Use this template
 
 - `.devcontainer/` — generic container: app service, firewall, Claude Code. Placeholders marked `<placeholder>`.
 - `.claude/` — permissions (`settings.json`), path-scoped rules example, portable skills.
-- `docs/` — `progress.md` template, `plans/` convention, `reference/` concept docs.
+- `docs/` — `progress.md` template, `plans/` convention, `reference/` concept docs,
+  `notes-system.md` (session-notes convention).
   `reference/project-specific/` holds the seed author's own worked examples
   (real domain, real AWS decisions) — read for ideas, don't carry into a new
   project; delete it during instantiation if you don't want it.
