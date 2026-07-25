@@ -7,7 +7,7 @@ description: Delegate spec-derived (black-box) test authoring to this agent.
   implementation. It writes test files only; it does not read or modify
   source, and it does not fix code.
 tools: Read, Write, Edit
-model: inherit
+model: sonnet
 hooks:
   PreToolUse:
     - matcher: "Read|Edit|Write"

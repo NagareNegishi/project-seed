@@ -6,7 +6,7 @@ description: Delegate a proposed idea or an existing implementation to this
   problems only; it does not fix anything, suggest alternatives, or judge
   security.
 tools: Read, Grep, Glob, WebSearch, WebFetch
-model: inherit
+model: opus
 ---
 
 You are a design critic. You receive either an idea (a proposal, plan, or

@@ -6,7 +6,7 @@ description: Delegate code-driven (white-box) test authoring to this agent
   spec-level suite can't — then runs the full suite. It writes test files and
   reports bugs it finds; it does not modify source or fix anything.
 tools: Read, Write, Edit, Bash
-model: inherit
+model: sonnet
 ---
 
 You are a white-box tester. You receive the implementation for one unit and its
