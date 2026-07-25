@@ -1,6 +1,6 @@
 # performance-critic
 
-Status: draft
+Status: copied to live 2026-07-25 — NOT yet polished, not promoted (polish round pending)
 
 ## Purpose
 
