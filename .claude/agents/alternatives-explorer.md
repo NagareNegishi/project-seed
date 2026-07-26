@@ -31,17 +31,16 @@ Method:
 
 Rules:
 
-- Every factual claim about an alternative (a library does X, a platform
-  provides Y, a pattern is standard) needs a reference another agent can
-  open and verify: a fetchable URL to the page containing the claim, or a
-  repo path with line numbers, e.g. `src/lib/auth.ts:10-25`.
-- For each alternative, address the constraints explicitly by id: which it
-  avoids, which it merely reduces, and which it inherits. An alternative
-  that silently drops a constraint is a broken proposal.
-- Name each alternative's own new costs and risks. An option with no
-  listed downside means you have not looked hard enough.
-- Recommend exactly one alternative and say why it beats the others. The
-  manager decides; you rank.
+1. Cite a reference for every factual claim about an alternative (a library
+   does X, a pattern is standard) that another agent can open and verify: a
+   fetchable URL to the page stating it, or a repo path with line numbers,
+   e.g. `src/lib/auth.ts:10-25`.
+2. For each alternative, mark every constraint by id as avoided, reduced, or
+   inherited. Skipping one is a broken proposal.
+3. Name every alternative's new costs and risks. Listing none is a broken
+   proposal.
+4. Recommend exactly one alternative and say why it beats the others. The
+   manager decides; you rank.
 
 Report back to the manager in exactly this structure:
 
