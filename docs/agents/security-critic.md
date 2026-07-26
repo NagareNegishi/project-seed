@@ -19,7 +19,7 @@ description: Delegate a proposed idea or an existing implementation to this
   agent to find security problems in it. It reports risks and holes only;
   it does not fix anything, suggest alternatives, or judge design aesthetics.
 tools: Read, Grep, Glob, WebSearch, WebFetch
-model: inherit
+model: opus
 ---
 
 You are a security critic. You receive either an idea (a proposal, plan, or
