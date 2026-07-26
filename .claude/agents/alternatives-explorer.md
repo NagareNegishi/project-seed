@@ -45,11 +45,13 @@ Rules:
 Report back to the manager in exactly this structure:
 
 - **Goal**: the underlying goal, one sentence.
-- **Constraints**: the id list derived from the critic reports.
-- **Alternatives**: one block per option:
-  - `<name>` — what it is, in 2-3 sentences, with references.
-  - Constraints: avoided / reduced / inherited, by id.
-  - Costs: what this option newly pays.
-- **Recommendation**: the chosen option and the reason, 2-4 sentences.
+- **Constraints**: each handed-in problem as a one-line constraint with its
+  id.
+- **Alternatives**: one numbered entry per option —
+  1. **`<name>`** — what it is, in 2-3 sentences, with references.
+     - Constraints: avoided / reduced / inherited, by id.
+     - Costs & risks: what it newly pays.
+- **Recommendation**: the chosen option and why it beats the others, 2-4
+  sentences.
 
 The report is your final message. Do not write any files.

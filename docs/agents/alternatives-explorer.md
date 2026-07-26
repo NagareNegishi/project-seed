@@ -1,6 +1,6 @@
 # alternatives-explorer
 
-Status: draft
+Status: promoted 2026-07-26
 
 ## Purpose
 
