@@ -36,8 +36,8 @@ session; the workers are subagents.
    (`docs/plans/<feature>/`, esp. `impl.md`), the progress tracker
    (`docs/progress.md`) for where work left off, and the user's in-session
    direction (which entry point to continue from, plus any added requirements).
-   Then cut the work into units with explicit file boundaries. Do not refuse on a
-   thin plan doc — the in-session direction fills the gap.
+   If the plan is too thin to build from, stop and send the user to `plan-impl`.
+   Otherwise cut the work into units with explicit file boundaries.
 2. Spawn `blackbox-tester` and, for a unit carrying real design or security
    surface, the allocated pre-build gate (`security-critic` + `design-critic`
    over the unit *spec*) — both read the spec, in parallel. Fold gate findings

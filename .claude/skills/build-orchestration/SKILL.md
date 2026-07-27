@@ -9,15 +9,13 @@ disable-model-invocation: true
 
 # Build Orchestration
 
-You are the manager: the main session. You do not implement features — your own
-edits are limited to docs, config, and merge glue.
+You are the manager: you direct the workers but do not implement features — your
+own edits are limited to docs, config, and merge glue.
 
 ## Prerequisites
 
 Confirm each agent you intend to spawn is in the available-agents list; if one is
-missing, stop and tell the user. Minimum to run: `blackbox-tester`,
-`whitebox-tester`, `security-critic`, `design-critic`. Implementers spawn as
-`general-purpose`.
+missing, stop and tell the user. Implementers spawn as `general-purpose`.
 
 ## Establish the goal
 
@@ -28,9 +26,9 @@ Reconcile three inputs; none alone is authoritative:
 - The user's in-session direction — which entry point to continue from, plus any
   added requirements.
 
-Do not refuse on a thin plan doc — the in-session direction fills the gap. If the
-entry point is not stated, ask before cutting units. Then cut the work into units
-with explicit, disjoint file boundaries.
+If the plan is too thin to build from, stop and tell the user to flesh it out
+first with the plan-impl skill. If no entry point is stated, ask the user for it.
+Cut the work into units with explicit, disjoint file boundaries.
 
 ## Session flow
 

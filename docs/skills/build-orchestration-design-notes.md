@@ -14,6 +14,9 @@ the skill is; this one holds *why* the calls were made and what's still open.
   manager) itself as a subagent, contradicting "the manager IS the main session".
   Keep build-orchestration non-forked; the main session spawns workers via the
   `Agent` tool.
+- **Build requires a solid plan; it does not invent one.** Too thin to build from →
+  stop and send the user to `plan-impl`. Planning stays in `plan-product`/`plan-impl`,
+  out of the build loop.
 - **Eight atomic critics, one axis each** — not one broad `code-reviewer`. Atomic
   single-axis designs compose cheaply later (merge into a bundle, or spin a new
   multi-aspect agent); splitting a bundle back into clean axes is a rewrite.
