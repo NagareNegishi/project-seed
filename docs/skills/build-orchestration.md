@@ -36,12 +36,14 @@ session; the workers are subagents.
    (`docs/plans/<feature>/`, esp. `impl.md`), the progress tracker
    (`docs/progress.md`) for where work left off, and the user's in-session
    direction (which entry point to continue from, plus any added requirements).
-   Then cut the work into units with explicit file boundaries. Do not refuse on a
-   thin plan doc — the in-session direction fills the gap.
-2. Spawn `blackbox-tester` and, for a unit carrying real design or security
-   surface, the allocated pre-build gate (`security-critic` + `design-critic`
-   over the unit *spec*) — both read the spec, in parallel. Fold gate findings
-   into the spec, then spawn implementers, one unit each.
+   If the plan is too thin to build from, stop and send the user to `plan-impl`.
+   Otherwise cut the work into units with explicit file boundaries.
+2. For a unit carrying real design or security surface, spawn the pre-build gate
+   (`security-critic` + `design-critic`) over the unit *spec* first. Surface its
+   findings to the user for a decision — the manager organises the points, it does
+   not resolve implementation direction — and record the decision into the spec.
+   Then spawn `blackbox-tester` and the implementers (one unit each) from the
+   settled spec, in parallel.
 3. As implementer reports arrive: integrate, run the build and the blackbox
    suite. On failure, follow the escalation ladder (Guardrails, Lever 2):
    bounded re-attempts, then stop and diagnose — never loop indefinitely on
@@ -50,7 +52,7 @@ session; the workers are subagents.
 5. Both suites pass → spawn the post-code review layer: **allocate** critics from
    the eight-axis roster per unit (not all, always), plus `change-discipline-critic`
    when the diff smells. Record the allocation and its deferred grade in
-   `docs/prompt-log/allocation.md`.
+   `build-orchestration/prompt-log/allocation.md`.
 6. Per reviewer finding: fix unit to an implementer, rerun the suites. Loop until
    clean or the remaining findings are recorded as accepted risk.
 7. Write the record, close out.
@@ -74,6 +76,12 @@ session; the workers are subagents.
   forbid making a private symbol public, or otherwise expanding the API surface,
   just to test it. An untestable-through-the-public-surface private is a Finding,
   not a licence to widen it.
+- **Stage and confine write-capable spawns.** Confirm the session is not in
+  `bypassPermissions` / `acceptEdits` before spawning — either overrides the
+  path-jail. Stage only the permitted files into `.agent-scope/` (spec-only for
+  blackbox, spec+impl for whitebox), point the tester at that root, move results
+  out, clear it; the two share the one root, so serialize them. Mechanism:
+  `docs/agents/authoring.md` §12.
 - **Audit the working tree around each write-capable spawn.** Testers and
   implementers share the tree and can write through `Bash`, which no `PreToolUse`
   hook can intercept. Snapshot `git status --porcelain` before the spawn; on return,
@@ -103,6 +111,26 @@ Each critic owns one axis; allocated per unit, not all-always (Session flow, ste
 
 Critics find problems in their lane with evidence per finding; they never fix.
 Fixes go to an implementer or `alternatives-explorer`.
+
+## Consuming reports
+
+Each family reports differently (Conventions), so the manager acts on each on its
+own terms:
+
+- **Critics** — read `Verdict`: axis-bad → triage `Problems` by severity into
+  batched fix units (critical/high block close-out, low → build-log accepted risk);
+  `unreviewable` → stage the missing input and respawn, or record the uncovered axis
+  (feeds the allocation `miss`); `clean` → record `Checked`.
+- **Testers** — no `Verdict`; read `Findings`, and for whitebox/mcdc the `Suite`
+  line — an xfail/skip parked against a Finding is an open bug → fix unit. Blackbox
+  `Findings` are spec gaps the manager resolves, not an implementer.
+- **researcher / verifier** — a researcher "Ambiguous" reply bounces back to the
+  manager; pair a researched answer with `verifier`, and a verifier `FAIL` blocks
+  acting on it.
+- **alternatives-explorer** — consume its single `Recommendation` into a design
+  decision, then a fix unit.
+- **debugger** — `Root cause` + `Fix location` feed the next fix unit; "could not
+  reproduce" is an escalation, not a fix.
 
 ## Guardrails against thrashing and spec-gaming
 
@@ -138,14 +166,14 @@ symptom, and the diff size is proportionate to the task.
 
 ## Record
 
-- **Build-log** — one `docs/build-log/<date>-<slug>.md` per session, committed with
+- **Build-log** — one `build-orchestration/build-log/<date>-<slug>.md` per session, committed with
   the work. Keeps only what a later session needs: option chosen and why, decisions
   with reasoning, how pieces connect, accepted risk.
-- **Prompt-log** — gitignored `docs/prompt-log/`, capture-only (never a decision
+- **Prompt-log** — gitignored `build-orchestration/prompt-log/`, capture-only (never a decision
   input): `README.md` (capture rules, `S<N>-<role>-<n>` id scheme), `_template.md`
   (verbatim per-spawn capture), and rolling `evaluations.md` (deferred per-spawn
   prompt judgment → a `fix:` to the SKILL rules or an agent draft).
-- **Allocation grade** — gitignored `docs/prompt-log/allocation.md`, per-unit
+- **Allocation grade** — gitignored `build-orchestration/prompt-log/allocation.md`, per-unit
   (deferred, never live): which critics were deployed vs skipped and why, judged for
   *waste* (spawned, found nothing on this unit-shape) and *miss* (skipped, a defect
   slipped its axis). Output is a fix to the allocation rules.
@@ -154,10 +182,9 @@ symptom, and the diff size is proportionate to the task.
 
 ## Prerequisites
 
-The skill names the agents it needs and stops with a clear message if one is absent.
-It never auto-promotes — promotion from `docs/agents/` drafts into `.claude/agents/`
-is user-sign-off only. Minimum to run: `blackbox-tester`, `whitebox-tester`,
-`security-critic`, `design-critic`; the full roster for the full flow.
+The skill confirms each agent it needs is in the available-agents list and stops
+with a clear message if one is absent. Minimum to run: `blackbox-tester`,
+`whitebox-tester`, `security-critic`, `design-critic`.
 
 ## Conventions
 
@@ -167,6 +194,8 @@ is user-sign-off only. Minimum to run: `blackbox-tester`, `whitebox-tester`,
 - **Trigger — explicit command.** `disable-model-invocation: true`; the user runs
   the skill to open a build session.
 - **Report format — defer to each agent.** The skill does not re-impose one; each
-  agent defines its own. The shared shape (severity line, evidence-required,
-  "Checked, no finding") lives in the agents `README.md` so agents and skill cite
-  one source.
+  agent defines its own. What agents share is a resemblance, not one shape (evidence
+  per finding, honest ranking where severity applies, every section present, report
+  as final message); only the eight critics carry the
+  `Target · Verdict · Problems · Checked · Out of scope` form, testers and advisory
+  deviate. Template + deviations: `docs/agents/authoring.md` §2 (+§10).

@@ -1,31 +1,7 @@
-# Build Orchestration — design notes & next steps
+# Build Orchestration — design notes
 
 Companion to `build-orchestration.md` (the skill-source spec). That doc says *what*
-to build; this one holds *why* the calls were made, what's still open, and where
-the next session picks up. All v2 design decisions are settled — nothing here
-blocks the wiring below.
-
-## Next session — start here
-
-A v1 SKILL.md already exists at `.claude/skills/build-orchestration/SKILL.md`. The
-job is to re-wire it to the v2 spec in `build-orchestration.md`:
-
-- **Review layer**: replace v1's `security`+`design` pair with the eight-critic
-  roster, spawned *by manager allocation* (not all, always), and capture the
-  allocation in `docs/prompt-log/allocation.md`.
-- **Pre-build gate**: add `security-critic` + `design-critic` over the unit *spec*,
-  allocated, parallel with `blackbox-tester`, before implementers build.
-- **Spawning rules**: add Lever 1's two rules (fix units exclude test files; no
-  visibility widening for test convenience).
-- **Escalation**: replace the v1 step-2 thrash loop with the Lever 2 ladder +
-  `debugger` (strike count is a "once or twice" placeholder — tune after a run).
-- **Optional slots**: add the `mcdc-tester` slot; wire `change-discipline-critic`
-  as an on-demand allocated critic (spawned on diff-smell, not always-on).
-- **Prerequisites**: refresh for the full promoted roster.
-
-Follow `new-skills.md`: directive voice, stack-agnostic `<placeholder>` markers, one
-section at a time. Then promote the required agents (user-sign-off only), exercise
-the skill on a real session, and record what the flow gets wrong.
+the skill is; this one holds *why* the calls were made and what's still open.
 
 ## Why these calls (rationale)
 
@@ -34,6 +10,13 @@ the skill on a real session, and record what the flow gets wrong.
   sessions) rather than sitting in `CLAUDE.md`. The manager *is* the main session,
   so its instructions belong in a skill; the workers need isolation and scoped
   tools, so they are subagents. Skill for the manager, agents for the workers.
+- **Never `context: fork` this skill.** `context: fork` would run the skill (the
+  manager) itself as a subagent, contradicting "the manager IS the main session".
+  Keep build-orchestration non-forked; the main session spawns workers via the
+  `Agent` tool.
+- **Build requires a solid plan; it does not invent one.** Too thin to build from →
+  stop and send the user to `plan-impl`. Planning stays in `plan-product`/`plan-impl`,
+  out of the build loop.
 - **Eight atomic critics, one axis each** — not one broad `code-reviewer`. Atomic
   single-axis designs compose cheaply later (merge into a bundle, or spin a new
   multi-aspect agent); splitting a bundle back into clean axes is a rewrite.
@@ -51,26 +34,29 @@ the skill on a real session, and record what the flow gets wrong.
   decision-dense units (auth rules, pricing, validation, state machines). Caveat:
   most stacks cannot *measure* MC/DC coverage out of the box, so the agent designs
   cases by analysing conditions and states where it cannot verify the number.
+- **Logs live in top-level `build-orchestration/`, not `docs/`.** `docs/` is for
+  planning; `build-log/` (committed) + `prompt-log/` (gitignored) are runtime logs,
+  parented under their source rather than a generic `logs/` another tool would claim.
+  `.agent-scope/` is jail staging, not a log.
 
-## Configure after implementing
+## Tune after a real run
 
-Knobs to set or tune once the skill exists and has run at least once:
-
-- **Escalation-ladder strike count — set to 2.** Failed implementer attempts before
-  the manager must stop and spawn `debugger` (Lever 2). 2 is the starting value; tune
-  after a real run — too low wastes a diagnosis spawn on a typo, too high lets the
-  thrash back in.
-- **Confirm permission mode before spawning.** Subagents inherit the session mode;
-  `bypassPermissions`/`acceptEdits` overrides the per-agent path-jail and can't be
-  read from config. Have the manager confirm the mode with the user before spawning
-  workers.
-- **whitebox-tester search tools — none for now.** Trimmed to `Read, Write, Edit, Bash`
-  (no `Grep`/`Glob`): it works from the impl files the manager stages, and `Bash` reaches
-  any file so search tools add no confinement. Re-add `Grep` if a real run shows it
-  branch-tracing a large implementation and needing to search within it.
+- **Escalation-ladder strike count = 2** (Lever 2, in the skill). Tune after a run —
+  too low wastes a diagnosis spawn on a typo, too high lets the thrash back in.
+- **whitebox-tester has no search tools** (`Read, Write, Edit, Bash`). Re-add `Grep`
+  only if a run shows it needing to search within a large implementation.
+- **Worker constraints sit in the manager prompt for now.** The two Lever-1 spawning
+  rules (no test files to an implementer; no visibility widening for testing) are
+  injected per-prompt because implementers spawn as generic `general-purpose`, which
+  has no definition to carry them. The tester half is already redundant — the
+  `blackbox`/`whitebox`/`mcdc` definitions forbid modifying source. When a dedicated
+  `implementer` agent exists, move these into its definition and drop them from the
+  skill.
 
 ## Still open
 
+- **Jail asymmetry.** `blackbox-tester` frontmatter carries the `PreToolUse` path-jail
+  hook; `whitebox-tester` does not, though §12 treats both as confined. Confirm intended.
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
   `researcher`/critic agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside

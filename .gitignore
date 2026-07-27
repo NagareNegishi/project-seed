@@ -12,9 +12,9 @@ docs/notes.md
 # Subagent prompt captures + deferred analysis from build-orchestration
 # sessions — local data, never committed; the README and the capture template
 # stay tracked to hold the rules and the copyable shape
-docs/prompt-log/*
-!docs/prompt-log/README.md
-!docs/prompt-log/_template.md
+build-orchestration/prompt-log/*
+!build-orchestration/prompt-log/README.md
+!build-orchestration/prompt-log/_template.md
 
 # Per-subagent path-jail scope root (agent-scope-jail.sh); throwaway staging + log
 .agent-scope/
