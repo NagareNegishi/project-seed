@@ -126,96 +126,62 @@ forward into the next draft promoted; sync all drafts to match the live files in
 
 ## 7. No fleet-taxonomy leak
 
-An agent file is read by a cold subagent that does not know the fleet exists. Never
-leak manager/fleet framing into it — no "neighbouring axis", "the other critics",
-"the manager will…". State each lane in the agent's own terms: name the concrete
-off-axis complaint types it must reject (e.g. "not a security or correctness
-complaint") plus an on-axis positive test. Use `security-critic`'s stay-in-lane rule
-as the model. The leak hides beyond the stay-in-lane rule — sweep the whole file for
-role nouns (implementer / tester / critic / manager), not just that rule, and
-restate each.
+The subagent is cold — it does not know the fleet exists. Never leak manager/fleet
+framing into an agent file. State each lane in the agent's own terms: name the
+off-axis complaint types to reject plus an on-axis positive test. Sweep the whole file
+for role nouns, not just the stay-in-lane rule, and restate each.
 
 ## 8. Polish criteria (general)
 
-Polish means making the file effective for a cold subagent as the reader, not
-improving the prose.
+Polish makes the file effective for a cold subagent, not the prose nicer.
 
-- **Directive, command voice.** "Never push", not "This agent never pushes". Every
-  Rule opens as an imperative command.
-- **Trim what the agent doesn't need to act** — rationale, restatements across
-  sections, trigger paraphrases the `description`'s first sentence already implies.
-  Cut any illustration that only restates an adjacent rule; keep it only if it
-  carries signal the rest can't.
-- **State a stance once**, in the rule where it's applied — not also in the role
-  line. Role line = mandate + boundary only.
-- **Add examples only where they aid operation** — an exact `file:line` syntax, a
-  sample of the report format. An example earns its place only by fixing a real
-  ambiguity; cut negative restatements and duplicate descriptors.
-- **`description` trimming.** It costs context every session, so it carries only what
-  the delegation decision needs — the trigger plus ~2–3 illustrative items behind
-  "such as". The hunt list in the body carries the full set. Each trigger-phrase
-  example must cover a request the trigger sentence would not obviously catch (test:
-  would delegation fail without it?).
+- **Directive, command voice.** Every rule opens as an imperative — "Never push", not
+  "This agent never pushes".
+- **State a stance once**, in the rule where it applies — not also in the role line.
+  Role line = mandate + boundary only.
+- **`description` trimming.** It costs context every session: carry only the trigger
+  plus ~2–3 items behind "such as"; the body's hunt list holds the full set. Each
+  example must earn its place — would delegation fail without it?
 - **Add rules only where they prevent a realistic misfire**, not for completeness.
 
 ## 9. Polish lessons by axis
 
-Learned promoting the fleet; each generalizes to the next agent.
+Each generalizes to the next agent.
 
-- **Tools track the job, not the axis.** If an agent only reads and reasons,
-  `Read, Grep, Glob` is enough — no `Bash`. Dropping `Bash` removes the confinement
-  surface and lets the read-only fence rule go; `Bash` only buys running a
-  type-checker, the tester's lane. Applies to the simplicity/performance/docs/legal
-  critics.
+- **Tools track the job, not the axis.** An agent that only reads and reasons gets
+  `Read, Grep, Glob` — no `Bash`. `Bash` only buys running a type-checker, the
+  tester's lane.
 - **Model tier tracks reasoning depth, not axis.** Pin `opus` only where the axis
-  needs deep multi-step reasoning (correctness); mechanical axes stay cheaper
-  (verifier `sonnet`).
-- **Fixed report shape.** Every section always appears; write "none" if it has no
-  content. The `Omit if none` / `(omit if empty)` pattern makes the shape vary
-  run-to-run so the manager can't parse uniformly — do not use it. Section-header
-  labels are noun tags (`Checked`), not sentences (`Checked, no finding`).
+  needs deep multi-step reasoning; mechanical axes stay cheaper.
+- **Never use the `Omit if none` report pattern.** It varies the shape run-to-run so
+  the manager can't parse uniformly.
 - **A report bullet states WHAT goes in the section, not WHY.** Motivational
-  rationale in a report section is dead weight — cut it.
-- **Ranking needs teeth, not "rank honestly."** Name the concrete dishonest move
-  ("Do not inflate a nitpick to critical"), not the virtue. Teeth are axis-specific:
-  add them only where the axis has a real severity-inflation bias — the user's call
-  per axis.
-- **Re-fit inherited rule shapes to the axis; don't copy verbatim.** A rule that
-  fits one axis (e.g. "don't trade X for a regression" fits performance, whose own
-  recommendations introduce the hazard) folds differently on a remove-only critic
-  ("don't flag load-bearing complexity"). A boundary already in the mandate needs no
-  third restatement in the rule's tail.
-- **Scope input + report shape together.** An agent scoped to "one unit" in the role
-  line gets a single-entry report; one scoped to multiple targets gets multiple
-  entries.
-- **A terminal alternate outcome** (e.g. could-not-reproduce) earns a specific
-  one-line format on the fixed-shape line ("put X under **Failure**, write 'none'
-  for the rest"), not an inline `(or …)` parenthetical smeared across two bullets.
+  rationale there is dead weight — cut it.
+- **Ranking teeth are axis-specific.** Name the concrete dishonest move, not the
+  virtue; add teeth only where the axis has a real severity-inflation bias — the
+  user's call per axis.
+- **Re-fit inherited rule shapes to the axis; don't copy verbatim.** A boundary
+  already in the mandate needs no restatement in the rule's tail.
+- **Scope input and report shape together.** One unit → single-entry report; multiple
+  targets → multiple entries.
+- **Give a terminal alternate outcome its own one-line format** on the fixed-shape
+  line, not an inline `(or …)` smeared across bullets.
 
 ## 10. Settled design decisions
 
-- **Atomic critics, one axis each** — not one broad `code-reviewer`. Atomic
-  single-axis designs compose cheaply later (merge into a bundle, or spin a new
-  multi-aspect agent); splitting a bundle back into clean axes is a rewrite.
-- **Toolset split** (consistent and reasoned): testers get `Write / Edit / Bash`;
-  code-inspecting critics get read-only (`Read, Grep, Glob`, no `Write`/`Edit`);
-  idea/web critics + researcher/verifier/alternatives-explorer get read-only + web,
-  no `Bash` ("never test an exploit / never act"); `legal-critic` adds `Bash` for
-  manifests.
-- **Model field defaults to `inherit`** — set it per-agent only where the axis has a
-  reason to differ; omitting equals `inherit`.
+- **Atomic critics, one axis each** — not one broad `code-reviewer`. Single-axis
+  designs compose cheaply later; splitting a bundle back into clean axes is a rewrite.
 - **Shared report shape is the family's core invariant.** Critics mirror
-  `security-critic`'s shape (hunt list → evidence-per-finding → honest ranking →
-  "Checked, no finding" → stay-in-lane). The manager consumes every report
-  uniformly. Preserve it.
+  `security-critic`'s shape; the manager consumes every report uniformly. Preserve it.
 - **`debugger` and `mcdc-tester` are standing agents.** `debugger` keeps diagnosis
   off the manager's context when a loop stalls; `mcdc-tester` stays optional —
   MC/DC earns its combinatorial cost only on decision-dense units.
 
 ## 11. Verified Claude Code facts
 
-Banked from `code.claude.com/docs/en/sub-agents.md` and `skills.md` so they are not
-re-researched. Re-verify only if Claude Code changes the spec.
+Verified against `code.claude.com/docs/en/sub-agents.md` and `skills.md` on
+2026-07-23, banked so they are not re-researched. Re-verify only if Claude Code has
+changed the spec since.
 
 - **Agent frontmatter fields** — only `name` + `description` required; rest optional:
   `tools` (allowlist; inherits all if omitted; unresolvable name → launch failure),
