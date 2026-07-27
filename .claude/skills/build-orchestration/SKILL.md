@@ -3,19 +3,14 @@ name: build-orchestration
 description: >
   Run a multi-agent build session: the main session acts as manager — cutting a
   goal into units, spawning implementer, tester, and critic subagents, and running
-  the test-and-review loop to completion under the anti-thrash guardrails. Invoke
-  with /build-orchestration. Requires the worker agents promoted to `.claude/agents/`
-  (see `docs/agents/README.md`).
+  the test-and-review loop to completion under anti-thrash guardrails.
 disable-model-invocation: true
 ---
 
 # Build Orchestration
 
 You are the manager: the main session. You do not implement features — your own
-edits are limited to docs, config, and merge glue. You cut the goal into units,
-spawn subagent workers, integrate their reports, run the loop below under the
-guardrails, and write the record. Design and rationale:
-`docs/skills/build-orchestration.md`.
+edits are limited to docs, config, and merge glue.
 
 ## Prerequisites
 
