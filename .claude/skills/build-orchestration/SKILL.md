@@ -19,17 +19,10 @@ guardrails, and write the record. Design and rationale:
 
 ## Prerequisites
 
-Confirm each agent you intend to spawn appears in the available-agents list before
-you start. If a required one is missing, stop and tell the user to promote it per
-`docs/agents/README.md`. Never auto-promote — promotion is user-sign-off only.
-
-- Minimum to run: `blackbox-tester`, `whitebox-tester`, `security-critic`,
-  `design-critic`.
-- Full roster for the full flow — critics `correctness-critic`, `simplicity-critic`,
-  `performance-critic`, `docs-critic`, `legal-critic`, `change-discipline-critic`;
-  testers `mcdc-tester`; advisory `researcher`, `verifier`, `alternatives-explorer`,
-  `debugger`. Spawn each only when a unit calls for it.
-- Implementers spawn as `general-purpose` (always available).
+Confirm each agent you intend to spawn is in the available-agents list; if one is
+missing, stop and tell the user. Minimum to run: `blackbox-tester`,
+`whitebox-tester`, `security-critic`, `design-critic`. Implementers spawn as
+`general-purpose`.
 
 ## Establish the goal
 
@@ -58,7 +51,7 @@ with explicit, disjoint file boundaries.
 4. Both suites pass → spawn the post-code review layer: allocate critics from the
    eight-axis roster per unit (not all, always), plus `change-discipline-critic`
    when the diff smells. Record the allocation and its deferred grade in
-   `docs/prompt-log/allocation.md`.
+   `build-orchestration/prompt-log/allocation.md`.
 5. Per reviewer finding: hand a fix unit to an implementer, rerun both suites.
    Loop until the reports are clean, or record the remaining findings in the
    build-log as accepted risk.
@@ -84,6 +77,15 @@ with explicit, disjoint file boundaries.
   forbid making a private symbol public, or otherwise expanding the API surface,
   just to test it. An untestable-through-the-public-surface private is a finding,
   not a licence to widen it.
+- **Stage and confine every write-capable spawn.** Testers and implementers share
+  the tree and can write. Confirm the session is not in `bypassPermissions` /
+  `acceptEdits` before spawning — either overrides the path-jail. Stage only the
+  permitted files into `.agent-scope/` (spec-only for `blackbox-tester`, spec+impl
+  for `whitebox-tester`), point the tester at that root, move results out, clear it;
+  the two share the one root, so serialize them. Snapshot `git status --porcelain`
+  before each write-capable spawn and diff it on return — revert and report any
+  changed path outside the unit's permitted set. Mechanism:
+  `docs/agents/authoring.md` §12.
 
 ## Review axes
 
@@ -127,24 +129,48 @@ large refactor for a small bug. Prevent it in the loop, not with a post-hoc crit
   acceptance test was weakened or deleted, no visibility widened for testing, the
   fix targets a diagnosed cause not a symptom, the diff size is proportionate.
 
-## Report format
+## Reports — demand and consume
 
-Do not impose a format — each agent's definition already specifies its own report
-structure. Demand that structure back in the prompt. The shared shape every agent
-follows (severity line, mandatory openable evidence, "Checked, no finding") lives
-in `docs/agents/README.md`; cite it, do not restate it.
+Do not impose a format; each agent defines its own. Demand that structure back in
+the prompt. What agents share is a resemblance, not one shape — evidence per
+finding, honest ranking where severity applies, every section always present (write
+"none"), the report as final message. Only the eight critics carry the
+`Target · Verdict · Problems · Checked · Out of scope` form; testers and advisory
+deviate. The template and its deviations live in `docs/agents/authoring.md` §2
+(+§10); cite it, do not restate it.
+
+Consume each family on its own terms:
+
+- **Critics** — read `Verdict`. Axis-bad → triage `Problems` by severity into
+  batched fix units; critical/high block close-out, low → build-log accepted risk.
+  `unreviewable` → stage the missing input and respawn, or record the uncovered
+  axis (feeds the allocation `miss`). `clean` → record `Checked`, proceed.
+- **Testers** — no `Verdict`. Read `Findings`, and for whitebox/mcdc the `Suite`
+  line: an xfail/skip parked against a Finding is an open bug → fix unit. Blackbox
+  `Findings` are spec gaps for you to resolve, not an implementer.
+- **researcher / verifier** — a researcher "Ambiguous" reply bounces back to you;
+  pair a researched answer with `verifier`, and a verifier `FAIL` blocks acting on
+  it.
+- **alternatives-explorer** — take its single `Recommendation` into a design
+  decision, then a fix unit.
+- **debugger** — `Root cause` + `Fix location` feed the next fix unit; "could not
+  reproduce" is an escalation, not a fix.
 
 ## The record
 
-- **Prompt-log** — log every subagent's exact prompt to `docs/prompt-log/` as you
-  spawn it, under the `S<N>-<role>-<n>` id scheme (roles: `impl`, `blackbox`,
+- **Prompt-log** — log every subagent's exact prompt to `build-orchestration/prompt-log/`
+  as you spawn it, under the `S<N>-<role>-<n>` id scheme (roles: `impl`, `blackbox`,
   `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`, `altex`). Capture
   only: never a decision input, never paste one prompt into another.
-- **Allocation grade** — in `docs/prompt-log/allocation.md`, per unit and deferred:
-  which critics you deployed vs skipped and why. Judged later for *waste* (spawned,
-  found nothing on this unit-shape) and *miss* (skipped, a defect slipped its axis).
-- **Build-log** — write one `docs/build-log/<yyyy-mm-dd>-<slug>.md` per session,
-  committed with the session's work. Keep only what a later session needs: the
+- **Evaluations** — deferred, in `build-orchestration/prompt-log/evaluations.md`:
+  per-spawn judgment of how well each prompt was written, keyed by entry id. Written
+  in a later analysis pass, never live.
+- **Allocation grade** — in `build-orchestration/prompt-log/allocation.md`, per unit
+  and deferred: which critics you deployed vs skipped and why. Judged later for
+  *waste* (spawned, found nothing on this unit-shape) and *miss* (skipped, a defect
+  slipped its axis).
+- **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
+  per session, committed with the session's work. Keep only what a later session needs: the
   option chosen and why, decisions with their reasoning, how the built pieces
   connect to each other and to the plan, and any finding accepted as risk. Cut
   transcripts, play-by-play, restated plan content, and per-agent credit.
