@@ -38,10 +38,12 @@ session; the workers are subagents.
    direction (which entry point to continue from, plus any added requirements).
    If the plan is too thin to build from, stop and send the user to `plan-impl`.
    Otherwise cut the work into units with explicit file boundaries.
-2. Spawn `blackbox-tester` and, for a unit carrying real design or security
-   surface, the allocated pre-build gate (`security-critic` + `design-critic`
-   over the unit *spec*) — both read the spec, in parallel. Fold gate findings
-   into the spec, then spawn implementers, one unit each.
+2. For a unit carrying real design or security surface, spawn the pre-build gate
+   (`security-critic` + `design-critic`) over the unit *spec* first. Surface its
+   findings to the user for a decision — the manager organises the points, it does
+   not resolve implementation direction — and record the decision into the spec.
+   Then spawn `blackbox-tester` and the implementers (one unit each) from the
+   settled spec, in parallel.
 3. As implementer reports arrive: integrate, run the build and the blackbox
    suite. On failure, follow the escalation ladder (Guardrails, Lever 2):
    bounded re-attempts, then stop and diagnose — never loop indefinitely on

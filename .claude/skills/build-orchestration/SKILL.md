@@ -32,23 +32,26 @@ Cut the work into units with explicit, disjoint file boundaries.
 
 ## Session flow
 
-1. Spawn `blackbox-tester` and, for a unit carrying real design or security
-   surface, the allocated pre-build gate (`security-critic` + `design-critic`
-   over the unit *spec*) — all read the spec, in parallel. Fold gate findings into
-   the spec, then spawn implementers, one unit each.
-2. As implementer reports arrive: integrate, then run the build, the project test
-   command (`<test command>`), and the blackbox suite. On failure, follow the
-   escalation ladder (Guardrails, Lever 2) — bounded re-attempts, then stop and
-   diagnose. Never loop indefinitely on "make it green".
-3. Units merged and green → spawn `whitebox-tester`.
-4. Both suites pass → spawn the post-code review layer: allocate critics from the
-   eight-axis roster per unit (not all, always), plus `change-discipline-critic`
-   when the diff smells. Record the allocation and its deferred grade in
+1. For a unit with real design or security surface, spawn the pre-build gate
+   (`security-critic` + `design-critic`) over the unit *spec*.
+2. Surface the gate findings to the user for a decision — do not resolve
+   implementation direction yourself.
+3. Update the spec to record the user's decision.
+4. Spawn `blackbox-tester` and the implementers (one unit each) from the settled
+   spec, in parallel.
+5. As each implementer report arrives, integrate it, then run the build, the test
+   command (`<test command>`), and the blackbox suite.
+6. On failure, follow the escalation ladder (Guardrails, Lever 2).
+7. Once the units are merged and green, spawn `whitebox-tester`.
+8. When both suites pass, spawn the review layer: allocate critics from the
+   eight-axis roster per unit — not always all — plus `change-discipline-critic`
+   when the diff smells.
+9. Record the allocation and its deferred grade in
    `build-orchestration/prompt-log/allocation.md`.
-5. Per reviewer finding: hand a fix unit to an implementer, rerun both suites.
-   Loop until the reports are clean, or record the remaining findings in the
-   build-log as accepted risk.
-6. Write the record (below) and close out.
+10. Per reviewer finding, hand a fix unit to an implementer and rerun both suites;
+    repeat until the reports are clean, or record the remaining findings in the
+    build-log as accepted risk.
+11. Write the record (below) and close out.
 
 ## Spawning rules
 
