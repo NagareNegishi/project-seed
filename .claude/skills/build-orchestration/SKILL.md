@@ -58,8 +58,8 @@ what to build for that unit, reconciled from the inputs above.
 
 - Subagents see none of this conversation. Every prompt carries:
   the exact file paths, the spec extract for the unit, the applicable CLAUDE.md
-  constraints (`code-commenting` skill, no Claude attribution), and the report
-  format you demand back.
+  constraints (`code-commenting` skill, no Claude attribution), and a demand for
+  its report back.
 - Parallel implementers get disjoint file sets. If units overlap, sequence them
   or give each its own worktree.
 - Background by default. Run synchronously only when the next allocation depends
@@ -131,17 +131,9 @@ Consume each family:
   as you spawn it, under the `S<N>-<role>-<n>` id scheme (roles: `impl`, `blackbox`,
   `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`, `altex`). Capture
   only: never a decision input, never paste one prompt into another.
-- **Evaluations** — deferred, in `build-orchestration/prompt-log/evaluations.md`:
-  per-spawn judgment of how well each prompt was written, keyed by entry id. Written
-  in a later analysis pass, never live.
-- **Allocation grade** — in `build-orchestration/prompt-log/allocation.md`, per unit
-  and deferred: which critics you deployed vs skipped and why. Judged later for
-  *waste* (spawned, found nothing on this unit-shape) and *miss* (skipped, a defect
-  slipped its axis).
 - **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
   per session, committed with the session's work. Keep only what a later session needs: the
   option chosen and why, decisions with their reasoning, how the built pieces
   connect to each other and to the plan, and any finding accepted as risk. Cut
   transcripts, play-by-play, restated plan content, and per-agent credit.
-- The build-log entry is a written document — run it through the `human-writing`
-  skill before committing.
+- Run the build-log through the `human-writing` skill before committing.
