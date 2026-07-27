@@ -24,7 +24,7 @@ are gitignored and never committed.
 ## Files
 
 - `<yyyy-mm-dd>-<slug>.md` — one capture file per session; slug matches the
-  session's `docs/build-log/` entry. Copy [`_template.md`](_template.md).
+  session's `build-orchestration/build-log/` entry. Copy [`_template.md`](_template.md).
 - `evaluations.md` — rolling per-spawn prompt evaluation, keyed by capture entry
   ID. Judges how well each *sent* prompt was written.
 - `allocation.md` — rolling per-unit allocation evaluation. Judges whether the
