@@ -6,7 +6,7 @@ lessons learned agent by agent, and the verified Claude Code facts behind it all
 
 ## 1. Draft anatomy — what promotes
 
-Drafts live in `docs/agents/<name>.md` and are inert: Claude Code loads agents only
+Drafts live in `docs/agents/drafts/<name>.md` and are inert: Claude Code loads agents only
 from `.claude/agents/`. A draft has four parts:
 
 - **Status** — `draft | promoted <date>`.
@@ -125,7 +125,7 @@ For each section you MUST:
 ## 7. Edit the live file only
 
 Polish edits `.claude/agents/<name>.md` directly and leaves it ahead of its draft on
-purpose. Do not sync the `docs/agents/` draft one at a time, and do not offer to.
+purpose. Do not sync the `docs/agents/drafts/` draft one at a time, and do not offer to.
 Carry the refinements a polished live file demonstrates (`model: inherit`, a Verdict
 field, a fixed report shape, …) forward into the next draft promoted, so the pattern
 compounds. Drafts are mirrored to live in **one final pass** after every agent is

@@ -100,7 +100,7 @@ The report is your final message. Do not write any files.
   see scope creep, a weakened test, or a symptom-patch. This is the only critic
   whose subject is the change rather than the code.
 - Written as the backstop to the two process levers in
-  [../skills/build-orchestration.md](../skills/build-orchestration.md) (frozen
+  [../../skills/build-orchestration.md](../../skills/build-orchestration.md) (frozen
   acceptance check + escalation ladder), which *prevent* most gaming in the
   loop. This catches what the levers miss. Prevention is primary; this is
   defence in depth.
