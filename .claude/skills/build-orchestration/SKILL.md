@@ -77,12 +77,8 @@ what to build for that unit, reconciled from the inputs above.
 
 ## Review axes
 
-Each critic owns one axis; allocate per unit by the `Deploy when` triggers below
-(Session flow, step 8), not all-always. Only `correctness-critic` is near-default;
-the rest earn their spawn from the unit's shape. Critics find problems in their
-lane with evidence per finding; they never fix. Decision-free fixes go to an
-implementer; anything turning on a decision surfaces to the user (Session flow,
-step 9).
+Each critic owns one axis. Deploy per unit by the `Deploy when` column below, not
+all-always. Critics report problems, never fix.
 
 | Axis | Agent | Deploy when |
 | --- | --- | --- |
