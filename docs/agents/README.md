@@ -3,30 +3,8 @@
 Drafts for custom subagents. Nothing here is active: Claude Code only loads
 agents from `.claude/agents/`, so files in this directory are reference only.
 
-## Conventions
-
-- One file per agent: `docs/agents/<agent-name>.md`.
-- Follow the structure in [template.md](template.md).
-- The **Definition** section is the exact file content that will land in
-  `.claude/agents/<agent-name>.md` on promotion. Keep it self-contained:
-  a subagent starts with no conversation context, no CLAUDE.md discussion,
-  nothing outside its prompt.
-- Everything outside the Definition section (status, design notes) stays in
-  the draft and is dropped on promotion.
-
-## Promotion
-
-Only with user sign-off, per agent:
-
-1. Copy the Definition code block to `.claude/agents/<agent-name>.md`.
-2. Polish the live file — section by section, `description` first — against the
-   "Polish criteria" in [../skills/new-skills.md](../skills/new-skills.md) and the
-   section walk in [definition-template.md](definition-template.md) "Promotion
-   check". Edit the live file only; leave it ahead of its draft, and carry the
-   refinements it demonstrates into the next draft promoted. Drafts are synced to
-   live in one final pass after every agent is promoted — never one at a time.
-3. Verify the agent appears in the available-agents list in a new session.
-4. Update the draft's status line to `promoted <date>` — after polish, not before.
+The draft format, the promoted-file anatomy, and the promote/polish process are all
+in [authoring.md](authoring.md).
 
 ## Drafts
 
