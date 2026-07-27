@@ -56,7 +56,7 @@ what to build for that unit, reconciled from the inputs above.
 
 ## Spawning rules
 
-- Subagents start cold and see none of this conversation. Every prompt carries:
+- Subagents see none of this conversation. Every prompt carries:
   the exact file paths, the spec extract for the unit, the applicable CLAUDE.md
   constraints (`code-commenting` skill, no Claude attribution), and the report
   format you demand back.
@@ -64,25 +64,16 @@ what to build for that unit, reconciled from the inputs above.
   or give each its own worktree.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
-- Do not spawn for a fix you can already see in full. Batch small findings into
-  one fix unit, not one agent each.
-- **An implementer fix unit's file set excludes the test files** (Lever 1). The
-  fixer cannot edit the check that judges it. A fix that requires a test to change
-  is a spec/test disagreement — escalate to yourself as manager, never a silent
-  edit.
-- **No visibility widening for test convenience.** Implementer and tester prompts
-  forbid making a private symbol public, or otherwise expanding the API surface,
-  just to test it. An untestable-through-the-public-surface private is a finding,
-  not a licence to widen it.
-- **Stage and confine every write-capable spawn.** Testers and implementers share
-  the tree and can write. Confirm the session is not in `bypassPermissions` /
-  `acceptEdits` before spawning — either overrides the path-jail. Stage only the
-  permitted files into `.agent-scope/` (spec-only for `blackbox-tester`, spec+impl
-  for `whitebox-tester`), point the tester at that root, move results out, clear it;
-  the two share the one root, so serialize them. Snapshot `git status --porcelain`
-  before each write-capable spawn and diff it on return — revert and report any
-  changed path outside the unit's permitted set. Mechanism:
-  `docs/agents/authoring.md` §12.
+- Batch small findings into one fix unit, not one agent each.
+- Never pass the test files to an implementer.
+- Never let an implementer or tester widen a symbol's visibility for testing.
+- Before any write-capable spawn, confirm the session is not in `bypassPermissions`
+  or `acceptEdits`.
+- Stage only the permitted files into `.agent-scope/` — spec-only for
+  `blackbox-tester`, spec+impl for `whitebox-tester`. Serialize the two testers;
+  they share the one root. Mechanism: `docs/agents/authoring.md` §12.
+- Snapshot `git status --porcelain` before each write-capable spawn; on return,
+  revert and report any changed path outside the unit's permitted set.
 
 ## Review axes
 
