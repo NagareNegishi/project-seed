@@ -28,30 +28,31 @@ Reconcile three inputs; none alone is authoritative:
 
 If the plan is too thin to build from, stop and tell the user to flesh it out
 first with the plan-impl skill. If no entry point is stated, ask the user for it.
-Cut the work into units with explicit, disjoint file boundaries.
+Cut the work into units. A unit pairs a disjoint file set with a written spec —
+what to build for that unit, reconciled from the inputs above.
 
 ## Session flow
 
-1. For a unit with real design or security surface, spawn the pre-build gate
-   (`security-critic` + `design-critic`) over the unit *spec*.
-2. Surface the gate findings to the user for a decision — do not resolve
-   implementation direction yourself.
-3. Update the spec to record the user's decision.
+1. Spawn `design-critic` and/or `security-critic` over the unit's *spec*, each
+   only if the spec meets its `Deploy when` trigger (Review axes). Neither → skip
+   to step 4.
+2. Surface the gate findings to the user; the call is theirs, not yours to
+   resolve.
+3. Record the user's decision in the spec.
 4. Spawn `blackbox-tester` and the implementers (one unit each) from the settled
    spec, in parallel.
-5. As each implementer report arrives, integrate it, then run the build, the test
-   command (`<test command>`), and the blackbox suite.
+5. As each implementer report arrives, integrate it, then run the build and the
+   blackbox suite (via `<test command>`).
 6. On failure, follow the escalation ladder (Guardrails, Lever 2).
 7. Once the units are merged and green, spawn `whitebox-tester`.
-8. When both suites pass, spawn the review layer: allocate critics from the
-   eight-axis roster per unit — not always all — plus `change-discipline-critic`
-   when the diff smells.
-9. Record the allocation and its deferred grade in
-   `build-orchestration/prompt-log/allocation.md`.
-10. Per reviewer finding, hand a fix unit to an implementer and rerun both suites;
-    repeat until the reports are clean, or record the remaining findings in the
-    build-log as accepted risk.
-11. Write the record (below) and close out.
+8. When both suites pass, spawn the review layer: each critic by its `Deploy
+   when` trigger (Review axes).
+9. Consume each reviewer report (Reports — demand and consume).
+10. Route each finding to an implementer as a fix unit; one whose fix needs a
+    design or spec decision surfaces to the user first and dispatches only once
+    the decision is recorded. Rerun both suites; repeat until the reports are
+    clean, or log the remainder as accepted risk (build-log).
+11. Write the record (below).
 
 ## Spawning rules
 
@@ -85,22 +86,25 @@ Cut the work into units with explicit, disjoint file boundaries.
 
 ## Review axes
 
-Each critic owns one axis; allocate per unit (Session flow, step 4), not
-all-always. Critics find problems in their lane with evidence per finding; they
-never fix. Fixes go to an implementer or `alternatives-explorer`.
+Each critic owns one axis; allocate per unit by the `Deploy when` triggers below
+(Session flow, step 8), not all-always. Only `correctness-critic` is near-default;
+the rest earn their spawn from the unit's shape. Critics find problems in their
+lane with evidence per finding; they never fix. Decision-free fixes go to an
+implementer; anything turning on a decision surfaces to the user (Session flow,
+step 9).
 
-| Axis | Agent |
-| --- | --- |
-| Correctness (logic, edge cases, contract) | `correctness-critic` |
-| Security risk | `security-critic` |
-| Design / architecture | `design-critic` |
-| Redundancy, over-complication | `simplicity-critic` |
-| Performance, efficiency | `performance-critic` |
-| Documentation, comments | `docs-critic` |
-| Legal, licensing, compliance | `legal-critic` |
-| Change discipline (diff vs. its mandate) | `change-discipline-critic` |
-| Decision-coverage testing (optional) | `mcdc-tester` |
-| Root-cause diagnosis on failure | `debugger` |
+| Axis | Agent | Deploy when |
+| --- | --- | --- |
+| Correctness (logic, edge cases, contract) | `correctness-critic` | the unit has non-trivial logic or branching (near-default) |
+| Security risk | `security-critic` | the unit touches auth, input handling, crypto, file/network I/O, or secrets |
+| Design / architecture | `design-critic` | the unit adds or changes an abstraction, interface, or module boundary |
+| Redundancy, over-complication | `simplicity-critic` | the diff is large or tangled |
+| Performance, efficiency | `performance-critic` | the unit loops over unbounded data, hits the DB, or sits on a hot path |
+| Documentation, comments | `docs-critic` | the unit changes public API or user-facing docs |
+| Legal, licensing, compliance | `legal-critic` | the unit adds a dependency or copied / third-party code |
+| Change discipline (diff vs. its mandate) | `change-discipline-critic` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
+| Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines |
+| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails, Lever 2) |
 
 ## Guardrails against thrashing
 
