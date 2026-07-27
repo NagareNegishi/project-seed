@@ -4,33 +4,6 @@
 **Skill work**: before polishing or adding a skill in `.claude/skills/`, read
 `docs/skills/new-skills.md` (authoring and polish guide).
 
-**Agent work** — TEMPORARY, delete this whole block once every agent is promoted and
-drafts are synced. Before creating, promoting, or polishing any agent (`.claude/agents/`
-or `docs/agents/` drafts), READ these in order and in full:
-1. `docs/notes.md` "Next-session handoff" — campaign state and which agent is next.
-2. `docs/agents/review-findings.md` — per-draft verdicts and findings.
-3. `docs/skills/build-orchestration-design-notes.md` — how the promoted agents are
-   *used* (manager IS the main session, agents are workers) and the "Configure after
-   implementing" tuning log where post-run knobs are recorded.
-4. `docs/agents/README.md`, then `definition-template.md` + `template.md` in that dir.
-5. `docs/skills/new-skills.md` "Polish criteria".
-Then:
-- Promote one agent at a time with user sign-off; walk the 10-point "Promotion check"
-  in `definition-template.md`.
-- One section at a time. This is a MUST, not a default: show exactly ONE section's
-  proposed text with its justification, then STOP and wait for the user's explicit go
-  on THAT section before showing the next. Presenting two or more sections in one
-  message is a violation, even as a "preview", a numbered list, or "here's the plan".
-- No batch-apply and no batch-propose: a go on one section is not a go on the next,
-  and a go on one agent is not a go on the rest. Never bundle sections or agents to
-  save round-trips — the round-trips are the point.
-- Polish the LIVE `.claude/agents/<name>.md` only and leave it ahead of its draft. Do
-  NOT sync drafts one at a time; carry each live file's refinements (`model: inherit`,
-  Verdict field, …) forward into the next draft promoted. Drafts are mirrored to live
-  in ONE final pass after every agent is promoted.
-- Never leak the manager/fleet taxonomy into an agent file — a cold subagent does not
-  know the fleet exists; state each lane in the agent's own terms.
-
 **Config work**: changes to `.claude/settings.json` (permissions, hooks) must cite
 the relevant code.claude.com docs and get user sign-off before writing.
 
