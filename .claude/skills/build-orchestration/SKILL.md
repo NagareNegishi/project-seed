@@ -105,20 +105,15 @@ all-always. Critics report problems, never fix.
 
 ## Reports — demand and consume
 
-Do not impose a format; each agent defines its own. Demand that structure back in
-the prompt. What agents share is a resemblance, not one shape — evidence per
-finding, honest ranking where severity applies, every section always present (write
-"none"), the report as final message. Only the eight critics carry the
-`Target · Verdict · Problems · Checked · Out of scope` form; testers and advisory
-deviate. The template and its deviations live in `docs/agents/authoring.md` §2
-(+§10); cite it, do not restate it.
+Do not impose a format; each agent defines its own. Demand it back as the agent's
+final message.
 
-Consume each family on its own terms:
+Consume each family:
 
 - **Critics** — read `Verdict`. Axis-bad → triage `Problems` by severity into
   batched fix units; critical/high block close-out, low → build-log accepted risk.
   `unreviewable` → stage the missing input and respawn, or record the uncovered
-  axis (feeds the allocation `miss`). `clean` → record `Checked`, proceed.
+  axis. `clean` → record `Checked`, proceed.
 - **Testers** — no `Verdict`. Read `Findings`, and for whitebox/mcdc the `Suite`
   line: an xfail/skip parked against a Finding is an open bug → fix unit. Blackbox
   `Findings` are spec gaps for you to resolve, not an implementer.
