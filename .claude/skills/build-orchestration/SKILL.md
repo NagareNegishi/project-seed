@@ -43,7 +43,7 @@ what to build for that unit, reconciled from the inputs above.
    spec, in parallel.
 5. As each implementer report arrives, integrate it, then run the build and the
    blackbox suite (via `<test command>`).
-6. On failure, follow the escalation ladder (Guardrails, Lever 2).
+6. On failure, follow the escalation ladder (Guardrails).
 7. Once the units are merged and green, spawn `whitebox-tester`.
 8. When both suites pass, spawn the review layer: each critic by its `Deploy
    when` trigger (Review axes).
@@ -91,30 +91,17 @@ all-always. Critics report problems, never fix.
 | Legal, licensing, compliance | `legal-critic` | the unit adds a dependency or copied / third-party code |
 | Change discipline (diff vs. its mandate) | `change-discipline-critic` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
 | Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines |
-| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails, Lever 2) |
+| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) |
 
 ## Guardrails against thrashing
 
-A stuck agent stops solving the problem and starts making the check turn green —
-editing the test, exposing a private to test it, over-complicating to compile, a
-large refactor for a small bug. Prevent it in the loop, not with a post-hoc critic.
-
-- **Lever 1 — freeze the acceptance check.** Once you accept the spec-derived
-  blackbox suite, the thing being judged cannot edit the judge. Enforced by the
-  two spawning rules above (fix units exclude test files; no visibility widening).
-- **Lever 2 — the escalation ladder.** No unbounded "make it green" loop:
+- **Escalation ladder** — after 2 strikes you diagnose, you do not re-attempt:
   1. Attempt fails → feed the exact failure back to the same implementer via
      `SendMessage` (context intact). At most twice.
   2. Still failing → **stop changing code. Spawn `debugger` for the root cause.**
      No further edit until the cause is named.
   3. Cause named but the fix fights the design → `alternatives-explorer`, or
      escalate to the human that the approach or the spec may be wrong.
-
-  The rule: after 2 strikes you diagnose, you do not re-attempt.
-- **Backstop — `change-discipline-critic`.** Allocate it on diff-smell. It judges
-  the diff against its mandate: the change does only what the task asked, no
-  acceptance test was weakened or deleted, no visibility widened for testing, the
-  fix targets a diagnosed cause not a symptom, the diff size is proportionate.
 
 ## Reports — demand and consume
 
