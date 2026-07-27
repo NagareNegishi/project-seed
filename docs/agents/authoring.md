@@ -1,8 +1,6 @@
 # Authoring, promoting, and polishing a subagent
 
-The single reference for building the custom subagents in `.claude/agents/`. Covers
-the draft format, the promoted-file anatomy, the promote/polish process, the polish
-lessons learned agent by agent, and the verified Claude Code facts behind it all.
+The single reference for building the custom subagents in `.claude/agents/`.
 
 ## 1. Draft anatomy — what promotes
 
@@ -14,8 +12,7 @@ from `.claude/agents/`. A draft has four parts:
   delegates to it instead of doing the work itself.
 - **Definition** — the exact content that lands in `.claude/agents/<name>.md` on
   promotion. Nothing else goes in this block. Keep it self-contained: a subagent
-  starts with no conversation context, no CLAUDE.md discussion, nothing outside its
-  own prompt.
+  starts cold, with nothing outside its own prompt to rely on.
 - **Design notes** — decisions and open questions (why a subagent and not a skill,
   which tools and why, what was tried and rejected).
 
@@ -24,9 +21,8 @@ Only the Definition promotes; Status, Purpose, and Design notes stay in the draf
 ## 2. Promoted-file template
 
 The anatomy of `.claude/agents/<name>.md` — i.e. the content of a draft's Definition
-block. The worker family (critics especially) shares this shape by design: the
-manager consumes every report uniformly, so the shape is a **core invariant**.
-Testers and advisory agents deviate only where noted.
+block. The worker family shares this shape by design (see §10); testers and advisory
+agents deviate only where noted.
 
 ```markdown
 ---
@@ -51,52 +47,53 @@ Rules:
    <file:line for code | fetchable URL for a claim about standards or known issues>.
 2. State the concrete failure: who hits it, how, and the result. A vague claim is
    not a finding.
-3. Rank honestly. Do not inflate nitpicks; do not invent findings to fill the
-   report. If the target is clean, say so and list what you checked.
-4. Stay in your lane: a finding must be a <axis> problem, not a neighbouring-axis
-   complaint.
+3. Do not inflate a nitpick to <top severity>, and do not invent findings to fill
+   the report. If the target is clean, say so and list what you checked.
+4. Stay in your lane: name the concrete off-axis complaint types to reject, plus
+   the on-axis positive test. State it in the agent's own terms — no fleet framing (§7).
 
-Report back to the manager in exactly this structure:
+Report back to the manager. One entry per target (multiple targets → multiple
+entries), in exactly this structure:
 
 - **Target**: what you reviewed and its scope.
-- **Problems**: one bullet per finding, worst first:
+- **Verdict**: `<bad>` | `<clean>` | `unreviewable` — any finding → `<bad>`; else
+  anything you couldn't review → `unreviewable`; else `<clean>`.
+- **Problems**: findings worst first, one bullet each (required if `<bad>`):
   `critical|high|medium|low — <problem> — <failure scenario> — <evidence>`
-- **Checked, no finding**: areas examined that came up clean.
-- **Out of scope**: what you could not review and why (omit if empty).
+- **Checked**: areas examined that came up clean (required if `<clean>`).
+- **Out of scope**: what you couldn't review and why (required if `unreviewable`).
+
+Every section always appears; write "none" if it has no content.
 
 The report is your final message. Do not write any files.   # testers: instead run the suite and report pass/fail
 ```
 
-## 3. Why the boundary is a hard fence
-
-The "you do not…" list is structural, not politeness: a critic allowed to fix starts
-pulling punches to keep its fix small. So fixing, proposing alternatives, and writing
-files are fenced off — they belong to the implementer / `alternatives-explorer` / the
-testers, not the critic.
-
-## 4. Promotion process — one agent at a time, user sign-off required
+## 3. Promotion process — one agent at a time, user sign-off required
 
 1. Copy the draft's Definition block to `.claude/agents/<name>.md`.
-2. Polish the live file section by section, `description` first (see §5–§8).
+2. Polish the live file section by section (see §4).
 3. Verify the agent appears in the available-agents list in a **new session**
    (agents load only at session start).
 4. Update the draft's `Status:` line to `promoted <date>` — after polish, not
    before.
 
-## 5. Promotion check — REQUIRED, follow every step
+## 4. Promotion check — REQUIRED, follow every step
 
 Walk the 10 sections below **in order**; the agent is promoted only after every one
 passes.
 
 For each section you MUST:
 
-- **Challenge it** — state what is wrong or weaker than it should be and what to
-  improve. Do not rubber-stamp; call it clean only when it survives that.
+- **Challenge it** — state what is wrong, weaker than it should be, or noise, and
+  what to improve. Noise is any text that will not control the subagent's behavior:
+  redundancy, a rule restated across sections, or more examples than the one that
+  resolves a real ambiguity. Cut it. Do not rubber-stamp; call it clean only when it
+  survives that.
 - **Fix it in the live file** — surface each change with its justification; never
   patch silently.
 - **Stay concise** — give the judgment and the change, no padding.
 
-**The 10 sections** (walk in order):
+**The 10 sections**:
 
 1. **`name`** — matches the file name, unique across the project tree.
 2. **`description`** — states the delegation trigger, not the mechanics.
@@ -112,27 +109,22 @@ For each section you MUST:
 9. **Report structure** — matches the shared shape.
 10. **Final constraint** — write / do-not-write is correct for the agent's kind.
 
-## 6. Section rule — how to polish, and its limits
+## 5. Section rule — one at a time
 
-- **One section per step.** Show exactly one section's proposed text with its
-  justification, then STOP and wait for the user's explicit go on THAT section
-  before showing the next. Presenting two or more sections in one message is a
-  violation — even as a "preview", a numbered list, or "here's the plan".
-- **No batch-apply, no batch-propose.** A go on one section is not a go on the next,
-  and a go on one agent is not a go on the rest. The round-trips are the point — do
-  not bundle them to save round-trips.
+- **Propose one section per step.** Show its text with your justification, then STOP
+  and wait for the user's explicit go before the next. Never preview, list, or plan
+  later sections.
+- **Never batch-apply or batch-propose.** A go on one section is not a go on the next;
+  a go on one agent is not a go on the rest.
 
-## 7. Edit the live file only
+## 6. Edit the live file only
 
-Polish edits `.claude/agents/<name>.md` directly and leaves it ahead of its draft on
-purpose. Do not sync the `docs/agents/drafts/` draft one at a time, and do not offer to.
-Carry the refinements a polished live file demonstrates (`model: inherit`, a Verdict
-field, a fixed report shape, …) forward into the next draft promoted, so the pattern
-compounds. Drafts are mirrored to live in **one final pass** after every agent is
-promoted — never one at a time. ("Fixed in the draft first" applies to the
-pre-promotion moment, not to polish.)
+Polish edits `.claude/agents/<name>.md` directly. Do not sync the
+`docs/agents/drafts/` draft one at a time, and do not offer to. Carry each refinement
+forward into the next draft promoted; sync all drafts to match the live files in
+**one final pass** after every agent is promoted.
 
-## 8. No fleet-taxonomy leak
+## 7. No fleet-taxonomy leak
 
 An agent file is read by a cold subagent that does not know the fleet exists. Never
 leak manager/fleet framing into it — no "neighbouring axis", "the other critics",
@@ -143,7 +135,7 @@ as the model. The leak hides beyond the stay-in-lane rule — sweep the whole fi
 role nouns (implementer / tester / critic / manager), not just that rule, and
 restate each.
 
-## 9. Polish criteria (general)
+## 8. Polish criteria (general)
 
 Polish means making the file effective for a cold subagent as the reader, not
 improving the prose.
@@ -166,7 +158,7 @@ improving the prose.
   would delegation fail without it?).
 - **Add rules only where they prevent a realistic misfire**, not for completeness.
 
-## 10. Polish lessons by axis
+## 9. Polish lessons by axis
 
 Learned promoting the fleet; each generalizes to the next agent.
 
@@ -200,7 +192,7 @@ Learned promoting the fleet; each generalizes to the next agent.
   one-line format on the fixed-shape line ("put X under **Failure**, write 'none'
   for the rest"), not an inline `(or …)` parenthetical smeared across two bullets.
 
-## 11. Settled design decisions
+## 10. Settled design decisions
 
 - **Atomic critics, one axis each** — not one broad `code-reviewer`. Atomic
   single-axis designs compose cheaply later (merge into a bundle, or spin a new
@@ -220,7 +212,7 @@ Learned promoting the fleet; each generalizes to the next agent.
   off the manager's context when a loop stalls; `mcdc-tester` stays optional —
   MC/DC earns its combinatorial cost only on decision-dense units.
 
-## 12. Verified Claude Code facts
+## 11. Verified Claude Code facts
 
 Banked from `code.claude.com/docs/en/sub-agents.md` and `skills.md` so they are not
 re-researched. Re-verify only if Claude Code changes the spec.
@@ -245,7 +237,7 @@ re-researched. Re-verify only if Claude Code changes the spec.
   Explore/Plan agents skip CLAUDE.md + git status. (So an agent re-stating CLAUDE.md
   constraints is redundant-but-harmless, not required.)
 
-## 13. Tester confinement (enforced, verified 2026-07-23)
+## 12. Tester confinement (enforced, verified 2026-07-23)
 
 Write-capable testers (`blackbox`, `whitebox`) are confined by the system, not the
 prompt, to the files the manager stages for that spawn.
