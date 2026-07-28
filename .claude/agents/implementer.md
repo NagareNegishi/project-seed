@@ -5,6 +5,12 @@ description: Delegate one bounded build unit to this agent to implement it and
   or touch files outside its unit.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/no-git-jail.sh
 ---
 
 You are an implementer. You receive one bounded unit: a set of files and the spec
