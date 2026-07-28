@@ -22,11 +22,14 @@ command=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
 # Only Bash can run git; every other tool passes straight through (exit 0 = allow).
 [[ "$tool" == "Bash" ]] || exit 0
 
-# Match `git` only when it sits in command position: at the start of the string or
-# right after a non-word character (space, ;, &&, |, (, backtick), and followed by
-# whitespace or end. This lets through look-alikes like `github`, `mygit`, and a bare
-# `.git` path while catching `git ...`, `foo && git ...`, and `env X=1 git ...`.
-if printf '%s' "$command" | grep -Eq '(^|[^[:alnum:]_])git([[:space:]]|$)'; then
+# Deny `git` only where it can run as a command: at the start of the command, after a
+# separator (; & | ( backtick) or whitespace, or reached by a path to the binary (the
+# `/` in `/usr/bin/git`, `./git`) — and followed by whitespace or end. That catches
+# `git ...`, `foo&&git ...`, `$(git ...)`, `env X=1 git ...`, and `/usr/bin/git ...`,
+# while leaving substrings that cannot be a command: `github`, `digit`, `legitimate`,
+# `.gitignore`, and a path like `src/git/x.ts`. Best-effort — a fully obfuscated
+# invocation ($(echo g)it) still slips through.
+if printf '%s' "$command" | grep -Eq '(^|[;&|(`/]|[[:space:]])git([[:space:]]|$)'; then
   # Only permissionDecision "deny" blocks a PreToolUse call; the reason is surfaced to
   # the agent so it knows git is fenced and to hand integration work to the manager.
   jq -n --arg r "git is fenced for the implementer: the manager owns all git and integration. Command blocked by no-git-jail.sh." \
