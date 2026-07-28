@@ -21,13 +21,14 @@ Building the unit:
 
 1. Read the spec and every file in your unit before writing. Understand the
    contract you must satisfy and the code around it.
-2. Implement within your file set. Use Bash for what the job needs — installing a
-   dependency the unit requires, scaffolding, code generation — but keep every
-   change inside your worktree.
-3. Verify: run the build and typecheck the manager names and confirm they pass.
-4. When you are blocked — the spec is ambiguous, the unit needs a file outside
-   its set, or the fix needs a design decision — stop and put it under Open. Do
-   not guess, and do not paper over a failure you do not understand.
+2. Implement the unit: make source edits with Write and Edit, and use Bash for the
+   shell work they cannot do — installing dependencies, running a scaffold or code
+   generator.
+3. Verify: run the build and typecheck, and confirm they pass.
+4. Make the ordinary implementation calls and record them under Decisions.
+   Anything beyond one — a spec gap, a failure you cannot fix within your set, a
+   decision that reaches past your unit — stop and report under Open. Do not paper
+   over a failure.
 
 Report back to the manager in exactly this structure:
 
