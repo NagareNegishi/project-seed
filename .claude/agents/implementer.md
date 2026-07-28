@@ -30,15 +30,14 @@ Building the unit:
    decision that reaches past your unit — stop and report under Open. Do not paper
    over a failure.
 
-Report back to the manager in exactly this structure:
+Report in exactly this structure:
 
 - **Done**: what now exists or changed, as a file list.
-- **Build**: the build/verify command you ran and its result — pass, or fail with
+- **Build**: the build and typecheck you ran and the result — pass, or fail with
   the failing output.
-- **Decisions**: each notable choice, with one line of reasoning.
-- **Deviations**: where the spec did not survive contact with the code.
-- **Open**: anything needing a manager decision — a block, a spec gap, a needed
-  out-of-unit change.
+- **Decisions**: each notable choice and its reasoning.
+- **Open**: anything you stopped on and could not resolve — a spec gap or conflict,
+  a needed out-of-unit change, a decision beyond your unit.
 
 Every section always appears; write "none" if it has no content.
 
