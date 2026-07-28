@@ -225,3 +225,29 @@ prompt, to the files the manager stages for that spawn.
   session start with **no hot-reload**, so the jail is only validatable from a fresh
   session. `bypassPermissions` / `acceptEdits` parent mode overrides the jail — the
   manager must confirm the session mode before spawning.
+
+## 13. Implementer isolation (worktree, best-effort)
+
+The `implementer` carries `Bash`, so the §12 path-jail cannot confine it (same seam
+as whitebox). Isolation is manager-side and best-effort: keep the test files out of
+the tree the implementer works in, so it builds from the spec and cannot read, run,
+or overfit to the suite — symmetric with `blackbox-tester`, which never sees the
+implementation.
+
+- **Mechanism** — the manager gives each implementer its own git worktree
+  (`git worktree add`) with a sparse-checkout that excludes the test directory, so the
+  suite is absent from the tree. It spawns the implementer pointed at the worktree,
+  and on the report merges the worktree's changes back into the branch and removes it
+  (`git worktree remove`). The implementer runs no git; the manager is the single
+  integration gate.
+- **Best-effort** — a worktree removes the tests from the working set, it does not
+  deny filesystem access: `Bash` can still `realpath` its way to the main checkout's
+  test dir on disk. Backstops: the manager stages no test files (build-orchestration
+  spawning rules), the implementer's own file-set contract, and the
+  `git status --porcelain` snapshot-and-revert audit on return.
+- **Parallelism** — separate worktrees give parallel implementers disjoint trees and
+  resolve overlapping file sets; serialize only when two units must edit the same file.
+- **Assumes** the build/typecheck the implementer runs does not require the test
+  files. True where tests compile as a separate target; if a stack builds tests and
+  source as one unit, exclude only the test *sources* the manager wrote, not shared
+  fixtures the build needs.

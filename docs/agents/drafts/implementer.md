@@ -66,18 +66,18 @@ The report is your final message.
   manager cannot predict which files a unit must read or which commands it must
   run, so a narrow allowlist would cripple it. `Agent` is omitted: only the main
   session fans out (authoring §11).
-- **Not jailed — confined by staging and audit.** `Bash` reaches any file, so a
+- **Not jailed — confined by worktree and audit.** `Bash` reaches any file, so a
   `PreToolUse` path-jail cannot hold it (authoring §12 "Seams") — the same reason
-  `whitebox-tester` is unjailed. Confinement is manager-side: it stages only the
-  unit's source + spec into `.agent-scope/`, spawns the implementer there, and
-  snapshots `git status --porcelain` before the spawn — reverting and reporting any
-  changed path outside the unit's set on return (build-orchestration spawning
-  rules). The agent's own contract — stay in your file set, run no git — keeps the
-  manager the single integration gate. A worktree is used only when parallel units'
-  file sets overlap.
+  `whitebox-tester` is unjailed. Confinement is manager-side: it spawns the
+  implementer in a git worktree that holds the unit's source + spec but excludes the
+  test files (authoring §13), and snapshots `git status --porcelain` before the spawn
+  — reverting and reporting any changed path outside the unit's set on return
+  (build-orchestration spawning rules). The agent's own contract — stay in your file
+  set, run no git — keeps the manager the single integration gate. Best-effort:
+  `Bash` can still reach the main checkout on disk, so the audit is the backstop.
 - **Test-unaware by construction.** It builds from the spec and never sees the
   acceptance suite — symmetric with `blackbox-tester`, which never sees the
-  implementation. The manager stages spec + source only, never test files, so the
+  implementation. The worktree holds spec + source only, never test files, so the
   implementer cannot read, run, or overfit to the suite, and its file-set rule
   forbids creating one. This is why the Definition needs no explicit "don't edit
   tests" or "don't widen visibility for testing" rule: with no tests present, both
@@ -97,4 +97,3 @@ The report is your final message.
 - **Model `sonnet`** matches the tester workers: implementation is substantial, but
   the manager has already cut and specced the unit, so it needs no opus-tier
   planning.
-```

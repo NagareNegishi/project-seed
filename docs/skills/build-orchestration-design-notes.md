@@ -45,13 +45,13 @@ the skill is; this one holds *why* the calls were made and what's still open.
   too low wastes a diagnosis spawn on a typo, too high lets the thrash back in.
 - **whitebox-tester has no search tools** (`Read, Write, Edit, Bash`). Re-add `Grep`
   only if a run shows it needing to search within a large implementation.
-- **Worker constraints sit in the manager prompt for now.** The two Lever-1 spawning
-  rules (no test files to an implementer; no visibility widening for testing) are
-  injected per-prompt because implementers spawn as generic `general-purpose`, which
-  has no definition to carry them. The tester half is already redundant — the
-  `blackbox`/`whitebox`/`mcdc` definitions forbid modifying source. When a dedicated
-  `implementer` agent exists, move these into its definition and drop them from the
-  skill.
+- **Worker constraints stay in the manager prompt.** The two Lever-1 spawning rules
+  (no test files to an implementer; no visibility widening for testing) stay
+  manager-side, not in the `implementer` def: the worktree excludes the tests
+  (authoring §13), so with no suite in the tree both rules reduce to ordinary
+  practice for the agent, and the manager is the party that stages the tree. The
+  tester half is redundant anyway — the `blackbox`/`whitebox`/`mcdc` defs forbid
+  modifying source.
 
 ## Still open
 

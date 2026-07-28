@@ -15,7 +15,7 @@ own edits are limited to docs, config, and merge glue.
 ## Prerequisites
 
 Confirm each agent you intend to spawn is in the available-agents list; if one is
-missing, stop and tell the user. Implementers spawn as `general-purpose`.
+missing, stop and tell the user.
 
 ## Establish the goal
 
@@ -39,8 +39,8 @@ what to build for that unit, reconciled from the inputs above.
 2. Surface the gate findings to the user; the call is theirs, not yours to
    resolve.
 3. Record the user's decision in the spec.
-4. Spawn `blackbox-tester` and the implementers (one unit each) from the settled
-   spec, in parallel.
+4. Spawn `blackbox-tester` and one `implementer` per unit, from the settled spec,
+   in parallel.
 5. As each implementer report arrives, integrate it, then run the build and the
    blackbox suite (via `<test command>`).
 6. On failure, follow the escalation ladder (Guardrails).
@@ -60,8 +60,10 @@ what to build for that unit, reconciled from the inputs above.
   the exact file paths, the spec extract for the unit, the applicable CLAUDE.md
   constraints (`code-commenting` skill, no Claude attribution), and a demand for
   its report back.
-- Parallel implementers get disjoint file sets. If units overlap, sequence them
-  or give each its own worktree.
+- Spawn each `implementer` in its own git worktree that excludes the test files:
+  create it, point the implementer there, and on its report merge the worktree back
+  and remove it. Give parallel implementers separate worktrees; sequence only when
+  two units must edit the same file. Mechanism: `docs/agents/authoring.md` §13.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
