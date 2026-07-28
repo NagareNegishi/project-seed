@@ -1,8 +1,7 @@
 ---
 name: implementer
-description: Delegate one bounded build unit to this agent — a disjoint file set
-  plus the spec for it. It implements the unit in its own worktree, verifies the
-  build, and reports back. It writes source only; it does not write or edit tests,
+description: Delegate one bounded build unit to this agent to implement it and
+  verify the build passes. It writes source only; it does not write or edit tests,
   widen visibility for testing, or touch files outside its unit.
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
