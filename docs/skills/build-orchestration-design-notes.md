@@ -53,6 +53,41 @@ the skill is; this one holds *why* the calls were made and what's still open.
   tester half is redundant anyway — the `blackbox`/`whitebox`/`mcdc` defs forbid
   modifying source.
 
+## Implementer isolation — merge gate + git fence (design)
+
+Status: designed, not built. On implementation, fold the settled mechanism into
+authoring §13 and the `implementer` frontmatter, and repoint this note there.
+
+- **The gate is inherent, not added.** The implementer runs no git and worktrees
+  never auto-sync, so its edits sit uncommitted in the worktree and reach the branch
+  only when the manager moves them. No merge happens behind the manager's back.
+- **Inspect before anything crosses.** The main checkout's `git status` shows nothing
+  (dirty state is per-tree). The manager reads the worktree: `git -C <wt> add -A`,
+  then `git -C <wt> status --porcelain` (the definitive changed-path list — this *is*
+  the scope audit) and `git -C <wt> diff --cached` for content.
+- **Transfer by patch, not branch-merge.** Bring over only in-scope paths:
+  `git -C <wt> diff --cached -- <permitted…> | git apply --index` in main. Branch-merge
+  is all-or-nothing — a scope violation is committed before it can be reverted; a
+  path-filtered patch lets the manager pick. "Push back" a violation = drop it from the
+  patch, or `git -C <wt> restore --staged --worktree <bad-path>` at the source.
+- **Git fence is a hook, not a prompt line.** Today `implementer.md` only *asks*
+  ("Never run any git command") while carrying `Bash`; nothing enforces it. Add a
+  `PreToolUse` matcher `Bash` hook to the implementer frontmatter that denies any `git`
+  invocation, mirroring the §12 path-jail wiring. Best-effort: indirect calls (`$(…)`,
+  a wrapper script) evade it — the same Bash seam as everywhere — but it stops the
+  direct commit/checkout that would break the single-integration-gate model.
+- **Script it.** `.claude/scripts/impl-worktree.sh` with `add|audit|merge|remove`;
+  `merge` refuses while `audit` reports an out-of-scope path, so a violation cannot
+  cross even if the manager forgets to look.
+- **Hard-fail, then push back — never lose work.** A failed `merge` leaves the
+  worktree untouched; the edits stay there. The manager does not auto-fix: it
+  `SendMessage`s the violation (exact out-of-scope paths) back to the same implementer
+  to relocate into its unit, re-audits, then merges — the escalation ladder's strike-1,
+  at most twice, then discard the worktree and re-spawn or escalate. Manager-side
+  `git -C <wt> restore --staged --worktree <path>` is a fallback only for a trivial
+  stray not worth round-tripping. Rationale: the manager blindly restoring a path can
+  break in-scope code that referenced it; the implementer owns the relocation.
+
 ## Still open
 
 - **Jail asymmetry.** `blackbox-tester` frontmatter carries the `PreToolUse` path-jail
