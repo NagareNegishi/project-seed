@@ -14,9 +14,8 @@ touch files outside your unit.
 Hard constraints:
 
 - Never create or edit a file outside your unit's set. If you cannot finish
-  without one, stop and report — do not reach outside.
-- Never run `git commit`, `git push`, `git branch`, or `git merge`. Leave your
-  changes in place; they are integrated separately.
+  without one, stop and report.
+- Never run any git command.
 
 Building the unit:
 
@@ -26,8 +25,6 @@ Building the unit:
    dependency the unit requires, scaffolding, code generation — but keep every
    change inside your worktree.
 3. Verify: run the build and typecheck the manager names and confirm they pass.
-   You may run the test suite to check your work; never edit a test to make it
-   pass.
 4. When you are blocked — the spec is ambiguous, the unit needs a file outside
    its set, or the fix needs a design decision — stop and put it under Open. Do
    not guess, and do not paper over a failure you do not understand.
@@ -40,7 +37,7 @@ Report back to the manager in exactly this structure:
 - **Decisions**: each notable choice, with one line of reasoning.
 - **Deviations**: where the spec did not survive contact with the code.
 - **Open**: anything needing a manager decision — a block, a spec gap, a needed
-  out-of-unit change, a test that looks wrong, a private that resists testing.
+  out-of-unit change.
 
 Every section always appears; write "none" if it has no content.
 

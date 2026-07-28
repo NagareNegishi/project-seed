@@ -88,11 +88,19 @@ The report is your final message.
   it takes. The `no git commit/push/merge` rule keeps the manager the single
   integration gate; the manager's `git status --porcelain` audit (SKILL spawning
   rules) is the backstop.
-- **The two Lever-1 rules now live here, not in the manager prompt.**
-  `build-orchestration-design-notes.md` earmarked moving "no test files" and "no
-  visibility widening" into the implementer's definition "when a dedicated
-  implementer agent exists" — this is it. The SKILL can drop them from its
-  per-prompt injection once this promotes.
+- **Implementer is test-unaware; the manager stages an isolated, test-free unit.**
+  It builds from the spec and never sees the acceptance suite — symmetric with
+  `blackbox-tester`, which never sees the implementation. Enforcement is
+  structural, not a prompt rule: the manager stages only the unit's source files
+  plus its spec into the worktree — no test files — the mirror of the spec-only
+  staging it does for blackbox. With no tests present the implementer cannot read,
+  run, or overfit to them, and the file-set scope rule ("never create or edit a
+  file outside your unit's set") forbids creating any. This supersedes the draft's
+  original two "Lever-1" rules ("no test files", "no visibility widening"): both
+  were anti-gaming levers that dissolve once the agent can't see tests —
+  visibility-minimalism reverts to ordinary good practice — so the Definition
+  carries neither. `build-orchestration`'s per-prompt injection of the two rules
+  can retire once this promotes.
 - **CLAUDE.md constraints not restated.** CLAUDE.md loads into custom subagents
   (authoring §11), so `code-commenting` and no-Claude-attribution arrive with it;
   restating them here would be redundant. This is why the manager's current
@@ -100,7 +108,8 @@ The report is your final message.
 - **Report shape deviates from the critic family.** An implementer produces work,
   not findings, so the `Target · Verdict · Problems` shape does not fit. Uses the
   site-factory orchestration doc's `Done / Decisions / Deviations / Open`, plus a
-  `Build` line because this agent self-verifies (it has the shell blackbox lacks).
+  `Build` line because this agent self-verifies the build — build/typecheck, not
+  the suite (it has the shell blackbox lacks).
   The SKILL's "Reports — demand and consume" section has no implementer entry yet;
   add one when this promotes.
 - **Model `sonnet`** matches the tester workers: implementation is substantial,
@@ -109,11 +118,17 @@ The report is your final message.
 
 ## Open questions
 
-- **Run the acceptance suite, or only build/typecheck?** The draft allows running
-  the suite read-only as a self-check while forbidding any test edit. The
-  alternative is to leave the suite entirely to the manager and have the
-  implementer verify only build/typecheck. Confirm intended before promotion.
-- **Worktree lifecycle is the manager's, not the agent's.** This definition
-  assumes the manager creates the worktree, points the spawn at it, and merges;
-  the agent only obeys "stay in it, don't run git." Confirm the SKILL spells out
-  worktree create/merge/cleanup on the manager side.
+- **Worktree + staging lifecycle is the manager's, not the agent's.** This
+  definition assumes the manager creates the worktree, stages only the unit's
+  source + spec into it (no tests, no out-of-unit files), points the spawn at it,
+  and merges; the agent only obeys "stay in your set, don't run git." Confirm the
+  SKILL spells out worktree create / test-free staging / merge / cleanup on the
+  manager side.
+
+Resolved:
+
+- **Verify only build/typecheck; the manager owns the suite.** (Was: run the
+  acceptance suite as a self-check, or not?) The implementer is test-unaware, so
+  it cannot run the suite — that needs the tests present and would leak their
+  content. It verifies build + typecheck; the manager runs the acceptance suite
+  after merge.
