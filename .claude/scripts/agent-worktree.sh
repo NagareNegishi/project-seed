@@ -11,7 +11,8 @@
 #
 # Each merge lands as a throwaway commit; `start` and `finalize` bracket the session and
 # collapse those into one deliberate commit. Run with no arguments for the subcommand
-# reference. Rationale: docs/skills/build-orchestration-design-notes.md, authoring.md §13.
+# reference. Rationale: docs/skills/build-orchestration-design-notes.md,
+# docs/agents/authoring.md §13.
 
 set -euo pipefail
 
@@ -63,8 +64,7 @@ in_scope() {
 # --- subcommands ------------------------------------------------------------------
 
 # add: create the isolated worktree. With <test-dirs> it prunes them out (implementer
-# shape, builds from the spec); with none it is a full checkout (tester/debugger shape,
-# which needs tests+impl to run the suite).
+# shape); with none it is a full checkout (tester/debugger shape).
 cmd_add() {
   (($# >= 1)) || usage
   local unit="$1" testdirs="${2:-}" base="${3:-HEAD}"
@@ -95,7 +95,7 @@ cmd_add() {
 }
 
 # audit: stage everything the implementer touched, then report any path outside the
-# unit's permitted set. This is the scope check; exit non-zero if any violation exists.
+# unit's permitted set — non-zero exit on any violation.
 cmd_audit() {
   (($# >= 2)) || usage
   local unit="$1"; shift
@@ -149,9 +149,7 @@ cmd_merge() {
   # Merge the unit's branch into main. A real 3-way merge off the true merge-base (the
   # worktree shares $root's history), so a path an earlier unit already changed auto-merges
   # when the edits don't overlap. An empty or already-integrated branch is "Already up to
-  # date" — a no-op. A genuine line conflict leaves standard markers and an unmerged index
-  # in $root to resolve as merge glue (then commit), or `git -C $root merge --abort` to
-  # re-sequence. A scope refusal above committed nothing to main.
+  # date" — a no-op. On a genuine line conflict the recovery is printed below.
   if ! git -C "$root" merge --no-edit "$branch"; then
     printf 'merge conflict: %s and an already-merged unit change the same lines of a shared path.\n' "$unit" >&2
     printf '%s now holds conflict markers on the affected paths. Resolve them (merge glue) and\n' "$root" >&2
