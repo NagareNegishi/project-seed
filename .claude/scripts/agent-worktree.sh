@@ -137,34 +137,26 @@ cmd_merge() {
     return 1
   fi
 
-  # No staged change → the implementer touched nothing in scope; nothing to integrate.
-  if git -C "$wt" diff --cached --quiet; then
-    printf 'nothing to merge from %s\n' "$unit"
-    return 0
+  # Commit any newly-audited changes onto the unit's branch. Skip when nothing is staged —
+  # an implementer that changed nothing, or a re-run after the commit already landed;
+  # either way the merge below still runs, so a re-run stays safe.
+  if ! git -C "$wt" diff --cached --quiet; then
+    git -C "$wt" commit -q -m "build: $unit"
   fi
 
-  # Count what crosses, before the commit empties the staged diff. Post-audit every staged
-  # path is in scope, so the full staged list is the merged set.
-  local merged=() f
-  while IFS= read -r f; do
-    [[ -z "$f" ]] && continue
-    merged+=("$f")
-  done < <(git -C "$wt" diff --cached --name-only)
-
-  # Commit the audited changes onto the unit's branch, then merge that branch into main.
-  # A real merge integrates off the true merge-base (worktrees share $root's history), so
-  # a path an earlier unit already changed auto-merges when the edits don't overlap. A
-  # genuine line conflict leaves standard markers and an unmerged index in $root for the
-  # manager to resolve as merge glue (then commit), or `git -C $root merge --abort` to
+  # Merge the unit's branch into main. A real 3-way merge off the true merge-base (the
+  # worktree shares $root's history), so a path an earlier unit already changed auto-merges
+  # when the edits don't overlap. An empty or already-integrated branch is "Already up to
+  # date" — a no-op. A genuine line conflict leaves standard markers and an unmerged index
+  # in $root to resolve as merge glue (then commit), or `git -C $root merge --abort` to
   # re-sequence. A scope refusal above committed nothing to main.
-  git -C "$wt" commit -q -m "build: $unit"
   if ! git -C "$root" merge --no-edit "$branch"; then
     printf 'merge conflict: %s and an already-merged unit change the same lines of a shared path.\n' "$unit" >&2
     printf '%s now holds conflict markers on the affected paths. Resolve them (merge glue) and\n' "$root" >&2
     printf 'commit, or `git -C %s merge --abort` to abort and re-sequence.\n' "$root" >&2
     return 1
   fi
-  printf 'merged %d path(s) from %s into %s\n' "${#merged[@]}" "$unit" "$root"
+  printf 'merged %s into %s\n' "$branch" "$root"
 }
 
 # remove: drop the worktree and its scratch branch. Idempotent — warn and continue past a
