@@ -38,7 +38,11 @@ hardening it.
    `impl/<unit>` and `git merge`s that branch into main (idempotent re-run; empty/already-
    integrated branch is a no-op); SKILL merge bullet updated. Verified end-to-end: base-drift
    non-overlapping edits auto-merge and keep pruned tests, true overlap conflicts with markers
-   staged in main, no-change unit is a clean no-op. SKILL failure-mode split holds: scope
+   staged in main, no-change unit is a clean no-op. History stays clean despite the per-unit
+   commits: they are disposable scaffolding, collapsed at session end by `agent-worktree.sh
+   finalize` (`reset --mixed` to the `start` stamp) into one gated `git-commit`-skill pass —
+   nothing lands in branch history or reaches a remote until the user's final check (design-
+   notes "Scaffold commits, collapsed at finalize"). SKILL failure-mode split holds: scope
    refusal (worker, strike 1) vs. true conflict (manager, never a strike); sequencing bullet
    names shared integration points.
    **Open thread:** the assigned fixer for a true conflict is the manager editing markers in

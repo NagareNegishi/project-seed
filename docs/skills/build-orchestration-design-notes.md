@@ -91,6 +91,19 @@ internally and serve as a manual fallback, not a second path to run by hand.
   merge --abort` restores main and the work stays on the branch; a scope refusal commits
   nothing to main. "Push back" a scope violation = the audit refuses before merge, or
   `git -C <wt> restore --staged --worktree <bad-path>` at the source.
+- **Scaffold commits, collapsed at finalize.** A real merge needs commits to compose (unit
+  B merges onto A only if A is a commit, giving a clean tree and a true merge-base), so each
+  `merge` commits its unit. But those per-unit commits must not become the branch's history —
+  git stays a separate, user-gated step. So `start` stamps the session's base commit and
+  `finalize` runs `git -C <root> reset --mixed <stamp>`: it drops every scaffold commit and
+  leaves the whole integrated result as uncommitted changes for one deliberate pass through
+  the `git-commit` skill. The reset refuses unless the stamp is an ancestor of HEAD, so it
+  can only ever drop commits made this session — never pre-session or pushed history; nothing
+  is pushed at any point. Consequence: per-unit commit messages are disposable (`build:
+  <unit>`), so they need not meet the `git-commit` standard — only the finalize commits do.
+  This is the reconciliation of correct base-drift merging (needs commits) with "nothing
+  lands in history until the user's final check" (the reason the old patch path committed
+  nothing); a single stamp is the first sliver of the durable session state item 4 wants.
 - **Git fence is a hook, not a prompt line.** A prompt rule can't hold a Bash-carrying
   agent; a `PreToolUse`/`Bash` hook can. Two variants, wired per agent frontmatter:
   - `no-git-jail.sh` — deny-all, for agents that never need git: `implementer`,
