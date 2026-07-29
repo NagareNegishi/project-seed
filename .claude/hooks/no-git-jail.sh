@@ -6,7 +6,7 @@
 # any Bash command that invokes git, keeping git in one owner's hands. Best-effort:
 # catches direct invocations, not indirect ($(...), a wrapper script) — the Bash seam
 # noted in authoring §13.
-# Design: docs/skills/build-orchestration-design-notes.md ("Implementer isolation").
+# Design: docs/skills/build-orchestration-design-notes.md ("Bash-agent isolation").
 
 set -uo pipefail
 

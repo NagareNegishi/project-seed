@@ -53,16 +53,22 @@ the skill is; this one holds *why* the calls were made and what's still open.
   tester half is redundant anyway — the `blackbox`/`whitebox`/`mcdc` defs forbid
   modifying source.
 
-## Implementer isolation — merge gate + git fence
+## Bash-agent isolation — merge gate + git fence
 
 Built: `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
 hooks below. `merge` refuses whenever `audit` reports an out-of-scope path, so a
 violation cannot cross even if the manager forgets to look. Cross-refs: authoring §13,
 agent frontmatter.
 
-- **The gate is inherent, not added.** The implementer runs no git and worktrees
-  never auto-sync, so its edits sit uncommitted in the worktree and reach the branch
-  only when the manager moves them. No merge happens behind the manager's back.
+- **One gate for every Bash agent.** `implementer`, `whitebox`, `mcdc`, and `debugger`
+  all carry Bash, so none can be path-jailed (§12); all four route through this one
+  worktree lifecycle instead of a second mechanism. Shapes differ — the implementer's
+  checkout prunes the tests, the others are full — but the crossing rule is identical:
+  nothing reaches the branch except an in-scope `merge`. The Bash testers moved here off
+  the old `.agent-scope` snapshot; `blackbox` (no Bash) stays path-jailed.
+- **The gate is inherent, not added.** The agent runs no git and worktrees never
+  auto-sync, so its edits sit uncommitted in the worktree and reach the branch only
+  when the manager moves them. No merge happens behind the manager's back.
 - **Inspect before anything crosses.** The main checkout's `git status` shows nothing
   (dirty state is per-tree). The manager reads the worktree: `git -C <wt> add -A`,
   then `git -C <wt> status --porcelain` (the definitive changed-path list — this *is*
@@ -84,17 +90,15 @@ agent frontmatter.
   as everywhere. `blackbox-tester` carries no Bash, so needs none.
 - **Hard-fail, then push back — never lose work.** A failed `merge` leaves the
   worktree untouched; the edits stay there. The manager does not auto-fix: it
-  `SendMessage`s the violation (exact out-of-scope paths) back to the same implementer
+  `SendMessage`s the violation (exact out-of-scope paths) back to the same worker
   to relocate into its unit, re-audits, then merges — the escalation ladder's strike-1,
   at most twice, then discard the worktree and re-spawn or escalate. Manager-side
   `git -C <wt> restore --staged --worktree <path>` is a fallback only for a trivial
   stray not worth round-tripping. Rationale: the manager blindly restoring a path can
-  break in-scope code that referenced it; the implementer owns the relocation.
+  break in-scope code that referenced it; the worker owns the relocation.
 
 ## Still open
 
-- **Jail asymmetry.** `blackbox-tester` frontmatter carries the `PreToolUse` path-jail
-  hook; `whitebox-tester` does not, though §12 treats both as confined. Confirm intended.
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
   `researcher`/critic agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside
