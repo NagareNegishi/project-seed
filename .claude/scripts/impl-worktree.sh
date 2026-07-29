@@ -12,9 +12,8 @@ set -euo pipefail
 
 # --- shared setup -----------------------------------------------------------------
 
-# Resolve the main checkout's root. The manager invokes this from the main working
-# tree, so `git rev-parse --show-toplevel` is the integration target every subcommand
-# writes back into.
+# The manager runs this from the main checkout; its root is the integration target
+# every `merge` writes back into. Also fails early (under -e) when run outside a repo.
 root=$(git rev-parse --show-toplevel)
 
 # All implementer worktrees live under one gitignored dir at the repo root, keyed by
@@ -55,21 +54,20 @@ in_scope() {
 
 # --- subcommands ------------------------------------------------------------------
 
-# add: create the isolated worktree with the test dir pruned out of it.
+# add: create the isolated worktree with the test dirs pruned out of it.
 cmd_add() {
   (($# >= 2)) || usage
   local unit="$1" testdirs="$2" base="${3:-HEAD}"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
 
-  # Branch a fresh worktree off the base ref. Full checkout first (simpler and more
-  # reliable than --no-checkout + manual materialise); the sparse step below prunes.
+  # Full checkout of the base ref first (simpler and more reliable than --no-checkout
+  # + manual materialise); the sparse step below prunes.
   git worktree add -b "$branch" "$wt" "$base"
 
-  # Non-cone sparse-checkout takes gitignore-style patterns: include everything at the
-  # root, then negate each comma-separated test dir so the suite is absent from the
-  # implementer's tree. Cone mode cannot express the negation, so --no-cone is required.
-  # `set` applies immediately, pruning the dirs from the just-checked-out worktree.
+  # Non-cone sparse-checkout (gitignore-style patterns): include the whole root, then
+  # negate each test dir. Cone mode cannot express the negation, so --no-cone is required.
+  # `set` applies at once, pruning the dirs from the just-checked-out tree.
   local patterns=('/*') dirs d
   IFS=',' read -ra dirs <<< "$testdirs"
   for d in "${dirs[@]}"; do
@@ -91,7 +89,8 @@ cmd_audit() {
   # what changed. Staging only touches the worktree's own index, not the manager's.
   git -C "$wt" add -A
 
-  # Walk each changed path; collect the ones the permitted set does not cover.
+  # Collect changed paths the permitted set does not cover. Process substitution (not a
+  # pipe) keeps the loop in this shell, so the array survives to be inspected below.
   local violations=() path
   while IFS= read -r path; do
     [[ -z "$path" ]] && continue
@@ -106,9 +105,7 @@ cmd_audit() {
   printf 'audit clean: all changes within permitted set\n'
 }
 
-# merge: hard-fail if audit finds any violation (nothing crosses, worktree left intact
-# for the manager to push back to the implementer), else transfer only the in-scope
-# paths into the main checkout via a path-filtered patch.
+# merge: refuse on any out-of-scope change, else transfer the in-scope paths into main.
 cmd_merge() {
   (($# >= 2)) || usage
   local unit="$1"; shift
@@ -129,10 +126,10 @@ cmd_merge() {
     merged+=("$f")
   done < <(git -C "$wt" diff --cached --name-only -- "$@")
 
-  # Emit a diff limited to the permitted paths and apply it to the main tree + index.
-  # Path-filtering (not a branch merge) lets the manager pick exactly what crosses;
-  # --cached already includes new files staged by the audit step. A failure here is
-  # almost always base drift or a conflicting local edit — surface it, not a raw error.
+  # Path-filtered patch, not a branch merge, so the manager transfers exactly the
+  # in-scope paths; --index lands them staged in main. --cached already includes the new
+  # files staged by the audit. A failure is almost always base drift or a conflicting
+  # local edit — surface it, not a raw git error.
   if ! git -C "$wt" diff --cached -- "$@" | git -C "$root" apply --index -; then
     printf 'merge failed: patch did not apply to %s (base drift or a conflicting local edit).\n' "$root" >&2
     printf 'inspect: git -C %s diff --cached -- <paths>; rebase the worktree or clean main, then retry.\n' "$wt" >&2
@@ -141,16 +138,17 @@ cmd_merge() {
   printf 'merged %d path(s) from %s into %s\n' "${#merged[@]}" "$unit" "$root"
 }
 
-# remove: drop the worktree and its scratch branch. --force covers the staged/dirty
-# state the audit step leaves behind.
+# remove: drop the worktree and its scratch branch. Idempotent — warn and continue past a
+# missing worktree or branch so a re-run finishes the teardown. --force covers the
+# staged/dirty state the audit step leaves behind.
 cmd_remove() {
   (($# >= 1)) || usage
   local unit="$1"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
 
-  git worktree remove --force "$wt"
-  git branch -D "$branch"
+  git worktree remove --force "$wt" || printf 'warning: no worktree at %s\n' "$wt" >&2
+  git branch -D "$branch"           || printf 'warning: no branch %s\n' "$branch" >&2
   printf 'removed worktree and branch for %s\n' "$unit"
 }
 
