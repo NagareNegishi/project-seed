@@ -2,19 +2,18 @@
 # PreToolUse hook — read-only git fence for a Bash-carrying subagent (wired via the
 # agent's frontmatter hooks).
 #
-# Lets an agent inspect history but never change it: every git invocation in a Bash
-# command must resolve to a read-only subcommand, or the command is denied. Fail-closed
-# — anything off the allowlist (commit, checkout, reset, bisect, stash, push, …) is
-# blocked, as is a git call whose subcommand can't be parsed. Best-effort against the
-# same Bash seam as no-git-jail.sh: $(...) and wrapper scripts can still hide a git call.
+# Every git invocation in a Bash command must resolve to a read-only subcommand, or the
+# command is denied — the agent can inspect history but not change it. Fail-closed: an
+# off-allowlist or unparseable subcommand is blocked. Best-effort against the same Bash
+# seam as no-git-jail.sh ($(...), wrapper scripts).
 # Design: docs/skills/build-orchestration-design-notes.md ("Implementer isolation").
 
 set -uo pipefail
 
 # Subcommands that only read repo state — no writes to tree, index, refs, or history.
-# Deliberately excludes dual-mode names (config, tag, branch, stash, reflog, notes):
-# their read form shares the name with a write form, so the top subcommand alone can't
-# prove the call is read-only. Space-padded for whole-word membership tests.
+# Dual-mode names (config, tag, branch, stash, reflog, notes) are excluded: their read
+# form shares the name with a write form, so the subcommand alone can't prove read-only.
+# Space-padded for whole-word membership tests.
 readonly_subs=" log show diff status blame grep rev-parse rev-list ls-files ls-tree ls-remote cat-file merge-base describe shortlog whatchanged show-ref name-rev var help version "
 
 # Global options that sit between `git` and the subcommand. Those listed here take a
@@ -35,8 +34,7 @@ deny() {
   exit 0
 }
 
-# Flatten shell separators ($(...), pipes, && chains, redirections, newlines) to spaces
-# so a plain whitespace split yields the token stream to scan for git invocations.
+# Flatten shell separators to spaces so a whitespace split yields the token stream.
 normalized=$(printf '%s' "$command" | tr ';&|()`$<>\n\t' '          ')
 read -ra toks <<< "$normalized"
 
