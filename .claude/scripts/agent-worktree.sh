@@ -8,6 +8,9 @@
 #   - whitebox/mcdc tester, debugger: full checkout (they need tests+impl to run the
 #     suite); a tester's merge permits only the test dirs, the debugger's worktree is
 #     discarded unmerged.
+# Each `merge` commits its unit so the integration can be a real `git merge`; those are
+# disposable scaffolding — `start` stamps the session base and `finalize` collapses the
+# scaffold commits back to it, leaving one uncommitted result for the git-commit skill.
 # The manager (the main session) runs these subcommands; the agent runs no git itself
 # and is never the integration gate. Run with no arguments for the subcommand reference.
 # Design + rationale: docs/skills/build-orchestration-design-notes.md

@@ -45,9 +45,10 @@ what to build for that unit, reconciled from the inputs above.
    repo's test-dirs, then clear the jail (Spawning rules). Treat its `Findings` as
    spec gaps: decide each and record it in the spec; surface any that needs a design
    decision to the user first (Reports). Never route a `Finding` to an implementer.
-6. As each implementer report arrives, integrate it with `agent-worktree.sh merge`
-   (Spawning rules). Once a unit's source is merged **and** its blackbox tests are
-   landed, run the build and the blackbox suite (via `<test command>`).
+6. Before the first merge, stamp the session base: `agent-worktree.sh start` (finalize
+   collapses to it). Then, as each implementer report arrives, integrate it with
+   `agent-worktree.sh merge` (Spawning rules). Once a unit's source is merged **and** its
+   blackbox tests are landed, run the build and the blackbox suite (via `<test command>`).
 7. On failure, follow the escalation ladder (Guardrails).
 8. Once the units are merged and green, spawn `whitebox-tester`.
 9. When both suites pass, spawn the review layer: each critic by its `Deploy
@@ -58,6 +59,13 @@ what to build for that unit, reconciled from the inputs above.
     the decision is recorded. Rerun both suites; repeat until the reports are
     clean, or log the remainder as accepted risk (build-log).
 12. Write the record (below).
+13. Finalize onto your branch. Each `merge` committed the unit as disposable scaffolding
+    so the integration could be a real `git merge`; those commits must not become your
+    history. Run `agent-worktree.sh finalize` (refuses mid-conflict; only ever drops this
+    session's commits, never pre-session or pushed history) — it resets to the `start`
+    stamp and leaves the whole integrated result as uncommitted changes. Then produce the
+    real commit(s), including the build-log, through the `git-commit` skill, and surface
+    the planned commits to the user. The scaffold commits never reach a remote.
 
 ## Spawning rules
 
@@ -150,7 +158,7 @@ Consume each family:
   `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`, `altex`). Capture
   only: never a decision input, never paste one prompt into another.
 - **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
-  per session, committed with the session's work. Keep only what a later session needs: the
+  per session, committed with the session's work at finalize (step 13). Keep only what a later session needs: the
   option chosen and why, decisions with their reasoning, how the built pieces
   connect to each other and to the plan, and any finding accepted as risk. Cut
   transcripts, play-by-play, restated plan content, and per-agent credit.
