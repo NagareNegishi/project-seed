@@ -6,7 +6,7 @@
 # command is denied — the agent can inspect history but not change it. Fail-closed: an
 # off-allowlist or unparseable subcommand is blocked. Best-effort against the same Bash
 # seam as no-git-jail.sh ($(...), wrapper scripts).
-# Design: docs/skills/build-orchestration-design-notes.md ("Implementer isolation").
+# Design: docs/skills/build-orchestration-design-notes.md ("Bash-agent isolation").
 
 set -uo pipefail
 
