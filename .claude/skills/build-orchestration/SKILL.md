@@ -41,18 +41,23 @@ what to build for that unit, reconciled from the inputs above.
 3. Record the user's decision in the spec.
 4. Spawn `blackbox-tester` and one `implementer` per unit, from the settled spec,
    in parallel.
-5. As each implementer report arrives, integrate it with `agent-worktree.sh merge`
-   (Spawning rules), then run the build and the blackbox suite (via `<test command>`).
-6. On failure, follow the escalation ladder (Guardrails).
-7. Once the units are merged and green, spawn `whitebox-tester`.
-8. When both suites pass, spawn the review layer: each critic by its `Deploy
+5. On the `blackbox-tester` report, move its tests from `.agent-scope/` into the
+   repo's test-dirs, then clear the jail (Spawning rules). Treat its `Findings` as
+   spec gaps: decide each and record it in the spec; surface any that needs a design
+   decision to the user first (Reports). Never route a `Finding` to an implementer.
+6. As each implementer report arrives, integrate it with `agent-worktree.sh merge`
+   (Spawning rules). Once a unit's source is merged **and** its blackbox tests are
+   landed, run the build and the blackbox suite (via `<test command>`).
+7. On failure, follow the escalation ladder (Guardrails).
+8. Once the units are merged and green, spawn `whitebox-tester`.
+9. When both suites pass, spawn the review layer: each critic by its `Deploy
    when` trigger (Review axes).
-9. Consume each reviewer report (Reports — demand and consume).
-10. Route each finding to an implementer as a fix unit; one whose fix needs a
+10. Consume each reviewer report (Reports — demand and consume).
+11. Route each finding to an implementer as a fix unit; one whose fix needs a
     design or spec decision surfaces to the user first and dispatches only once
     the decision is recorded. Rerun both suites; repeat until the reports are
     clean, or log the remainder as accepted risk (build-log).
-11. Write the record (below).
+12. Write the record (below).
 
 ## Spawning rules
 
@@ -80,7 +85,8 @@ what to build for that unit, reconciled from the inputs above.
 - Before any write-capable spawn, confirm the session is not in `bypassPermissions`
   or `acceptEdits`.
 - For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
-  there, move the written tests out, clear it.
+  there. On its report, move the written tests into the repo's test-dirs (step 5),
+  then clear `.agent-scope/`.
 
 ## Review axes
 
