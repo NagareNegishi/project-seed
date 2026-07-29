@@ -53,10 +53,12 @@ the skill is; this one holds *why* the calls were made and what's still open.
   tester half is redundant anyway — the `blackbox`/`whitebox`/`mcdc` defs forbid
   modifying source.
 
-## Implementer isolation — merge gate + git fence (design)
+## Implementer isolation — merge gate + git fence
 
-Status: designed, not built. On implementation, fold the settled mechanism into
-authoring §13 and the `implementer` frontmatter, and repoint this note there.
+Built: `.claude/scripts/impl-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
+hooks below. `merge` refuses whenever `audit` reports an out-of-scope path, so a
+violation cannot cross even if the manager forgets to look. Cross-refs: authoring §13,
+agent frontmatter.
 
 - **The gate is inherent, not added.** The implementer runs no git and worktrees
   never auto-sync, so its edits sit uncommitted in the worktree and reach the branch
@@ -70,15 +72,16 @@ authoring §13 and the `implementer` frontmatter, and repoint this note there.
   is all-or-nothing — a scope violation is committed before it can be reverted; a
   path-filtered patch lets the manager pick. "Push back" a violation = drop it from the
   patch, or `git -C <wt> restore --staged --worktree <bad-path>` at the source.
-- **Git fence is a hook, not a prompt line.** Today `implementer.md` only *asks*
-  ("Never run any git command") while carrying `Bash`; nothing enforces it. Add a
-  `PreToolUse` matcher `Bash` hook to the implementer frontmatter that denies any `git`
-  invocation, mirroring the §12 path-jail wiring. Best-effort: indirect calls (`$(…)`,
-  a wrapper script) evade it — the same Bash seam as everywhere — but it stops the
-  direct commit/checkout that would break the single-integration-gate model.
-- **Script it.** `.claude/scripts/impl-worktree.sh` with `add|audit|merge|remove`;
-  `merge` refuses while `audit` reports an out-of-scope path, so a violation cannot
-  cross even if the manager forgets to look.
+- **Git fence is a hook, not a prompt line.** A prompt rule can't hold a Bash-carrying
+  agent; a `PreToolUse`/`Bash` hook can. Two variants, wired per agent frontmatter:
+  - `no-git-jail.sh` — deny-all, for agents that never need git: `implementer`,
+    `whitebox-tester`, `mcdc-tester`.
+  - `git-readonly-jail.sh` — allowlist of read-only subcommands (fail-closed), for
+    `debugger`: it may inspect history (log/blame/show/diff) but not mutate the tree.
+    Dual-mode names (config, tag, branch, stash, reflog) are denied — the top
+    subcommand can't prove the call is read-only.
+  Both best-effort: indirect calls (`$(…)`, a wrapper) evade them, the same Bash seam
+  as everywhere. `blackbox-tester` carries no Bash, so needs none.
 - **Hard-fail, then push back — never lose work.** A failed `merge` leaves the
   worktree untouched; the edits stay there. The manager does not auto-fix: it
   `SendMessage`s the violation (exact out-of-scope paths) back to the same implementer
