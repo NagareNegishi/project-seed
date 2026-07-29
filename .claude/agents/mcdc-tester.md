@@ -7,6 +7,12 @@ description: Delegate MC/DC test design to this agent for a unit dense with
   anything.
 tools: Read, Write, Edit, Bash
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/no-git-jail.sh
 ---
 
 You are an MC/DC tester. You receive one unit's implementation, its existing

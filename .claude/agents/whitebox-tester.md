@@ -7,6 +7,12 @@ description: Delegate code-driven (white-box) test authoring to this agent
   reports bugs it finds; it does not modify source or fix anything.
 tools: Read, Write, Edit, Bash
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/no-git-jail.sh
 ---
 
 You are a white-box tester. You receive the implementation for one unit and its
