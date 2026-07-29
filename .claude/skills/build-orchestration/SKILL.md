@@ -41,8 +41,8 @@ what to build for that unit, reconciled from the inputs above.
 3. Record the user's decision in the spec.
 4. Spawn `blackbox-tester` and one `implementer` per unit, from the settled spec,
    in parallel.
-5. As each implementer report arrives, integrate it, then run the build and the
-   blackbox suite (via `<test command>`).
+5. As each implementer report arrives, integrate it with `impl-worktree.sh merge`
+   (Spawning rules), then run the build and the blackbox suite (via `<test command>`).
 6. On failure, follow the escalation ladder (Guardrails).
 7. Once the units are merged and green, spawn `whitebox-tester`.
 8. When both suites pass, spawn the review layer: each critic by its `Deploy
@@ -60,10 +60,17 @@ what to build for that unit, reconciled from the inputs above.
   the exact file paths, the spec extract for the unit, the applicable CLAUDE.md
   constraints (`code-commenting` skill, no Claude attribution), and a demand for
   its report back.
-- Spawn each `implementer` in its own git worktree that excludes the test files:
-  create it, point the implementer there, and on its report merge the worktree back
-  and remove it. Give parallel implementers separate worktrees; sequence only when
-  two units must edit the same file. Mechanism: `docs/agents/authoring.md` §13.
+- Spawn each `implementer` in its own git worktree that excludes the test files, via
+  `.claude/scripts/impl-worktree.sh`, run from the main checkout:
+  - `add <unit> <test-dirs> [base-ref]` — create the worktree (comma-separate multiple
+    test dirs); point the implementer at `.impl-worktrees/<unit>`.
+  - On its report, `merge <unit> <permitted-path>...` — audits scope first and refuses
+    if the implementer touched anything outside the permitted set, leaving the worktree
+    intact so you push the violation back (escalation ladder, strike 1).
+  - `remove <unit>` once merged or abandoned.
+  Give parallel implementers separate worktrees; sequence only when two units must edit
+  the same file. Mechanism + rationale: `docs/agents/authoring.md` §13 and the design
+  notes ("Implementer isolation — merge gate + git fence").
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
@@ -74,8 +81,10 @@ what to build for that unit, reconciled from the inputs above.
 - Stage only the permitted files into `.agent-scope/` — spec-only for
   `blackbox-tester`, spec+impl for `whitebox-tester`. Serialize the two testers;
   they share the one root. Mechanism: `docs/agents/authoring.md` §12.
-- Snapshot `git status --porcelain` before each write-capable spawn; on return,
-  revert and report any changed path outside the unit's permitted set.
+- For write-capable spawns working in the main tree or `.agent-scope/` (the testers),
+  snapshot `git status --porcelain` before spawning; on return, revert and report any
+  changed path outside the permitted set. Implementers use the worktree's `merge` audit
+  instead — the main tree's status shows nothing, since dirty state is per-worktree.
 
 ## Review axes
 
