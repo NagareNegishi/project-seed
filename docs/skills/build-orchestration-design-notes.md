@@ -101,8 +101,9 @@ internally and serve as a manual fallback, not a second path to run by hand.
     subcommand can't prove the call is read-only.
   Both best-effort: indirect calls (`$(…)`, a wrapper) evade them, the same Bash seam
   as everywhere. `blackbox-tester` carries no Bash, so needs none.
-- **Hard-fail, then push back — never lose work.** A failed `merge` leaves the
-  worktree untouched; the edits stay there. The manager does not auto-fix: it
+- **Hard-fail, then push back — never lose work.** A scope-refused `merge` (the audit
+  fires before any commit) leaves the worktree untouched; the edits stay there. The
+  manager does not auto-fix: it
   `SendMessage`s the violation (exact out-of-scope paths) back to the same worker
   to relocate into its unit, re-audits, then merges — the escalation ladder's strike-1,
   at most twice, then discard the worktree and re-spawn or escalate. Manager-side

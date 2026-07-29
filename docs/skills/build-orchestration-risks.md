@@ -34,10 +34,13 @@ hardening it.
    (no ancestor for new shared files; half-applied state didn't block the next merge).
    Pruned test dirs merge safely (sparse-checkout skip-worktree → git won't stage the absent
    files as deletions, per git-update-index). Rationale in design-notes ("Integrate by
-   branch-merge"). **Still to do:** swap `agent-worktree.sh merge` from `git apply --3way
-   --index` to commit-on-branch + `git merge`, and update the SKILL merge bullet's commands.
-   The SKILL failure-mode split stays valid: scope refusal (worker, strike 1) vs. true
-   conflict (manager, never a strike); sequencing bullet names shared integration points.
+   branch-merge"). `DONE` — `agent-worktree.sh merge` now commits the audited changes onto
+   `impl/<unit>` and `git merge`s that branch into main (idempotent re-run; empty/already-
+   integrated branch is a no-op); SKILL merge bullet updated. Verified end-to-end: base-drift
+   non-overlapping edits auto-merge and keep pruned tests, true overlap conflicts with markers
+   staged in main, no-change unit is a clean no-op. SKILL failure-mode split holds: scope
+   refusal (worker, strike 1) vs. true conflict (manager, never a strike); sequencing bullet
+   names shared integration points.
    **Open thread:** the assigned fixer for a true conflict is the manager editing markers in
    a source file — collides with the manager-source fence planned in item 6; fold the
    merge-glue exception into that hook's design.
