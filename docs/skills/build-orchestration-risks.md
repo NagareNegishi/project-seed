@@ -17,12 +17,12 @@ Companion: `build-orchestration-design-notes.md` (why the calls were made).
 The Session-flow / consumption sections don't run as written. Fix the happy path before
 hardening it.
 
-1. **Blackbox test integration missing from the numbered flow.** *(severity #4)* Step 4
-   spawns blackbox into `.agent-scope/`; "move the written tests out" (lines 82–83) names
-   no destination and is not a numbered step; the implementer worktree prunes test-dirs.
-   A manager following steps 1–11 literally can reach "run the blackbox suite" (step 5)
-   with the tests never moved into main's test-dirs — a green suite that tests nothing.
-   *Rides along:* the two-documented-merge-paths cleanup below.
+1. **Blackbox test integration missing from the numbered flow.** *(severity #4)* `DONE` —
+   new step 5 in SKILL.md lands blackbox tests into the repo test-dirs before the suite
+   runs; step 6 gates the suite on source-merged **and** tests-landed; the blackbox
+   spawning rule names the destination. *Ride-along DONE:* design-notes intro now states
+   the manager drives isolation only through the `agent-worktree.sh` subcommands and the
+   raw git commands document their internals / manual fallback.
 
 2. **Parallel merges cause base drift with no assigned fixer.** *(severity #5)* All
    worktrees `add` from HEAD at spawn; once one unit merges, the others are behind. On

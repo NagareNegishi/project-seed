@@ -58,7 +58,9 @@ the skill is; this one holds *why* the calls were made and what's still open.
 Built: `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
 hooks below. `merge` refuses whenever `audit` reports an out-of-scope path, so a
 violation cannot cross even if the manager forgets to look. Cross-refs: authoring §13,
-agent frontmatter.
+agent frontmatter. The manager drives isolation only through these subcommands; the raw
+`git -C <wt> …` commands in the bullets below document what each subcommand does
+internally and serve as a manual fallback, not a second path to run by hand.
 
 - **One gate for every Bash agent.** `implementer`, `whitebox`, `mcdc`, and `debugger`
   all carry Bash, so none can be path-jailed (§12); all four route through this one
