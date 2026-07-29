@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Implementer isolation helper — manager-side git worktree lifecycle.
+# Bash-agent isolation helper — manager-side git worktree lifecycle.
 #
-# Gives each `implementer` subagent its own git worktree with the test directories
-# pruned out, so it builds from the spec and never sees the suite. The manager
-# (the main session) runs these subcommands; the implementer runs no git itself and is
-# the single integration gate. Run with no arguments for the subcommand reference.
+# Gives a Bash-carrying subagent its own git worktree, so its edits reach the branch
+# only through the manager's audit+merge and never behind its back. Two shapes:
+#   - implementer: test dirs pruned, so it builds from the spec and never sees the
+#     suite; merge permits its source paths.
+#   - whitebox/mcdc tester, debugger: full checkout (they need tests+impl to run the
+#     suite); a tester's merge permits only the test dirs, the debugger's worktree is
+#     discarded unmerged.
+# The manager (the main session) runs these subcommands; the agent runs no git itself
+# and is never the integration gate. Run with no arguments for the subcommand reference.
 # Design + rationale: docs/skills/build-orchestration-design-notes.md
-# ("Implementer isolation — merge gate + git fence") and docs/agents/authoring.md §13.
+# ("Bash-agent isolation — merge gate + git fence") and docs/agents/authoring.md §13.
 
 set -euo pipefail
 
@@ -16,9 +21,9 @@ set -euo pipefail
 # every `merge` writes back into. Also fails early (under -e) when run outside a repo.
 root=$(git rev-parse --show-toplevel)
 
-# All implementer worktrees live under one gitignored dir at the repo root, keyed by
-# unit id. Nesting a worktree inside the main tree is fine as long as it is ignored.
-worktrees_dir="$root/.impl-worktrees"
+# All agent worktrees live under one gitignored dir at the repo root, keyed by unit
+# id. Nesting a worktree inside the main tree is fine as long as it is ignored.
+worktrees_dir="$root/.agent-worktrees"
 
 # Each unit gets a scratch branch; git forbids checking out one branch in two trees,
 # so the worktree cannot share the manager's branch and needs its own.
@@ -31,7 +36,8 @@ usage() {
   local self; self=$(basename "$0")
   cat >&2 <<EOF
 usage: $self <subcommand> [args]
-  add    <unit> <test-dirs> [base-ref]   create the worktree; <test-dirs> is comma-separated, pruned
+  add    <unit> [test-dirs] [base-ref]   create the worktree; with test-dirs (comma-sep)
+                                         prunes them (implementer), without = full checkout
   audit  <unit> <permitted-path>...      list changed paths outside the permitted set
   merge  <unit> <permitted-path>...      refuse on any violation, else transfer in-scope paths
   remove <unit>                          tear the worktree down
@@ -54,16 +60,24 @@ in_scope() {
 
 # --- subcommands ------------------------------------------------------------------
 
-# add: create the isolated worktree with the test dirs pruned out of it.
+# add: create the isolated worktree. With <test-dirs> it prunes them out (implementer
+# shape, builds from the spec); with none it is a full checkout (tester/debugger shape,
+# which needs tests+impl to run the suite).
 cmd_add() {
-  (($# >= 2)) || usage
-  local unit="$1" testdirs="$2" base="${3:-HEAD}"
+  (($# >= 1)) || usage
+  local unit="$1" testdirs="${2:-}" base="${3:-HEAD}"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
 
   # Full checkout of the base ref first (simpler and more reliable than --no-checkout
-  # + manual materialise); the sparse step below prunes.
+  # + manual materialise); the sparse step below prunes when test dirs are given.
   git worktree add -b "$branch" "$wt" "$base"
+
+  # No test dirs → full checkout, nothing to prune (tester/debugger).
+  if [[ -z "$testdirs" ]]; then
+    printf 'worktree ready: %s (branch %s, full checkout)\n' "$wt" "$branch"
+    return 0
+  fi
 
   # Non-cone sparse-checkout (gitignore-style patterns): include the whole root, then
   # negate each test dir. Cone mode cannot express the negation, so --no-cone is required.

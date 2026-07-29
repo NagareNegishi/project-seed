@@ -19,5 +19,5 @@ build-orchestration/prompt-log/*
 # Per-subagent path-jail scope root (agent-scope-jail.sh); throwaway staging + log
 .agent-scope/
 
-# Implementer isolation worktrees (impl-worktree.sh); throwaway
-.impl-worktrees/
+# Bash-agent isolation worktrees (agent-worktree.sh); throwaway
+.agent-worktrees/
