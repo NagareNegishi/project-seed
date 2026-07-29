@@ -60,15 +60,18 @@ what to build for that unit, reconciled from the inputs above.
   the exact file paths, the spec extract for the unit, the applicable CLAUDE.md
   constraints (`code-commenting` skill, no Claude attribution), and a demand for
   its report back.
-- Spawn each `implementer` in its own git worktree that excludes the test files, via
-  `.claude/scripts/agent-worktree.sh`, run from the main checkout:
-  - `add <unit> <test-dirs> [base-ref]` — create the worktree (comma-separate multiple
-    test dirs); point the implementer at `.agent-worktrees/<unit>`.
-  - On its report, `merge <unit> <permitted-path>...`; on refusal (a path outside the
-    permitted set) push the violation back to the implementer (escalation ladder, strike 1).
+- Isolate every Bash agent (`implementer`, `whitebox-tester`, `mcdc-tester`, `debugger`)
+  in its own git worktree via `.claude/scripts/agent-worktree.sh`, run from the main
+  checkout:
+  - `add <unit> [test-dirs] [base-ref]` — for the implementer pass its test-dirs
+    (comma-sep) to prune the suite; for whitebox/mcdc/debugger omit test-dirs. Point the
+    agent at `.agent-worktrees/<unit>`.
+  - On the report, `merge <unit> <permitted-path>...` — permit the implementer's source
+    paths, a tester's test-dirs only. On refusal, push the violation back to the same
+    worker (escalation ladder, strike 1). Merge nothing from the debugger.
   - `remove <unit>` once merged or abandoned.
-  Give parallel implementers separate worktrees; sequence only when two units must edit
-  the same file. Mechanism: `docs/agents/authoring.md` §13; rationale in the design notes.
+  Give parallel agents separate worktrees; sequence only when two units edit the same
+  file. Mechanism: `docs/agents/authoring.md` §13.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
@@ -76,13 +79,8 @@ what to build for that unit, reconciled from the inputs above.
 - Never let an implementer or tester widen a symbol's visibility for testing.
 - Before any write-capable spawn, confirm the session is not in `bypassPermissions`
   or `acceptEdits`.
-- Stage only the permitted files into `.agent-scope/` — spec-only for
-  `blackbox-tester`, spec+impl for `whitebox-tester`. Serialize the two testers;
-  they share the one root. Mechanism: `docs/agents/authoring.md` §12.
-- For write-capable spawns working in the main tree or `.agent-scope/` (the testers),
-  snapshot `git status --porcelain` before spawning; on return, revert and report any
-  changed path outside the permitted set. Implementers use the worktree's `merge` audit
-  instead (their dirty state never shows in the main tree).
+- For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
+  there, move the written tests out, clear it. Mechanism: `docs/agents/authoring.md` §12.
 
 ## Review axes
 
