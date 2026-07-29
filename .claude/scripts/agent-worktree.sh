@@ -8,13 +8,10 @@
 #   - whitebox/mcdc tester, debugger: full checkout (they need tests+impl to run the
 #     suite); a tester's merge permits only the test dirs, the debugger's worktree is
 #     discarded unmerged.
-# Each `merge` commits its unit so the integration can be a real `git merge`; those are
-# disposable scaffolding — `start` stamps the session base and `finalize` collapses the
-# scaffold commits back to it, leaving one uncommitted result for the git-commit skill.
-# The manager (the main session) runs these subcommands; the agent runs no git itself
-# and is never the integration gate. Run with no arguments for the subcommand reference.
-# Design + rationale: docs/skills/build-orchestration-design-notes.md
-# ("Bash-agent isolation — merge gate + git fence") and docs/agents/authoring.md §13.
+#
+# Each merge lands as a throwaway commit; `start` and `finalize` bracket the session and
+# collapse those into one deliberate commit. Run with no arguments for the subcommand
+# reference. Rationale: docs/skills/build-orchestration-design-notes.md, authoring.md §13.
 
 set -euo pipefail
 
@@ -187,8 +184,12 @@ cmd_start() {
     printf 'session-start already stamped: %s\n' "$(cat "$marker")"
     return 0
   fi
-  git -C "$root" rev-parse HEAD > "$marker"
-  printf 'session-start stamped: %s\n' "$(cat "$marker")"
+  # Resolve HEAD before writing the marker: redirecting into it would truncate the file
+  # first, so a rev-parse failure (e.g. unborn HEAD) would leave an empty marker that then
+  # satisfies the guard above and blocks every later stamp.
+  local head; head=$(git -C "$root" rev-parse HEAD)
+  printf '%s\n' "$head" > "$marker"
+  printf 'session-start stamped: %s\n' "$head"
 }
 
 # finalize: collapse the per-unit scaffold commits `merge` made back into uncommitted
