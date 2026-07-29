@@ -24,12 +24,25 @@ hardening it.
    the manager drives isolation only through the `agent-worktree.sh` subcommands and the
    raw git commands document their internals / manual fallback.
 
-2. **Parallel merges cause base drift with no assigned fixer.** *(severity #5)* All
-   worktrees `add` from HEAD at spawn; once one unit merges, the others are behind. On
-   overlap the patch fails as "base drift" (script 147–151) — not an implementer strike,
-   so the escalation ladder does not cover it. The remedy ("rebase the worktree") has no
-   owner: the implementer is git-fenced, the manager's role bars working inside worktrees.
-   *Rides along:* debugger-worktree-discard reminder below.
+2. **Parallel merges cause base drift with no assigned fixer.** *(severity #5)* Approach
+   settled — **integrate by real `git merge`, not `git apply`.** The `audit` step already
+   refuses any out-of-scope path before anything crosses, so the branch is wholly in-scope
+   and branch-merge's all-or-nothing has nothing bad to admit; the path-filtering that
+   forced `git apply --3way` is redundant. A real merge integrates off the true merge-base
+   — concurrent non-overlapping edits auto-merge, and a conflict leaves standard markers +
+   an unmerged index that blocks further work — where patch-apply faked a per-file ancestor
+   (no ancestor for new shared files; half-applied state didn't block the next merge).
+   Pruned test dirs merge safely (sparse-checkout skip-worktree → git won't stage the absent
+   files as deletions, per git-update-index). Rationale in design-notes ("Integrate by
+   branch-merge"). **Still to do:** swap `agent-worktree.sh merge` from `git apply --3way
+   --index` to commit-on-branch + `git merge`, and update the SKILL merge bullet's commands.
+   The SKILL failure-mode split stays valid: scope refusal (worker, strike 1) vs. true
+   conflict (manager, never a strike); sequencing bullet names shared integration points.
+   **Open thread:** the assigned fixer for a true conflict is the manager editing markers in
+   a source file — collides with the manager-source fence planned in item 6; fold the
+   merge-glue exception into that hook's design.
+   *Ride-along (debugger-worktree-discard):* deferred to Phase A follow-up — still just
+   the line-71 reminder, no mechanism yet.
 
 3. **Report consumption assumes fields the manager can't guarantee.** *(severity #8)* Line
    115 imposes no format, yet lines 118–133 route on specific tokens (`Verdict`, `Suite`,
@@ -77,7 +90,7 @@ Built on the corrected flow and the state file.
 ## Lower severity (fold into the phase noted)
 
 - **Two documented merge paths** (Phase A / item 1) — SKILL `agent-worktree.sh merge` vs.
-  design-notes manual `add -A`/`diff`/`apply`; mixing them can skip the audit gate.
+  design-notes manual `add -A`/`commit`/`merge`; mixing them can skip the audit gate.
 - **Debugger worktree must be discarded** (Phase A / item 2) — line 71; correct behavior
   relies on the manager remembering not to merge and to `remove`.
 - **Visibility-widening rule** (Phase C / item 5) — line 79 is undetectable without a

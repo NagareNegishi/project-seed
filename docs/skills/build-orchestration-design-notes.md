@@ -75,11 +75,22 @@ internally and serve as a manual fallback, not a second path to run by hand.
   (dirty state is per-tree). The manager reads the worktree: `git -C <wt> add -A`,
   then `git -C <wt> status --porcelain` (the definitive changed-path list — this *is*
   the scope audit) and `git -C <wt> diff --cached` for content.
-- **Transfer by patch, not branch-merge.** Bring over only in-scope paths:
-  `git -C <wt> diff --cached -- <permitted…> | git apply --index` in main. Branch-merge
-  is all-or-nothing — a scope violation is committed before it can be reverted; a
-  path-filtered patch lets the manager pick. "Push back" a violation = drop it from the
-  patch, or `git -C <wt> restore --staged --worktree <bad-path>` at the source.
+- **Integrate by branch-merge, gated by the audit.** Commit the worktree's staged
+  changes onto its `impl/<unit>` branch, then `git -C <root> merge impl/<unit>` in main.
+  The audit already refused any out-of-scope path, so the branch is wholly in-scope and
+  branch-merge's all-or-nothing has nothing bad to admit — the path-filtering that once
+  forced a `git apply --3way` patch is redundant. A real merge is the right base-drift
+  tool: it integrates off the true merge-base, so non-overlapping edits to a path a
+  concurrent unit already landed auto-merge (git's default), and a real conflict leaves
+  standard markers plus an unmerged index in main that blocks further work until resolved.
+  Patch-apply faked a per-file ancestor from the patch's blob ids — weaker exactly where
+  concurrency bites: new shared files have no ancestor, and its half-applied state did not
+  block the next merge. Pruned test dirs merge safely — sparse-checkout sets skip-worktree,
+  and git will not stage a deletion for an absent skip-worktree file (git-update-index), so
+  merging the implementer branch never removes tests from main. On conflict, `git -C <root>
+  merge --abort` restores main and the work stays on the branch; a scope refusal commits
+  nothing to main. "Push back" a scope violation = the audit refuses before merge, or
+  `git -C <wt> restore --staged --worktree <bad-path>` at the source.
 - **Git fence is a hook, not a prompt line.** A prompt rule can't hold a Bash-carrying
   agent; a `PreToolUse`/`Bash` hook can. Two variants, wired per agent frontmatter:
   - `no-git-jail.sh` — deny-all, for agents that never need git: `implementer`,
