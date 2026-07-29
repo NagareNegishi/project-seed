@@ -36,11 +36,13 @@ usage() {
   local self; self=$(basename "$0")
   cat >&2 <<EOF
 usage: $self <subcommand> [args]
-  add    <unit> [test-dirs] [base-ref]   create the worktree; with test-dirs (comma-sep)
+  add      <unit> [test-dirs] [base-ref] create the worktree; with test-dirs (comma-sep)
                                          prunes them (implementer), without = full checkout
-  audit  <unit> <permitted-path>...      list changed paths outside the permitted set
-  merge  <unit> <permitted-path>...      refuse on any violation, else merge the unit's branch
-  remove <unit>                          tear the worktree down
+  audit    <unit> <permitted-path>...    list changed paths outside the permitted set
+  merge    <unit> <permitted-path>...    refuse on any violation, else merge the unit's branch
+  remove   <unit>                        tear the worktree down
+  start                                  stamp the session base commit for finalize
+  finalize [session-start-ref]           collapse per-unit scaffold commits back to the stamp
 EOF
   exit 2
 }
@@ -173,13 +175,61 @@ cmd_remove() {
   printf 'removed worktree and branch for %s\n' "$unit"
 }
 
+# start: stamp the session's base commit so `finalize` can collapse back to it. Idempotent —
+# a re-run keeps the original stamp, so a resumed session never moves its own baseline.
+cmd_start() {
+  mkdir -p "$worktrees_dir"
+  local marker="$worktrees_dir/.session-start"
+  if [[ -f "$marker" ]]; then
+    printf 'session-start already stamped: %s\n' "$(cat "$marker")"
+    return 0
+  fi
+  git -C "$root" rev-parse HEAD > "$marker"
+  printf 'session-start stamped: %s\n' "$(cat "$marker")"
+}
+
+# finalize: collapse the per-unit scaffold commits `merge` made back into uncommitted
+# changes, so the integrated result is committed once, deliberately, through the git-commit
+# skill. Resets $root to the session-start stamp (--mixed: changes kept, unstaged) and
+# refuses unless that stamp is an ancestor of HEAD, so it can only ever drop commits made
+# this session — never pre-session or pushed history.
+cmd_finalize() {
+  local marker="$worktrees_dir/.session-start"
+  local ref="${1:-}"
+  if [[ -z "$ref" && -f "$marker" ]]; then
+    ref=$(cat "$marker")
+  fi
+  if [[ -z "$ref" ]]; then
+    printf 'finalize: no session-start stamp (run `start` first) and no ref given\n' >&2
+    return 1
+  fi
+
+  # A mid-merge finalize would lose the unresolved conflict; resolve or abort it first.
+  if git -C "$root" rev-parse -q --verify MERGE_HEAD >/dev/null; then
+    printf 'finalize refused: a merge is in progress in %s — resolve or abort it first\n' "$root" >&2
+    return 1
+  fi
+
+  # The stamp must be reachable from HEAD, or the reset would discard real history.
+  if ! git -C "$root" merge-base --is-ancestor "$ref" HEAD; then
+    printf 'finalize refused: %s is not an ancestor of HEAD — wrong ref, refusing to reset\n' "$ref" >&2
+    return 1
+  fi
+
+  git -C "$root" reset --mixed "$ref"
+  rm -f "$marker"
+  printf 'collapsed session commits back to %s; stage exact paths and commit via git-commit\n' "$ref"
+}
+
 # --- dispatch ---------------------------------------------------------------------
 
 sub="${1:-}"; shift || true
 case "$sub" in
-  add)    cmd_add    "$@" ;;
-  audit)  cmd_audit  "$@" ;;
-  merge)  cmd_merge  "$@" ;;
-  remove) cmd_remove "$@" ;;
-  *)      usage ;;
+  add)      cmd_add      "$@" ;;
+  audit)    cmd_audit    "$@" ;;
+  merge)    cmd_merge    "$@" ;;
+  remove)   cmd_remove   "$@" ;;
+  start)    cmd_start    "$@" ;;
+  finalize) cmd_finalize "$@" ;;
+  *)        usage ;;
 esac
