@@ -72,11 +72,16 @@ what to build for that unit, reconciled from the inputs above.
     (comma-sep) to prune the suite; for whitebox/mcdc/debugger omit test-dirs. Point the
     agent at `.agent-worktrees/<unit>`.
   - On the report, `merge <unit> <permitted-path>...` — permit the implementer's source
-    paths, a tester's test-dirs only. On refusal, push the violation back to the same
-    worker (escalation ladder, strike 1). Merge nothing from the debugger.
+    paths, a tester's test-dirs only. Merge nothing from the debugger. Route the two
+    failures differently:
+    - Scope refusal (out-of-scope path): push it back to the same worker (escalation
+      ladder, strike 1).
+    - Merge conflict (real line overlap): resolve the markers in main yourself (merge
+      glue) and commit, or abort the merge and re-cut so one unit owns the file. Never
+      an implementer's job; never a strike.
   - `remove <unit>` once merged or abandoned.
-  Give parallel agents separate worktrees; sequence only when two units edit the same
-  file.
+  Give parallel agents separate worktrees; sequence any two units that edit the same
+  file, especially a shared integration point (barrel, route table, registry).
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
