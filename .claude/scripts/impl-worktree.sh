@@ -4,16 +4,9 @@
 # Gives each `implementer` subagent its own git worktree with the test directory
 # sparse-checked-out, so it builds from the spec and never sees the suite. The manager
 # (the main session) runs these subcommands; the implementer runs no git itself and is
-# the single integration gate. Design + rationale: docs/skills/build-orchestration-design-notes.md
+# the single integration gate. Run with no arguments for the subcommand reference.
+# Design + rationale: docs/skills/build-orchestration-design-notes.md
 # ("Implementer isolation — merge gate + git fence") and docs/agents/authoring.md §13.
-#
-# Subcommands:
-#   add    <unit> <test-dir> [base-ref]   create the isolated worktree (tests pruned)
-#   audit  <unit> <permitted-path>...     list changed paths outside the permitted set
-#   merge  <unit> <permitted-path>...     hard-fail on any violation, else transfer in-scope paths
-#   remove <unit>                         tear the worktree down
-#
-# NOTE: verbose step comments are intentional for this first pass; polish later.
 
 set -euo pipefail
 
@@ -32,6 +25,20 @@ worktrees_dir="$root/.impl-worktrees"
 # so the worktree cannot share the manager's branch and needs its own.
 branch_for() { printf 'impl/%s' "$1"; }
 wt_for()     { printf '%s/%s' "$worktrees_dir" "$1"; }
+
+# Print the subcommand reference and exit 2 (misuse — distinct from a subcommand that
+# ran but failed, which returns 1).
+usage() {
+  local self; self=$(basename "$0")
+  cat >&2 <<EOF
+usage: $self <subcommand> [args]
+  add    <unit> <test-dir> [base-ref]    create the isolated worktree (tests pruned)
+  audit  <unit> <permitted-path>...      list changed paths outside the permitted set
+  merge  <unit> <permitted-path>...      refuse on any violation, else transfer in-scope paths
+  remove <unit>                          tear the worktree down
+EOF
+  exit 2
+}
 
 # in_scope <path> <permitted>... — true if <path> is one of the permitted paths or
 # sits under one of them (treated as a directory prefix). Git prints repo-relative,
@@ -132,9 +139,5 @@ case "$sub" in
   audit)  cmd_audit  "$@" ;;
   merge)  cmd_merge  "$@" ;;
   remove) cmd_remove "$@" ;;
-  *)
-    printf 'usage: %s {add <unit> <test-dir> [base-ref]|audit <unit> <permitted>...|merge <unit> <permitted>...|remove <unit>}\n' \
-      "$(basename "$0")" >&2
-    exit 2
-    ;;
+  *)      usage ;;
 esac
