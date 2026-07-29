@@ -55,7 +55,7 @@ the skill is; this one holds *why* the calls were made and what's still open.
 
 ## Implementer isolation — merge gate + git fence
 
-Built: `.claude/scripts/impl-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
+Built: `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
 hooks below. `merge` refuses whenever `audit` reports an out-of-scope path, so a
 violation cannot cross even if the manager forgets to look. Cross-refs: authoring §13,
 agent frontmatter.

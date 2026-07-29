@@ -41,7 +41,7 @@ what to build for that unit, reconciled from the inputs above.
 3. Record the user's decision in the spec.
 4. Spawn `blackbox-tester` and one `implementer` per unit, from the settled spec,
    in parallel.
-5. As each implementer report arrives, integrate it with `impl-worktree.sh merge`
+5. As each implementer report arrives, integrate it with `agent-worktree.sh merge`
    (Spawning rules), then run the build and the blackbox suite (via `<test command>`).
 6. On failure, follow the escalation ladder (Guardrails).
 7. Once the units are merged and green, spawn `whitebox-tester`.
@@ -61,9 +61,9 @@ what to build for that unit, reconciled from the inputs above.
   constraints (`code-commenting` skill, no Claude attribution), and a demand for
   its report back.
 - Spawn each `implementer` in its own git worktree that excludes the test files, via
-  `.claude/scripts/impl-worktree.sh`, run from the main checkout:
+  `.claude/scripts/agent-worktree.sh`, run from the main checkout:
   - `add <unit> <test-dirs> [base-ref]` — create the worktree (comma-separate multiple
-    test dirs); point the implementer at `.impl-worktrees/<unit>`.
+    test dirs); point the implementer at `.agent-worktrees/<unit>`.
   - On its report, `merge <unit> <permitted-path>...`; on refusal (a path outside the
     permitted set) push the violation back to the implementer (escalation ladder, strike 1).
   - `remove <unit>` once merged or abandoned.
