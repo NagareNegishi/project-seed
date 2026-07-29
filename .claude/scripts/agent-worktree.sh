@@ -39,7 +39,7 @@ usage: $self <subcommand> [args]
   add    <unit> [test-dirs] [base-ref]   create the worktree; with test-dirs (comma-sep)
                                          prunes them (implementer), without = full checkout
   audit  <unit> <permitted-path>...      list changed paths outside the permitted set
-  merge  <unit> <permitted-path>...      refuse on any violation, else transfer in-scope paths
+  merge  <unit> <permitted-path>...      refuse on any violation, else merge the unit's branch
   remove <unit>                          tear the worktree down
 EOF
   exit 2
@@ -119,34 +119,49 @@ cmd_audit() {
   printf 'audit clean: all changes within permitted set\n'
 }
 
-# merge: refuse on any out-of-scope change, else transfer the in-scope paths into main.
+# merge: refuse on any out-of-scope change, else commit the worktree's audited changes
+# onto its branch and merge that branch into main. Post-audit the branch is wholly
+# in-scope, so a whole-branch merge crosses exactly the permitted paths — no path filter
+# needed. A pruned test dir carries the skip-worktree bit, so the audit's `add -A` never
+# stages it as a deletion (git-update-index); the commit keeps main's tests intact.
 cmd_merge() {
   (($# >= 2)) || usage
   local unit="$1"; shift
-  local wt; wt=$(wt_for "$unit")
+  local wt branch; wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
 
-  # Gate on the audit. On failure we stop here: the edits stay in the worktree, so the
-  # manager can SendMessage the violation back to the implementer to relocate.
+  # Gate on the audit (its `add -A` also stages the worktree). On failure we stop here:
+  # the edits stay uncommitted in the worktree, so the manager can SendMessage the
+  # violation back to the implementer to relocate.
   if ! cmd_audit "$unit" "$@"; then
     printf 'merge refused: out-of-scope changes present — push back to the implementer\n' >&2
     return 1
   fi
 
-  # Count what actually crosses (in-scope files changed), not the number of permitted
-  # paths given — the two differ whenever the implementer touched only part of its set.
+  # No staged change → the implementer touched nothing in scope; nothing to integrate.
+  if git -C "$wt" diff --cached --quiet; then
+    printf 'nothing to merge from %s\n' "$unit"
+    return 0
+  fi
+
+  # Count what crosses, before the commit empties the staged diff. Post-audit every staged
+  # path is in scope, so the full staged list is the merged set.
   local merged=() f
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
     merged+=("$f")
-  done < <(git -C "$wt" diff --cached --name-only -- "$@")
+  done < <(git -C "$wt" diff --cached --name-only)
 
-  # Path-filtered patch, not a branch merge, so the manager transfers exactly the
-  # in-scope paths; --index lands them staged in main. --cached already includes the new
-  # files staged by the audit. A failure is almost always base drift or a conflicting
-  # local edit — surface it, not a raw git error.
-  if ! git -C "$wt" diff --cached -- "$@" | git -C "$root" apply --index -; then
-    printf 'merge failed: patch did not apply to %s (base drift or a conflicting local edit).\n' "$root" >&2
-    printf 'inspect: git -C %s diff --cached -- <paths>; rebase the worktree or clean main, then retry.\n' "$wt" >&2
+  # Commit the audited changes onto the unit's branch, then merge that branch into main.
+  # A real merge integrates off the true merge-base (worktrees share $root's history), so
+  # a path an earlier unit already changed auto-merges when the edits don't overlap. A
+  # genuine line conflict leaves standard markers and an unmerged index in $root for the
+  # manager to resolve as merge glue (then commit), or `git -C $root merge --abort` to
+  # re-sequence. A scope refusal above committed nothing to main.
+  git -C "$wt" commit -q -m "build: $unit"
+  if ! git -C "$root" merge --no-edit "$branch"; then
+    printf 'merge conflict: %s and an already-merged unit change the same lines of a shared path.\n' "$unit" >&2
+    printf '%s now holds conflict markers on the affected paths. Resolve them (merge glue) and\n' "$root" >&2
+    printf 'commit, or `git -C %s merge --abort` to abort and re-sequence.\n' "$root" >&2
     return 1
   fi
   printf 'merged %d path(s) from %s into %s\n' "${#merged[@]}" "$unit" "$root"
