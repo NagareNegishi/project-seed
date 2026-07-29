@@ -64,13 +64,11 @@ what to build for that unit, reconciled from the inputs above.
   `.claude/scripts/impl-worktree.sh`, run from the main checkout:
   - `add <unit> <test-dirs> [base-ref]` — create the worktree (comma-separate multiple
     test dirs); point the implementer at `.impl-worktrees/<unit>`.
-  - On its report, `merge <unit> <permitted-path>...` — audits scope first and refuses
-    if the implementer touched anything outside the permitted set, leaving the worktree
-    intact so you push the violation back (escalation ladder, strike 1).
+  - On its report, `merge <unit> <permitted-path>...`; on refusal (a path outside the
+    permitted set) push the violation back to the implementer (escalation ladder, strike 1).
   - `remove <unit>` once merged or abandoned.
   Give parallel implementers separate worktrees; sequence only when two units must edit
-  the same file. Mechanism + rationale: `docs/agents/authoring.md` §13 and the design
-  notes ("Implementer isolation — merge gate + git fence").
+  the same file. Mechanism: `docs/agents/authoring.md` §13; rationale in the design notes.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
@@ -84,7 +82,7 @@ what to build for that unit, reconciled from the inputs above.
 - For write-capable spawns working in the main tree or `.agent-scope/` (the testers),
   snapshot `git status --porcelain` before spawning; on return, revert and report any
   changed path outside the permitted set. Implementers use the worktree's `merge` audit
-  instead — the main tree's status shows nothing, since dirty state is per-worktree.
+  instead (their dirty state never shows in the main tree).
 
 ## Review axes
 

@@ -235,14 +235,14 @@ or overfit to the suite — symmetric with `blackbox-tester`, which never sees t
 implementation.
 
 - **Mechanism** — the manager gives each implementer its own git worktree
-  (`git worktree add`) with a sparse-checkout that excludes the test directory, so the
+  (`git worktree add`) with a sparse-checkout that excludes the test directories, so the
   suite is absent from the tree. It spawns the implementer pointed at the worktree,
   and on the report merges the worktree's changes back into the branch and removes it
   (`git worktree remove`). The implementer runs no git; the manager is the single
   integration gate.
 - **Best-effort** — a worktree removes the tests from the working set, it does not
   deny filesystem access: `Bash` can still `realpath` its way to the main checkout's
-  test dir on disk. Backstops: the manager stages no test files (build-orchestration
+  test dirs on disk. Backstops: the manager stages no test files (build-orchestration
   spawning rules), the implementer's own file-set contract, and the
   `git status --porcelain` snapshot-and-revert audit on return.
 - **Parallelism** — separate worktrees give parallel implementers disjoint trees and
