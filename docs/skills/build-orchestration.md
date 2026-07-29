@@ -62,8 +62,8 @@ session; the workers are subagents.
 - Subagents start cold. Every prompt carries: exact file paths, the spec extract
   for the unit, the applicable `CLAUDE.md` constraints (code-commenting skill, no
   Claude attribution), and the report format.
-- Parallel implementers get disjoint file sets. Overlap → sequence them or give
-  each a worktree.
+- Parallel Bash agents get separate worktrees. Sequence only when two units must
+  edit the same file.
 - Background by default; run synchronously only when the next allocation depends
   on the result.
 - Do not spawn for a fix the manager can already see in full; batch small findings
@@ -76,21 +76,19 @@ session; the workers are subagents.
   forbid making a private symbol public, or otherwise expanding the API surface,
   just to test it. An untestable-through-the-public-surface private is a Finding,
   not a licence to widen it.
-- **Stage and confine write-capable spawns.** Confirm the session is not in
-  `bypassPermissions` / `acceptEdits` before spawning — either overrides the
-  path-jail. Stage only the permitted files into `.agent-scope/` (spec-only for
-  blackbox, spec+impl for whitebox), point the tester at that root, move results
-  out, clear it; the two share the one root, so serialize them. Mechanism:
+- **Confirm the session mode before any write-capable spawn.** `bypassPermissions` /
+  `acceptEdits` override the path-jail — check before spawning.
+- **Isolate every Bash agent in a worktree.** `implementer`, `whitebox`, `mcdc`, and
+  `debugger` write through `Bash`, which no `PreToolUse` hook can intercept, so confine
+  them structurally: each gets its own worktree (`.claude/scripts/agent-worktree.sh`),
+  and `merge` transfers only in-scope paths, refusing on any violation. That merge audit
+  is the manager-side enforcement of Lever 1 — the subagent-prompt rules (no test files
+  to an implementer, no visibility widening) are backstops; an actual violation is caught
+  at the gate, not by them. Push a refusal back to the worker; report an out-of-scope
+  change to the user in one line. Mechanism: `docs/agents/authoring.md` §13.
+- **Confine `blackbox` by path-jail.** It carries no Bash, so stage only the spec into
+  `.agent-scope/`, point it there, move the tests out, clear it. Mechanism:
   `docs/agents/authoring.md` §12.
-- **Audit the working tree around each write-capable spawn.** Testers and
-  implementers share the tree and can write through `Bash`, which no `PreToolUse`
-  hook can intercept. Snapshot `git status --porcelain` before the spawn; on return,
-  diff it and reject any changed path outside that unit's permitted set — a source
-  edit from a tester, a test-file edit from a fix unit. Revert the out-of-scope
-  change and report it to the user in one line: what changed, which agent, and how it
-  was handled. This is the manager-side enforcement of Lever 1: the two rules above
-  are placed in the subagent's own prompt, so an actual violation is caught here, not
-  by them.
 
 ## Review axes
 
