@@ -66,15 +66,15 @@ The report is your final message.
   manager cannot predict which files a unit must read or which commands it must
   run, so a narrow allowlist would cripple it. `Agent` is omitted: only the main
   session fans out (authoring §11).
-- **Not jailed — confined by worktree and audit.** `Bash` reaches any file, so a
+- **Not jailed — confined by worktree and merge audit.** `Bash` reaches any file, so a
   `PreToolUse` path-jail cannot hold it (authoring §12 "Seams") — the same reason
-  `whitebox-tester` is unjailed. Confinement is manager-side: it spawns the
-  implementer in a git worktree that holds the unit's source + spec but excludes the
-  test files (authoring §13), and snapshots `git status --porcelain` before the spawn
-  — reverting and reporting any changed path outside the unit's set on return
-  (build-orchestration spawning rules). The agent's own contract — stay in your file
-  set, run no git — keeps the manager the single integration gate. Best-effort:
-  `Bash` can still reach the main checkout on disk, so the audit is the backstop.
+  `whitebox`, `mcdc`, and `debugger` run in worktrees too. Confinement is manager-side:
+  it spawns the implementer in a git worktree that holds the unit's source + spec but
+  excludes the test files (authoring §13), and its edits reach the branch only through
+  the manager's `merge`, which audits every changed path and refuses anything outside
+  the unit's set. The agent's own contract — stay in your file set, run no git — keeps
+  the manager the single integration gate. Best-effort: `Bash` can still reach the main
+  checkout on disk, so the merge audit is the backstop.
 - **Test-unaware by construction.** It builds from the spec and never sees the
   acceptance suite — symmetric with `blackbox-tester`, which never sees the
   implementation. The worktree holds spec + source only, never test files, so the

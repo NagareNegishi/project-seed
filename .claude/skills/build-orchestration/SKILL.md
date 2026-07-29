@@ -71,7 +71,7 @@ what to build for that unit, reconciled from the inputs above.
     worker (escalation ladder, strike 1). Merge nothing from the debugger.
   - `remove <unit>` once merged or abandoned.
   Give parallel agents separate worktrees; sequence only when two units edit the same
-  file. Mechanism: `docs/agents/authoring.md` §13.
+  file.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
@@ -80,7 +80,7 @@ what to build for that unit, reconciled from the inputs above.
 - Before any write-capable spawn, confirm the session is not in `bypassPermissions`
   or `acceptEdits`.
 - For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
-  there, move the written tests out, clear it. Mechanism: `docs/agents/authoring.md` §12.
+  there, move the written tests out, clear it.
 
 ## Review axes
 
