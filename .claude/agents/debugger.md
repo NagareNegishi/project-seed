@@ -5,6 +5,12 @@ description: Delegate a single reproduced failure to this agent to find its root
   diagnoses only; it does not fix, and it does not write tests.
 tools: Read, Grep, Glob, Bash
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/git-readonly-jail.sh
 ---
 
 You are a debugger. You receive one failure from a manager agent, plus the code
