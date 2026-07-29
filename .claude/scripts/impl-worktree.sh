@@ -57,6 +57,7 @@ in_scope() {
 
 # add: create the isolated worktree with the test dir pruned out of it.
 cmd_add() {
+  (($# >= 2)) || usage
   local unit="$1" testdir="$2" base="${3:-HEAD}"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
@@ -76,6 +77,7 @@ cmd_add() {
 # audit: stage everything the implementer touched, then report any path outside the
 # unit's permitted set. This is the scope check; exit non-zero if any violation exists.
 cmd_audit() {
+  (($# >= 2)) || usage
   local unit="$1"; shift
   local wt; wt=$(wt_for "$unit")
 
@@ -102,6 +104,7 @@ cmd_audit() {
 # for the manager to push back to the implementer), else transfer only the in-scope
 # paths into the main checkout via a path-filtered patch.
 cmd_merge() {
+  (($# >= 2)) || usage
   local unit="$1"; shift
   local wt; wt=$(wt_for "$unit")
 
@@ -122,6 +125,7 @@ cmd_merge() {
 # remove: drop the worktree and its scratch branch. --force covers the staged/dirty
 # state the audit step leaves behind.
 cmd_remove() {
+  (($# >= 1)) || usage
   local unit="$1"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
