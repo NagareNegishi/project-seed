@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Implementer isolation helper — manager-side git worktree lifecycle.
 #
-# Gives each `implementer` subagent its own git worktree with the test directory
-# sparse-checked-out, so it builds from the spec and never sees the suite. The manager
+# Gives each `implementer` subagent its own git worktree with the test directories
+# pruned out, so it builds from the spec and never sees the suite. The manager
 # (the main session) runs these subcommands; the implementer runs no git itself and is
 # the single integration gate. Run with no arguments for the subcommand reference.
 # Design + rationale: docs/skills/build-orchestration-design-notes.md
@@ -32,7 +32,7 @@ usage() {
   local self; self=$(basename "$0")
   cat >&2 <<EOF
 usage: $self <subcommand> [args]
-  add    <unit> <test-dir> [base-ref]    create the isolated worktree (tests pruned)
+  add    <unit> <test-dirs> [base-ref]   create the worktree; <test-dirs> is comma-separated, pruned
   audit  <unit> <permitted-path>...      list changed paths outside the permitted set
   merge  <unit> <permitted-path>...      refuse on any violation, else transfer in-scope paths
   remove <unit>                          tear the worktree down
@@ -58,7 +58,7 @@ in_scope() {
 # add: create the isolated worktree with the test dir pruned out of it.
 cmd_add() {
   (($# >= 2)) || usage
-  local unit="$1" testdir="$2" base="${3:-HEAD}"
+  local unit="$1" testdirs="$2" base="${3:-HEAD}"
   local wt branch
   wt=$(wt_for "$unit"); branch=$(branch_for "$unit")
 
@@ -67,11 +67,17 @@ cmd_add() {
   git worktree add -b "$branch" "$wt" "$base"
 
   # Non-cone sparse-checkout takes gitignore-style patterns: include everything at the
-  # root, then negate the test dir so the suite is absent from the implementer's tree.
-  # `set` applies immediately, removing the test dir from the just-checked-out worktree.
-  git -C "$wt" sparse-checkout set --no-cone '/*' "!/${testdir%/}/"
+  # root, then negate each comma-separated test dir so the suite is absent from the
+  # implementer's tree. Cone mode cannot express the negation, so --no-cone is required.
+  # `set` applies immediately, pruning the dirs from the just-checked-out worktree.
+  local patterns=('/*') dirs d
+  IFS=',' read -ra dirs <<< "$testdirs"
+  for d in "${dirs[@]}"; do
+    patterns+=("!/${d%/}/")
+  done
+  git -C "$wt" sparse-checkout set --no-cone "${patterns[@]}"
 
-  printf 'worktree ready: %s (branch %s, tests pruned: %s)\n' "$wt" "$branch" "$testdir"
+  printf 'worktree ready: %s (branch %s, tests pruned: %s)\n' "$wt" "$branch" "$testdirs"
 }
 
 # audit: stage everything the implementer touched, then report any path outside the
@@ -115,11 +121,24 @@ cmd_merge() {
     return 1
   fi
 
+  # Count what actually crosses (in-scope files changed), not the number of permitted
+  # paths given — the two differ whenever the implementer touched only part of its set.
+  local merged=() f
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    merged+=("$f")
+  done < <(git -C "$wt" diff --cached --name-only -- "$@")
+
   # Emit a diff limited to the permitted paths and apply it to the main tree + index.
-  # Path-filtering (not a branch merge) is what lets the manager pick exactly what
-  # crosses; --cached already includes new files staged by the audit step.
-  git -C "$wt" diff --cached -- "$@" | git -C "$root" apply --index -
-  printf 'merged %d path(s) from %s into %s\n' "$#" "$unit" "$root"
+  # Path-filtering (not a branch merge) lets the manager pick exactly what crosses;
+  # --cached already includes new files staged by the audit step. A failure here is
+  # almost always base drift or a conflicting local edit — surface it, not a raw error.
+  if ! git -C "$wt" diff --cached -- "$@" | git -C "$root" apply --index -; then
+    printf 'merge failed: patch did not apply to %s (base drift or a conflicting local edit).\n' "$root" >&2
+    printf 'inspect: git -C %s diff --cached -- <paths>; rebase the worktree or clean main, then retry.\n' "$wt" >&2
+    return 1
+  fi
+  printf 'merged %d path(s) from %s into %s\n' "${#merged[@]}" "$unit" "$root"
 }
 
 # remove: drop the worktree and its scratch branch. --force covers the staged/dirty
