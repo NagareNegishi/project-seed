@@ -106,12 +106,43 @@ Keeping format distinct from instruction in the agent file:
   markers, the `route:` key, the section headers); each `<…>` is replaced with the agent's
   content. This draws the format/instruction line at the token level.
 
-Open choices (confirm before the 16-file edit):
-1. Marker token — `===REPORT===` vs `<<<REPORT>>>`. Any distinctive, prose-unlikely form;
-   lean `===REPORT===`.
-2. In the source agent file, show the template bare-indented (no risk of the agent echoing
-   a fence) or inside a ``` fence (more readable for the author). Lean bare, paired with
-   the explicit "do not wrap in a code fence" rule.
+Resolved by the legal-critic review (below): the marker token is `===REPORT===` (over
+`<<<REPORT>>>`); the template is shown bare-indented, no fence, paired with the rule-1
+"no code fence".
+
+## Reviewed reference: legal-critic (human-polished)
+
+`legal-critic.md`'s `## Report` section is the reviewed template for the other 7 critics —
+copy it from the file, don't restate it here (a second copy would drift). Per critic only
+two things change, both from the `report-schemas.md` critics table: rule 4's section names
+and the severity scale. Rules 1–3 and the envelope are emitted verbatim.
+
+Changes the polish made, relative to the old `Verdict`-style report — apply each to the
+other critics:
+
+1. **Final `## Report` heading**, last in the file — the boundary between job instructions
+   (above) and the literal final message (this section). The one body heading; leave "Hunt
+   for" / "Rules" as bare lead-ins.
+2. **Report rules as a numbered list**, each a standalone command. Rules 1–3 verbatim;
+   rule 4 is the per-critic route→section mapping.
+3. **`route:` is the first line in the envelope; the axis verdict word is deleted** — no
+   `risks-found` / `vulnerable` / … anywhere; `route` carries the disposition.
+4. **`(required if X)` parentheticals dropped** — the disposition→section coupling lives
+   once, in rule 4.
+5. **"Write no files" moved to the role paragraph** — a job-scope constraint, not a
+   report-shaping rule.
+6. **Bare template, no fence; constant `===REPORT===` / `===END REPORT===` markers.**
+7. **Content sections and severity scale unchanged.**
+
+## Rollout order
+
+Critics first — the 8 share the shape above and convert off the `report-schemas.md` table.
+The other types are not mechanical; audit each before applying:
+- **testers**: no `Verdict`; route set differs (`accept | decide | redrive`, `+fix` for
+  whitebox/mcdc); `Open` is a section every tester fills.
+- **implementer**: `Build: pass|fail` stays as evidence; the disposition moves to `route`.
+- **advisory** (debugger, researcher, verifier, alternatives-explorer): bespoke sections,
+  and researcher has two alternate structures — each needs its own rule 4.
 
 ## Hook role — validator only (built later)
 
@@ -130,7 +161,9 @@ format work.
 
 ## Next steps
 
-1. Apply `route` to the 16 `.claude/agents/*.md` files (the bulk edit; after sign-off).
+1. Roll the polished `## Report` shape to the other 7 critics off the `report-schemas.md`
+   table (legal-critic is the reviewed reference — see "Reviewed reference" / "Rollout
+   order"). The non-critic types need a per-type audit first; they are not mechanical.
 2. Rebind SKILL "Reports — demand and consume" to route on `route`. This also closes the
    legal-critic `Risks`-reads-as-clean bug for free — routing no longer touches section
    names.
