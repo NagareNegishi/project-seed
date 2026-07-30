@@ -41,10 +41,11 @@ Companion: `build-orchestration-design-notes.md` (why the calls were made).
    `route:` field (`accept`/`fix`/`decide`/`redrive`, `+`-combinable); manager and hook route
    on `route`, not section names. Design, per-agent mapping, and body schemas:
    `build-orchestration-report-schemas.md`.
-   **Status:** consumption fail-safe interim in place; 6 critics converted (legal-critic
-   reference + correctness, simplicity, performance, docs, change-discipline).
-   **Open:** convert security + design (need the "one entry per target" decision resolved
-   against the single-block envelope); audit-and-convert the non-critic types; rebind the SKILL
+   **Status:** consumption fail-safe interim in place; all 8 critics converted (legal-critic
+   reference + correctness, simplicity, performance, docs, change-discipline, security, design).
+   Security + design resolved by dropping "one entry per target": the manager allocates critics
+   per unit, so each spawn has one target and the multi-target path was never exercised.
+   **Open:** audit-and-convert the non-critic types; rebind the SKILL
    "Reports — demand and consume" to `route` (closes the legal `Risks`-reads-as-clean bug —
    routing no longer touches section names); then build the `SubagentStop` validator hook
    (block-vs-warn, loop-guard — pure validator, needs docs citation + user sign-off). Full
