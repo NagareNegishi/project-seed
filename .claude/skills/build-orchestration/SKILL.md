@@ -131,28 +131,41 @@ all-always. Critics report problems, never fix.
 
 ## Reports — demand and consume
 
-Do not impose a format; each agent defines its own. Demand it back as the agent's
-final message.
+Each agent defines its own format; demand it back as the final message with a
+first-line `route:` token. Act on `route`, never on a section's presence or the axis
+verdict word. Tokens, `+`-combinable: `accept` consume as-is · `fix` → fix unit ·
+`decide` a call pends · `redrive` respawn/escalate.
 
-Consume each family:
+Legal tokens per agent, and the consumption behind them:
 
-- **Critics** — route on which section is populated, not the `Verdict` word (it
-  differs per critic). `Problems` populated → triage by severity into batched fix
-  units; critical/high block close-out, low → build-log accepted risk. `Out of
-  scope` populated → stage the missing input and respawn, or record the uncovered
-  axis. Both empty → record `Checked`, proceed. Cannot place it → treat as
-  `unreviewable`, never clean.
-- **Testers** — no `Verdict`. Read `Findings` and `Open`, and for whitebox/mcdc the
-  `Suite` line: an xfail/skip parked against a Finding is an open bug → fix unit.
-  Resolve blackbox `Findings` and every `Open` item yourself; never route one to an
-  implementer.
-- **researcher / verifier** — a researcher's ambiguous-task reply (its `Needed`
-  section, no `Answer`) bounces back to you; pair a researched answer with
-  `verifier`, and a verifier `Verdict: FAIL` blocks acting on it.
-- **alternatives-explorer** — take its single `Recommendation` into a design
-  decision, then a fix unit.
-- **debugger** — `Root cause` + `Fix location` feed the next fix unit; `Root cause:
-  none` (no reproduction) is an escalation, not a fix.
+- **Critics** — `accept` \| `fix` \| `redrive`. `fix`: triage the `Problems` by
+  severity into batched fix units — a `high` must be fixed before finalize;
+  `medium`/`low` → fix, or record in the build-log as accepted risk. `redrive`:
+  stage the missing input and respawn. `accept`: record its clean section. On any
+  route, an `Out of scope` entry naming an unreviewed area is a coverage hole —
+  restage and respawn, or record the uncovered axis.
+- **blackbox-tester** — `accept` \| `decide` \| `redrive`. `Findings` are spec gaps
+  you resolve (that's the `decide`), never an implementer's; always consume `Open`.
+- **whitebox / mcdc-tester** — `accept` \| `fix` \| `decide` \| `fix+decide` \|
+  `redrive`. The tests land on any non-`redrive` route. `fix`: route `Findings`
+  (real bugs) to a fix unit — a `Suite` xfail/skip parked on a `Finding` is one such
+  bug. `decide`: an `Open` item pends — always consume it. `redrive`: the suite
+  wouldn't run → respawn.
+- **implementer** — `accept` \| `decide` \| `accept+decide` \| `redrive`. `accept`:
+  `Build` passed, no `Open` → integrate the unit. `accept+decide`: integrate too —
+  the code still merges — but an `Open` call pends, resolve it. `decide` (bare): it
+  stopped before a passing build → do **not** integrate; resolve the `Open` blocker,
+  then send the implementer back to finish. `redrive`: `Build: fail` → escalation
+  ladder.
+- **researcher** — `accept` \| `decide`. `decide` (its `Needed` ambiguity) bounces
+  back to you; it never emits `redrive`.
+- **verifier** — `accept` \| `redrive`. `redrive` (a claim failed) blocks acting on
+  the researched answer.
+- **alternatives-explorer** — `accept`. Take the single `Recommendation` into a
+  design decision, then a fix unit.
+- **debugger** — `fix` \| `decide` \| `fix+decide` \| `redrive`. `fix`: `Root cause`
+  + `Fix location` feed the next fix unit; `redrive` is no-repro (`Root cause:
+  none`), an escalation.
 
 ## The record
 
