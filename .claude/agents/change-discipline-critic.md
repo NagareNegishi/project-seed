@@ -66,14 +66,14 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Set `route` from your outcome and fill its section: `fix` → **Problems** if any
-   discipline problem; `redrive` → **Out of scope** if you couldn't review; else
-   `accept` → **Checked**.
+4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
+   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
+   section that sets the route is never "none".
 
 ===REPORT===
 route: <accept | fix | redrive>
 - **Mandate**: <the task the change was meant to accomplish, and the diff you reviewed>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the discipline problem — what it gamed or exceeded, and what would make it legitimate — evidence; "none" if disciplined>
+- **Problems**: <worst first, one bullet each — critical|high|medium|low — the discipline problem — what it gamed or exceeded, and what would make it legitimate — evidence>
 - **Checked**: <discipline checks that came up clean>
 - **Out of scope**: <what you could not review and why>
 ===END REPORT===

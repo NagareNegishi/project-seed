@@ -58,14 +58,14 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Set `route` from your outcome and fill its section: `fix` → **Problems** if any
-   redundancy or over-complication; `redrive` → **Out of scope** if you couldn't
-   review; else `accept` → **Checked**.
+4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
+   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
+   section that sets the route is never "none".
 
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed and the surrounding code you checked it against>
-- **Problems**: <worst first, one bullet each — high|medium|low — the redundancy or over-complication — the simpler form, one line — evidence; "none" if simple>
+- **Problems**: <worst first, one bullet each — high|medium|low — the redundancy or over-complication — the simpler form, one line — evidence>
 - **Checked**: <areas you examined that are already as simple as the problem allows>
 - **Out of scope**: <what you couldn't review, and off-axis issues you set aside>
 ===END REPORT===

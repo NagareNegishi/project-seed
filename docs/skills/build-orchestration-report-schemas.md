@@ -57,10 +57,11 @@ manager and hook still read these headers):
   carry `critical`; simplicity, performance, docs, legal top out at `high`. The manager's
   "critical/high block close-out" means "high" is the top block-trigger on those four axes.
 
-Every critic: `route` is `fix` (a finding) | `accept` (clean) | `redrive` (unreviewable),
-from the axis words above; the routed section is filled — `<findings>` for `fix`,
-`<clean>` for `accept`, `Out of scope` for `redrive` — and every section still appears,
-"none" when empty.
+Every critic: every section fills independently and always appears ("none" when empty);
+`route` is then *derived* from which are filled — `fix` if the findings section has an
+entry, else `redrive` if `Out of scope` names something unreviewable, else `accept`. The
+section that sets the route is never "none". (Axis words map the same: bad → `fix`, clean
+→ `accept`, unreviewable → `redrive`.)
 
 ## Testers (3) — no `Verdict`
 

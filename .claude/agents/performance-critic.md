@@ -61,14 +61,14 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Set `route` from your outcome and fill its section: `fix` → **Problems** if any
-   inefficiency; `redrive` → **Out of scope** if you couldn't review; else `accept`
-   → **Checked**.
+4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
+   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
+   section that sets the route is never "none".
 
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed and the scale/latency expectation you judged it against; "none given" if the manager provided none>
-- **Problems**: <worst first, one bullet each — high|medium|low — the inefficiency — cost term and the scale at which it bites — evidence; "none" if efficient>
+- **Problems**: <worst first, one bullet each — high|medium|low — the inefficiency — cost term and the scale at which it bites — evidence>
 - **Checked**: <paths you examined that are efficient enough for their use>
 - **Out of scope**: <what you couldn't review, and off-axis issues you set aside>
 ===END REPORT===

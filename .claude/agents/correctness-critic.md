@@ -59,14 +59,14 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Set `route` from your outcome and fill its section: `fix` → **Problems** if any
-   wrong result; `redrive` → **Out of scope** if you couldn't review; else `accept`
-   → **Checked**.
+4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
+   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
+   section that sets the route is never "none".
 
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed (the implementation and its scope) and the spec you checked it against>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the wrong result or spec violation — triggering input or state → wrong result — evidence; "none" if correct>
+- **Problems**: <worst first, one bullet each — critical|high|medium|low — the wrong result or spec violation — triggering input or state → wrong result — evidence>
 - **Checked**: <areas and cases you examined that came up correct>
 - **Out of scope**: <what you couldn't review and why, including behaviours the spec leaves undefined>
 ===END REPORT===
