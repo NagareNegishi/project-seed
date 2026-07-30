@@ -50,7 +50,7 @@ value-set:
 | whitebox-tester, mcdc-tester | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / bug `Findings` / `Open` / both / can't produce |
 | implementer | `accept` \| `decide` \| `accept+decide` \| `redrive` | build pass & no open / `Open` only / integrate but a call pends / `Build: fail` |
 | debugger | `fix` \| `decide` \| `fix+decide` \| `redrive` | root cause found / `Open` / both / no-repro (`Root cause: none`) |
-| researcher | `accept` \| `decide` \| `redrive` | usable `Answer` / `Needed` ambiguity / can't research |
+| researcher | `accept` \| `decide` | researched `Answer` / `Needed` ambiguity (no `redrive` — it always delivers a conclusion; answer quality is the verifier's `FAIL`) |
 | verifier | `accept` \| `redrive` | `PASS` / `FAIL` |
 | alternatives-explorer | `accept` | always — take the `Recommendation` |
 
@@ -77,33 +77,25 @@ route: <tokens>
   ("Your entire final message is exactly the block below…"); and state the literal-vs-fill
   convention once — text outside `<…>` is emitted verbatim (markers, `route:` key, headers),
   each `<…>` is replaced with content.
-- Settled: marker token is `===REPORT===` (over `<<<REPORT>>>`); template shown bare-indented,
-  no fence, paired with the "no code fence" rule.
+## Editing or adding an agent report
 
-## Converting an agent file
+All 16 are converted (per-agent value-sets in the mapping table above; body shapes in the
+family sections below). This is the recipe for the next report edit or a new agent. Per agent:
+(1) `route: <legal value-set>` as the first report line, with a one-line rule mapping outcome →
+token; (2) no standalone verdict/status line — `route` replaces it; (3) content sections
+unchanged.
 
-Per agent: (1) add `route: <legal value-set>` as the first report line, with a one-line rule
-mapping outcome → token; (2) remove the standalone verdict/status line `route` replaces;
-(3) leave every content section unchanged.
+**Critics share one shape — legal-critic is the reviewed reference.** Copy its `## Report`
+section from the file; per critic only two things change, both from the Critics table below:
+the section names in rule 4 and the severity scale. Structure: one final `## Report` heading
+(last in the file, everything above is how to do the job); rules 1–3 verbatim, rule 4 derives
+`route` from the filled sections; `route:` first in the envelope, no axis verdict word; bare
+template, no fence.
 
-**legal-critic is the reviewed reference for the 7 other critics** — copy its `## Report`
-section from the file rather than restating it here. Per critic only two things change, both
-from the critics table below: the section names in rule 4 and the severity scale. The polish,
-relative to the old `Verdict`-style report: a final `## Report` heading (last in the file);
-report rules as a numbered list (rules 1–3 verbatim; rule 4 derives `route` from the filled
-sections); `route:` first in the envelope with the axis verdict word deleted; `(required if
-X)` parentheticals dropped (the coupling lives once, in rule 4); bare template, no fence;
-"write no files" in the role paragraph, not a report rule.
-
-**All 8 critics converted.** security-critic and design-critic carried "one entry per target
-(multiple targets → multiple entries)," which the single-block envelope can't hold (the hook
-reads only the first `===REPORT===`…`===END REPORT===` span). Resolved by dropping the clause:
-the build-orchestration manager allocates critics **per unit** (SKILL steps 2 and 5), so each
-spawn has exactly one target — the multi-target path was never exercised. Both now match the
-other six single-block, single-target. The non-critic types (testers, implementer, advisory)
-are still not mechanical — each needs its own rule 4 audit (testers' route set differs and
-`Open` is always filled; implementer keeps `Build:` as evidence; researcher has two alternate
-structures).
+**One target per spawn.** security-critic and design-critic once carried "one entry per target";
+the single-block envelope can't hold it (the hook reads only the first
+`===REPORT===`…`===END REPORT===` span) and the manager allocates critics per unit (SKILL steps
+2 and 5), so each spawn has exactly one target. Don't reintroduce a multi-target clause.
 
 ## Universal invariants (body)
 
@@ -181,8 +173,8 @@ Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 | Agent | sections, in order | routing signal |
 | --- | --- | --- |
 | debugger | `Failure` · `Root cause` · `Fix location` · `Also-noticed` · `Open` | `Root cause` + `Fix location` → next fix unit. **No-repro = `Root cause: none`** (what it tried goes under `Failure`, "none" for the rest) — an escalation, not a fix. `Also-noticed` = an unrelated second bug handed back. |
-| researcher | **two alternate structures** | Ambiguous: `Task` · `Ambiguity` · `Needed`. Researched: `Task` · `Answer` · `Findings` · `Unverified` · `Gaps`. Discriminator: `Needed` present (bounce back to manager) vs `Answer` present (usable). |
-| verifier | `Verdict` · `Claims` · `Notes` | `Verdict` = **`PASS` or `FAIL`** overall (FAIL if any claim fails). `Verdict: FAIL` blocks acting on the researched answer. |
+| researcher | `Task` · `Answer` · `Findings` · `Unverified` · `Gaps` · `Ambiguity` · `Needed` | **One block** (was two structures). Ambiguous → fill `Ambiguity`/`Needed`, rest "none", `route: decide`; else `route: accept`. No `redrive` — it always delivers a conclusion; answer quality is the verifier's `FAIL`. |
+| verifier | `Claims` · `Notes` | Overall PASS/FAIL → `route` (`redrive` if any `Claims` bullet is `fail`, else `accept`); the standalone `Verdict` section is **deleted** (pure disposition). `redrive` blocks acting on the researched answer. |
 | alternatives-explorer | `Goal` · `Constraints` · `Alternatives` · `Recommendation` | take the single `Recommendation` into a design decision, then a fix unit. (No "every section none" note; structure still fixed.) |
 
 ## Enforcement hook (SubagentStop — built later)
