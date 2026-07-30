@@ -69,7 +69,7 @@ Emit your report by these rules:
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed (idea or implementation, and its scope)>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the security flaw — who exploits it, how, and what they get — evidence>
+- **Problems**: <worst first, one bullet each — high|medium|low — the security flaw — who exploits it, how, and what they get — evidence>
 - **Checked**: <areas you examined that came up clean>
 - **Out of scope**: <what you couldn't review and why>
 ===END REPORT===

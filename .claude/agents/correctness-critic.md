@@ -66,7 +66,7 @@ Emit your report by these rules:
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed (the implementation and its scope) and the spec you checked it against>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the wrong result or spec violation — triggering input or state → wrong result — evidence>
+- **Problems**: <worst first, one bullet each — high|medium|low — the wrong result or spec violation — triggering input or state → wrong result — evidence>
 - **Checked**: <areas and cases you examined that came up correct>
 - **Out of scope**: <what you couldn't review and why, including behaviours the spec leaves undefined>
 ===END REPORT===

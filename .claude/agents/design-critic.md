@@ -66,7 +66,7 @@ Emit your report by these rules:
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed (idea or implementation, and its scope)>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the design flaw — who it hurts and how — evidence>
+- **Problems**: <worst first, one bullet each — high|medium|low — the design flaw — who it hurts and how — evidence>
 - **Challenged**: <angles you attacked that held up>
 - **Out of scope**: <what you couldn't review and why>
 ===END REPORT===

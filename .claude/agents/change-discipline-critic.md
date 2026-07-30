@@ -73,7 +73,7 @@ Emit your report by these rules:
 ===REPORT===
 route: <accept | fix | redrive>
 - **Mandate**: <the task the change was meant to accomplish, and the diff you reviewed>
-- **Problems**: <worst first, one bullet each — critical|high|medium|low — the discipline problem — what it gamed or exceeded, and what would make it legitimate — evidence>
+- **Problems**: <worst first, one bullet each — high|medium|low — the discipline problem — what it gamed or exceeded, and what would make it legitimate — evidence>
 - **Checked**: <discipline checks that came up clean>
 - **Out of scope**: <what you could not review and why>
 ===END REPORT===

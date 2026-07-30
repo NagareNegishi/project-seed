@@ -68,14 +68,14 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `fix` if **Risks** has any entry; else
-   `redrive` if **Out of scope** names something you couldn't review; else
-   `accept`. The section that sets the route is never "none".
+4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
+   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
+   section that sets the route is never "none".
 
 ===REPORT===
 route: <accept | fix | redrive>
 - **Target**: <what you reviewed, the project's own licence/policy you judged against, and the dependency set you inspected>
-- **Risks**: <worst first, one bullet each — high|medium|low — the obligation or restriction, and where the code conflicts with it — who must decide — evidence>
+- **Problems**: <worst first, one bullet each — high|medium|low — the obligation or restriction, and where the code conflicts with it — who must decide — evidence>
 - **Checked**: <licences and data flows you examined that came up clear>
 - **Out of scope**: <what you couldn't review; always keep the standing note that this is risk-flagging, not legal advice>
 ===END REPORT===
