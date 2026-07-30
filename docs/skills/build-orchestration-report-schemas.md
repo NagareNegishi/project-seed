@@ -1,37 +1,125 @@
-# Build Orchestration — subagent report schemas
+# Build Orchestration — subagent reports (route field + body schemas)
 
-The single source of truth for every worker's report structure. Two consumers bind to
-it: the manager's consumption routing (SKILL "Reports — demand and consume") and the
-planned `SubagentStop` format-enforcement hook (risk backlog item 3, enforcement side).
-Transcribed verbatim from the 16 `.claude/agents/*.md` files — do not route on anything
-not recorded here, and update this doc in the same change as any agent report edit.
+The single source of truth for every worker's report: the machine-routable `route` field it
+carries, the locator envelope that frames it, and the body sections behind it. Two consumers
+bind here — the manager's consumption routing (SKILL "Reports — demand and consume") and the
+planned `SubagentStop` format-enforcement hook (risk backlog item 3). Body sections are
+transcribed verbatim from the 16 `.claude/agents/*.md` files; update this doc in the same
+change as any agent report edit, and do not route on anything not recorded here.
 
-Companion: `build-orchestration-risks.md` item 3, `build-orchestration.md` "Consuming
-reports", `docs/agents/authoring.md` §2/§10 (the shared-shape rule these derive from).
+Companion: `build-orchestration-risks.md` item 3 (why the route field exists),
+`build-orchestration.md` "Consuming reports", `docs/agents/authoring.md` §2/§10.
 
-## Universal invariants
+## The `route` field
 
-- **Every section always appears; write "none" when empty.** Holds for all 16 agents
-  except `alternatives-explorer` (no such note; structure still fixed). So absence of a
-  section = a malformed report, not an empty one.
-- **The report is the agent's final message.** Returned to the manager as the `Agent`
-  tool result / `last_assistant_message`.
-- **`unreviewable` is the only verdict word shared across critics.** The bad/clean words
-  are axis-specific (table below). Routing on a literal `clean`/`axis-bad` was the item-3
-  bug.
+Each report is machine-routable **without a wrapper**: the format carries one normalized
+first-line disposition, `route:`, so neither manager nor hook parses natural-language prose.
+(Chosen over an envelope wrapper — a second copy of the disposition — and over a middle
+converter, which would have to parse 16 flavors of NL prose; the `SubagentStop` hook stays a
+pure validator, never a converter.)
+
+`route` **replaces** each report's axis-specific verdict/status line (`Verdict: vulnerable`,
+`Verdict: PASS`, `Root cause: none`, and `Build: pass` in its disposition role). Every content
+section stays verbatim — the axis (`vulnerable` vs `unsound`) is still evident from the
+findings. `Build: pass|fail` itself stays as escalation-ladder evidence; only its role as *the
+disposition* moves to `route`.
+
+Values name the manager's next action; combine with `+` when a report carries more than one:
+
+| value | manager's next action (meaning set by agent type) |
+| --- | --- |
+| `accept` | consume the output, no further action — close the axis (critic), integrate the code (implementer), land the tests (tester), use the answer/recommendation (researcher / alternatives-explorer) |
+| `fix` | route the findings to a fix unit |
+| `decide` | a decision is pending for the manager/user |
+| `redrive` | respawn or escalate — the agent didn't deliver |
+
+Settled: success word is `accept` (family-neutral — reads right for a clean critic and for
+integrate/land/use); verifier `FAIL` → `redrive` (re-drive or discard the research), not
+`decide`; implementer with an open decision → `accept+decide` (the code still merges, a call
+pends), not a bare `decide` that would hold integration.
+
+### Per-agent mapping (all 16)
+
+`route` values each agent can legally emit — the hook's per-agent check is exactly this
+value-set:
+
+| Agent(s) | legal `route` values | mapped from |
+| --- | --- | --- |
+| the 8 critics | `accept` \| `fix` \| `redrive` | good verdict / bad verdict / `unreviewable` |
+| blackbox-tester | `accept` \| `decide` \| `redrive` | clean / spec-gap `Findings` or `Open` / can't produce. (Gaps are manager calls → `decide`, never `fix`.) |
+| whitebox-tester, mcdc-tester | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / bug `Findings` / `Open` / both / can't produce |
+| implementer | `accept` \| `decide` \| `accept+decide` \| `redrive` | build pass & no open / `Open` only / integrate but a call pends / `Build: fail` |
+| debugger | `fix` \| `decide` \| `fix+decide` \| `redrive` | root cause found / `Open` / both / no-repro (`Root cause: none`) |
+| researcher | `accept` \| `decide` \| `redrive` | usable `Answer` / `Needed` ambiguity / can't research |
+| verifier | `accept` \| `redrive` | `PASS` / `FAIL` |
+| alternatives-explorer | `accept` | always — take the `Recommendation` |
+
+## Locator envelope
+
+Markers frame the report so its `route` line and body are findable even if the agent adds
+stray preamble — and specifying that in the agent file must not blur "text to emit literally"
+against "instructions about the job." Markers are **constant across all 16 files** (no
+per-agent fill):
+
+```
+===REPORT===
+route: <tokens>
+<body sections>
+===END REPORT===
+```
+
+- **Locating (hook):** the span from the first `===REPORT===` to the next `===END REPORT===`;
+  text outside is ignored preamble, so a chatty agent still passes when the block is intact.
+  Malformed = a marker missing, or the first line inside is not `route:` with a token-set
+  legal for the event's `agent_type`.
+- **Keep format distinct from instruction in the agent file:** one **final** `## Report`
+  section, last in the file (everything above is how to do the job); frame the whole message
+  ("Your entire final message is exactly the block below…"); and state the literal-vs-fill
+  convention once — text outside `<…>` is emitted verbatim (markers, `route:` key, headers),
+  each `<…>` is replaced with content.
+- Settled: marker token is `===REPORT===` (over `<<<REPORT>>>`); template shown bare-indented,
+  no fence, paired with the "no code fence" rule.
+
+## Converting an agent file
+
+Per agent: (1) add `route: <legal value-set>` as the first report line, with a one-line rule
+mapping outcome → token; (2) remove the standalone verdict/status line `route` replaces;
+(3) leave every content section unchanged.
+
+**legal-critic is the reviewed reference for the 7 other critics** — copy its `## Report`
+section from the file rather than restating it here. Per critic only two things change, both
+from the critics table below: the section names in rule 4 and the severity scale. The polish,
+relative to the old `Verdict`-style report: a final `## Report` heading (last in the file);
+report rules as a numbered list (rules 1–3 verbatim; rule 4 derives `route` from the filled
+sections); `route:` first in the envelope with the axis verdict word deleted; `(required if
+X)` parentheticals dropped (the coupling lives once, in rule 4); bare template, no fence;
+"write no files" in the role paragraph, not a report rule.
+
+**Not yet converted: security-critic and design-critic.** Both carry "one entry per target
+(multiple targets → multiple entries)," which the single-block envelope can't hold (the hook
+reads only the first `===REPORT===`…`===END REPORT===` span). Resolve to one report per
+subagent — `route` = the worst disposition across targets, `Target` names them all, findings
+cite each — or rethink the locator, before converting. The non-critic types (testers,
+implementer, advisory) are also not mechanical — each needs its own rule 4 audit (testers'
+route set differs and `Open` is always filled; implementer keeps `Build:` as evidence;
+researcher has two alternate structures).
+
+## Universal invariants (body)
+
+- **Every section always appears; write "none" when empty.** Holds for all 16 except
+  `alternatives-explorer` (no such note; structure still fixed). Absence of a section = a
+  malformed report, not an empty one.
+- **The report is the agent's final message** (`Agent` tool result / `last_assistant_message`).
+- **`unreviewable` is the only verdict word shared across critics.** The bad/clean words are
+  axis-specific (table below).
 
 ## Critics (8) — shared 5-section shape, with per-critic deviations
 
-Emitted order is: `route:` (first line inside the envelope), then `<target>` ·
-`<findings>` · `<clean>` · `Out of scope`. The axis verdict word is **not emitted** — it
-maps to `route`: bad → `fix`, clean → `accept`, unreviewable → `redrive`. The header names
-are **not** uniform — three critics rename a section:
-
-Conversion status: legal-critic (reference) and correctness, simplicity, performance,
-docs, change-discipline emit `route`. **security-critic and design-critic are not yet
-converted** — their "one entry per target (multiple targets → multiple entries)" clause
-must be resolved against the single-block envelope first (see report-format.md "Rollout
-order").
+Emitted order: `route:` (first line inside the envelope), then `<target>` · `<findings>` ·
+`<clean>` · `Out of scope`. The axis verdict word is **not emitted** — it maps to `route`:
+bad → `fix`, clean → `accept`, unreviewable → `redrive`. The header names are **not** uniform
+— three critics rename a section. Converted: legal-critic (reference), correctness, simplicity,
+performance, docs, change-discipline. Pending: security, design (see "Converting an agent file").
 
 | Critic | target hdr | axis: bad \| clean \| unreviewable (→ `fix` \| `accept` \| `redrive`) | findings hdr (`fix`) | clean hdr (`accept`) | severity scale |
 | --- | --- | --- | --- | --- | --- |
@@ -44,11 +132,11 @@ order").
 | legal-critic | `Target` | `risks-found` \| `none-found` \| `unreviewable` | **`Risks`** | `Checked` | high/medium/low |
 | change-discipline-critic | **`Mandate`** | `undisciplined` \| `disciplined` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
 
-Per-critic deviations (they no longer affect routing — `route` is uniform — but the
-manager and hook still read these headers):
-- **legal-critic findings live under `Risks`, not `Problems`.** Under the old
-  section-name routing this misrouted to a silent clean; `route` closes it — a legal risk
-  emits `route: fix` like any critic.
+Per-critic deviations (they no longer affect routing — `route` is uniform — but the manager
+and hook still read these headers):
+- **legal-critic findings live under `Risks`, not `Problems`.** Under the old section-name
+  routing this misrouted to a silent clean; `route` closes it — a legal risk emits `route: fix`
+  like any critic.
 - **design-critic's clean section is `Challenged`, not `Checked`.**
 - **change-discipline-critic's first section is `Mandate`, not `Target`.**
 - **legal-critic keeps a standing legal-advice note in `Out of scope` that always stays**,
@@ -71,21 +159,20 @@ section that sets the route is never "none". (Axis words map the same: bad → `
 | whitebox-tester | `Tests` · `Suite` · `Findings` · `Checked` · `Open` | `Findings` | critical/high/medium/low | yes |
 | mcdc-tester | `Decisions covered` · `Coverage` · `Tests` · `Suite` · `Findings` · `Open` | `Findings` | critical/high/medium/low | yes |
 
-- All three carry an **`Open`** section (anything needing a manager decision) — the
-  manager must consume it, not just `Findings`.
-- `blackbox` `Findings` are **spec gaps** the manager resolves, never routed to an
-  implementer. Its `Findings` severity is high/medium/low (no `critical`), and it has no
-  `Suite` (it never runs the tests — no shell).
-- `whitebox`/`mcdc` `Suite`: an xfail/skip parked against a `Finding` = an open bug → fix
-  unit.
+- All three carry an **`Open`** section (anything needing a manager decision) — the manager
+  must consume it, not just `Findings`.
+- `blackbox` `Findings` are **spec gaps** the manager resolves, never routed to an implementer.
+  Its `Findings` severity is high/medium/low (no `critical`), and it has no `Suite` (it never
+  runs the tests — no shell).
+- `whitebox`/`mcdc` `Suite`: an xfail/skip parked against a `Finding` = an open bug → fix unit.
 
 ## Implementer (1)
 
 Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 - `Build` = the build/typecheck run and its result: **`pass`, or `fail` with the failing
   output** — the manager's escalation-ladder trigger.
-- `Open` = anything it stopped on (spec gap/conflict, a needed out-of-unit change, a
-  decision beyond its unit) → a manager decision.
+- `Open` = anything it stopped on (spec gap/conflict, a needed out-of-unit change, a decision
+  beyond its unit) → a manager decision.
 - Every section always appears; "none" when empty.
 
 ## Advisory (4)
@@ -97,43 +184,24 @@ Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 | verifier | `Verdict` · `Claims` · `Notes` | `Verdict` = **`PASS` or `FAIL`** overall (FAIL if any claim fails). `Verdict: FAIL` blocks acting on the researched answer. |
 | alternatives-explorer | `Goal` · `Constraints` · `Alternatives` · `Recommendation` | take the single `Recommendation` into a design decision, then a fix unit. (No "every section none" note; structure still fixed.) |
 
-## Enforcement-hook parameters (settled this session)
+## Enforcement hook (SubagentStop — built later)
 
-The routing signal is no longer a verdict word or a section set — it is the first-line
-`route:` field defined in `build-orchestration-report-format.md` (approach A: the report
-format carries one normalized disposition natively). This doc stays the source of truth
-for the **body sections**; the hook and the manager route on `route`.
+Keyed on `agent_type`: validates that the envelope markers are present and the first non-empty
+line inside is `route:` with a token-set legal for that agent. A **pure validator**, not a
+converter. Needs docs citation + user sign-off before writing (CLAUDE.md).
 
-For the `SubagentStop` hook that will validate reports (build next session):
-- **Event / inputs** (verified against code.claude.com/docs/en/hooks): `SubagentStop`
-  receives `agent_type` (selects the legal `route` value-set), `last_assistant_message`
-  (report text), `agent_id` (loop-guard key), `transcript_path`, `permission_mode`.
-- **Block mechanism**: emit `{"decision":"block","reason":"…"}` (exit 0) → the subagent
-  continues and re-emits before its report reaches the manager. Exit 2 also blocks.
-- **Loop-guard**: docs expose **no** `stop_hook_active`-style field for SubagentStop, so
-  track a per-`agent_id` block count in a state file and **fail open after 2** — then the
-  manager's consumption fail-safe (`can't place it → redrive`) catches it.
-- **Validate `route`, not the body sections.** The check is: the envelope markers are
-  present, and the first line inside is `route:` with a token-set legal for that
-  `agent_type` (value-sets in report-format.md). The body sections below are read by the
-  human/manager, not routed on — so the hook does not police their headers, keeping its
-  surface off the agent files' prose.
+- **Inputs** (verified vs code.claude.com/docs/en/hooks): `agent_type` (selects the legal
+  `route` value-set), `last_assistant_message` (report text), `agent_id` (loop-guard key),
+  `transcript_path`, `permission_mode`.
+- **Block**: `{"decision":"block","reason":"…"}` (exit 0; exit 2 also blocks) → the subagent
+  continues and re-emits before its report reaches the manager.
+- **Loop-guard**: docs expose no `stop_hook_active`-style field for `SubagentStop`, so track a
+  per-`agent_id` block count in a state file and **fail open after 2** — then the manager's
+  consumption fail-safe (can't place it → `redrive`) catches it.
+- **Validate `route`, not the body sections** — keeps the hook's surface off the agent files'
+  prose.
 
-## Open decisions for next session
-
-1. **Legal-critic `Risks`-reads-as-clean — resolved by `route`.** Routing no longer reads
-   section names, so legal's findings under `Risks` can't misroute; a legal risk emits
-   `route: fix` like any critic. Closed when the SKILL rebinds to `route`
-   (report-format.md "Next steps" #2).
-2. **Block-and-retry vs warn-only.** Block bounces a malformed report back to the subagent
-   (stronger, can loop → needs the guard). Warn-only injects the problem as
-   `hookSpecificOutput.additionalContext` for the manager and never blocks (simpler, no
-   loop). Pick one.
-3. **Drift control — narrowed.** The hook checks only the `route` value-set per
-   `agent_type` (small, stable surface), not the body headers, so it no longer duplicates
-   the agent files' section names.
-4. **Non-uniform severity scale** (critical only on 4 of 8 critics) — confirm the manager's
-   "critical/high block close-out" rule reads correctly on the high-topped axes.
-5. **Locator-envelope enforcement** — how the report's delimiters are specified in the
-   agent files without confusing report-format for instruction (design in
-   report-format.md "Locator envelope").
+Open: block-and-retry vs warn-only (block bounces a malformed report back, stronger but can
+loop; warn-only injects the problem as `hookSpecificOutput.additionalContext` and never
+blocks); confirm the "critical/high block close-out" rule reads correctly on the high-topped
+axes (severity not uniform across critics).

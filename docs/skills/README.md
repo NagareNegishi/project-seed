@@ -36,4 +36,5 @@ a skill drove them (see `../permissions/v4-gh-allowlist.md`).
   [build-orchestration-design-notes.md](build-orchestration-design-notes.md) (rationale),
   [build-orchestration-risks.md](build-orchestration-risks.md) (risk backlog), and
   [build-orchestration-report-schemas.md](build-orchestration-report-schemas.md) (the
-  single source of truth for every worker's report structure).
+  single source of truth for every worker's report — the `route` field, locator
+  envelope, and body sections).

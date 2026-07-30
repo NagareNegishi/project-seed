@@ -55,74 +55,54 @@ the skill is; this one holds *why* the calls were made and what's still open.
 
 ## Bash-agent isolation — merge gate + git fence
 
-Built: `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove`) plus the git-fence
-hooks below. `merge` refuses whenever `audit` reports an out-of-scope path, so a
-violation cannot cross even if the manager forgets to look. Cross-refs: authoring §13,
-agent frontmatter. The manager drives isolation only through these subcommands; the raw
-`git -C <wt> …` commands in the bullets below document what each subcommand does
-internally and serve as a manual fallback, not a second path to run by hand.
+Built: `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove|start|finalize`) plus the
+git-fence hooks below. This section holds the decisions; the script is the mechanism, and the
+manager drives isolation only through its subcommands. Cross-refs: authoring §13, agent
+frontmatter.
 
-- **One gate for every Bash agent.** `implementer`, `whitebox`, `mcdc`, and `debugger`
-  all carry Bash, so none can be path-jailed (§12); all four route through this one
-  worktree lifecycle instead of a second mechanism. Shapes differ — the implementer's
-  checkout prunes the tests, the others are full — but the crossing rule is identical:
-  nothing reaches the branch except an in-scope `merge`. The Bash testers moved here off
-  the old `.agent-scope` snapshot; `blackbox` (no Bash) stays path-jailed.
-- **The gate is inherent, not added.** The agent runs no git and worktrees never
-  auto-sync, so its edits sit uncommitted in the worktree and reach the branch only
-  when the manager moves them. No merge happens behind the manager's back.
-- **Inspect before anything crosses.** The main checkout's `git status` shows nothing
-  (dirty state is per-tree). The manager reads the worktree: `git -C <wt> add -A`,
-  then `git -C <wt> status --porcelain` (the definitive changed-path list — this *is*
-  the scope audit) and `git -C <wt> diff --cached` for content.
-- **Integrate by branch-merge, gated by the audit.** Commit the worktree's staged
-  changes onto its `impl/<unit>` branch, then `git -C <root> merge impl/<unit>` in main.
-  The audit already refused any out-of-scope path, so the branch is wholly in-scope and
-  branch-merge's all-or-nothing has nothing bad to admit — the path-filtering that once
-  forced a `git apply --3way` patch is redundant. A real merge is the right base-drift
-  tool: it integrates off the true merge-base, so non-overlapping edits to a path a
-  concurrent unit already landed auto-merge (git's default), and a real conflict leaves
-  standard markers plus an unmerged index in main that blocks further work until resolved.
-  Patch-apply faked a per-file ancestor from the patch's blob ids — weaker exactly where
-  concurrency bites: new shared files have no ancestor, and its half-applied state did not
-  block the next merge. Pruned test dirs merge safely — sparse-checkout sets skip-worktree,
-  and git will not stage a deletion for an absent skip-worktree file (git-update-index), so
-  merging the implementer branch never removes tests from main. On conflict, `git -C <root>
-  merge --abort` restores main and the work stays on the branch; a scope refusal commits
-  nothing to main. "Push back" a scope violation = the audit refuses before merge, or
-  `git -C <wt> restore --staged --worktree <bad-path>` at the source.
-- **Scaffold commits, collapsed at finalize.** A real merge needs commits to compose (unit
-  B merges onto A only if A is a commit, giving a clean tree and a true merge-base), so each
-  `merge` commits its unit. But those per-unit commits must not become the branch's history —
-  git stays a separate, user-gated step. So `start` stamps the session's base commit and
-  `finalize` runs `git -C <root> reset --mixed <stamp>`: it drops every scaffold commit and
-  leaves the whole integrated result as uncommitted changes for one deliberate pass through
-  the `git-commit` skill. The reset refuses unless the stamp is an ancestor of HEAD, so it
-  can only ever drop commits made this session — never pre-session or pushed history; nothing
-  is pushed at any point. Consequence: per-unit commit messages are disposable (`build:
-  <unit>`), so they need not meet the `git-commit` standard — only the finalize commits do.
-  This is the reconciliation of correct base-drift merging (needs commits) with "nothing
-  lands in history until the user's final check" (the reason the old patch path committed
-  nothing); a single stamp is the first sliver of the durable session state item 4 wants.
-- **Git fence is a hook, not a prompt line.** A prompt rule can't hold a Bash-carrying
-  agent; a `PreToolUse`/`Bash` hook can. Two variants, wired per agent frontmatter:
+- **One gate for every Bash agent.** `implementer`, `whitebox`, `mcdc`, and `debugger` all
+  carry Bash, so none can be path-jailed (§12); all four route through one worktree lifecycle.
+  `blackbox` (no Bash) stays path-jailed instead. Shapes differ — the implementer's checkout
+  prunes the tests, the others are full — but the crossing rule is identical: nothing reaches
+  the branch except an in-scope `merge`.
+- **The gate is inherent, not added.** The agent runs no git and worktrees never auto-sync, so
+  its edits sit uncommitted in the worktree and reach the branch only when the manager merges.
+  No merge happens behind the manager's back; `audit` refuses any out-of-scope path before
+  anything crosses.
+- **Integrate by real `git merge`, not `git apply`.** The audit already refused out-of-scope
+  paths, so the branch is wholly in-scope and branch-merge's all-or-nothing has nothing bad to
+  admit. A real merge integrates off the true merge-base: concurrent non-overlapping edits to a
+  path auto-merge, and a real conflict leaves standard markers plus an unmerged index in main
+  that blocks further work until resolved. Patch-apply faked a per-file ancestor from the
+  patch's blob ids — weaker exactly where concurrency bites (new shared files have no ancestor;
+  its half-applied state didn't block the next merge). Pruned test dirs merge safely:
+  sparse-checkout sets skip-worktree, and git won't stage a deletion for an absent
+  skip-worktree file, so merging never removes tests from main.
+- **Scaffold commits, collapsed at finalize.** A real merge needs commits to compose (unit B
+  merges onto A only if A is a commit, giving a true merge-base), so each `merge` commits its
+  unit — but those commits must not become the branch's history. `start` stamps the session's
+  base commit; `finalize` runs `reset --mixed <stamp>`, dropping every scaffold commit and
+  leaving the whole integrated result as uncommitted changes for one deliberate pass through the
+  `git-commit` skill. The reset refuses unless the stamp is an ancestor of HEAD, so it can only
+  drop commits made this session — never pre-session or pushed history. Consequence: per-unit
+  commit messages are disposable (`build: <unit>`); only the finalize commit meets the
+  `git-commit` standard. This reconciles correct base-drift merging (needs commits) with
+  "nothing lands in history until the user's final check."
+- **Git fence is a hook, not a prompt line.** A prompt rule can't hold a Bash-carrying agent; a
+  `PreToolUse`/`Bash` hook can. Two variants, wired per agent frontmatter:
   - `no-git-jail.sh` — deny-all, for agents that never need git: `implementer`,
     `whitebox-tester`, `mcdc-tester`.
-  - `git-readonly-jail.sh` — allowlist of read-only subcommands (fail-closed), for
-    `debugger`: it may inspect history (log/blame/show/diff) but not mutate the tree.
-    Dual-mode names (config, tag, branch, stash, reflog) are denied — the top
-    subcommand can't prove the call is read-only.
-  Both best-effort: indirect calls (`$(…)`, a wrapper) evade them, the same Bash seam
-  as everywhere. `blackbox-tester` carries no Bash, so needs none.
-- **Hard-fail, then push back — never lose work.** A scope-refused `merge` (the audit
-  fires before any commit) leaves the worktree untouched; the edits stay there. The
-  manager does not auto-fix: it
-  `SendMessage`s the violation (exact out-of-scope paths) back to the same worker
-  to relocate into its unit, re-audits, then merges — the escalation ladder's strike-1,
-  at most twice, then discard the worktree and re-spawn or escalate. Manager-side
-  `git -C <wt> restore --staged --worktree <path>` is a fallback only for a trivial
-  stray not worth round-tripping. Rationale: the manager blindly restoring a path can
-  break in-scope code that referenced it; the worker owns the relocation.
+  - `git-readonly-jail.sh` — allowlist of read-only subcommands (fail-closed), for `debugger`:
+    it may inspect history (log/blame/show/diff) but not mutate the tree. Dual-mode names
+    (config, tag, branch, stash, reflog) are denied — the top subcommand can't prove read-only.
+  Both best-effort: indirect calls (`$(…)`, a wrapper) evade them, the same Bash seam as
+  everywhere. `blackbox-tester` carries no Bash, so needs none.
+- **Hard-fail, then push back — never lose work.** A scope-refused `merge` (the audit fires
+  before any commit) leaves the worktree untouched; the edits stay there. The manager does not
+  auto-fix: it `SendMessage`s the violation (exact out-of-scope paths) back to the same worker
+  to relocate into its unit, re-audits, then merges — the escalation ladder's strike-1, at most
+  twice, then discard the worktree and re-spawn or escalate. Rationale: the manager blindly
+  restoring a path can break in-scope code that referenced it; the worker owns the relocation.
 
 ## Still open
 
