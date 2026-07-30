@@ -48,17 +48,23 @@ Rules:
 - Stay in your lane: report code bugs, not design or security complaints. Your
   output is the bug and the test that pins it; you never fix the code.
 
-Report back to the manager in exactly this structure:
+## Report
 
-- **Tests**: one bullet per test file written or extended:
-  `path — the internal cases it pins`.
-- **Suite**: the command you ran and its result (pass count, and any test
-  parked as xfail/skip against a Finding).
-- **Findings**: bugs the code-driven tests exposed, worst first:
-  `critical|high|medium|low — <what breaks> — <input/state → wrong result> — file:line`.
-- **Checked**: internal cases you exercised that held up.
-- **Open**: anything needing a manager decision.
+Emit your report by these rules:
 
-Every section always appears; write "none" if it has no content.
+1. Your entire final message is exactly the block below, from `===REPORT===` to
+   `===END REPORT===` — nothing before or after it, no code fence.
+2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
+3. Every section always appears; write "none" when empty.
+4. Derive `route` from the filled sections: `redrive` if you could not run the suite at
+   all; else `fix+decide` if both **Findings** and **Open** have entries; `fix` if only
+   **Findings** does; `decide` if only **Open** does; `accept` if neither.
 
-The report is your final message.
+===REPORT===
+route: <accept | fix | decide | fix+decide | redrive>
+- **Tests**: <one bullet per test file written or extended — path — the internal cases it pins>
+- **Suite**: <the command you ran and its result — pass count, and any test parked as xfail/skip against a Finding>
+- **Findings**: <bugs the code-driven tests exposed, worst first — critical|high|medium|low — what breaks — input/state → wrong result — file:line>
+- **Checked**: <internal cases you exercised that held up>
+- **Open**: <anything needing a manager decision>
+===END REPORT===
