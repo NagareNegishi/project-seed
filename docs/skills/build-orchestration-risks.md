@@ -83,6 +83,51 @@ Built on the corrected flow and the state file.
    user; undefined behavior — hang, or invent a decision and record it as the user's. Reuses
    the session-mode introspection from #7.
 
+## Proposal — critic-suggested fixes (not yet sequenced)
+
+Large change, not yet accepted; documented here so the decision has context. Touches the
+SKILL, every critic agent def, and the report-schemas doc — sequence into a phase once decided.
+
+**The hole.** When a critic surfaces a problem the manager has no fix for, the flow's only move
+is to route it to an `implementer` as a fix unit. But an implementer needs to be told *what* to
+build, so the manager must guess an approach and dispatch **blind**. Options (`alternatives-explorer`)
+are reachable only *reactively*, gated behind the escalation ladder: two failed implementer
+attempts → `debugger` → then alternatives. There is no path from "problem with no known fix"
+straight to getting an approach before dispatch.
+
+**Root cause.** Critics report problems but are contracted *not* to suggest fixes (every critic
+def: "does not fix anything, suggest alternatives, or judge design"). So the fix direction never
+rides along with the problem, even when the critic — the actor with the most context on it —
+has an obvious one.
+
+**Proposed change.** Let a critic emit an axis-scoped **fix direction** alongside a problem, and
+route on it:
+- critic gives one clear, obvious fix direction → manager routes to an `implementer` as a now-bounded unit;
+- no direction given, or multiple with no clear winner → surface to the user.
+
+Composed with the manager's existing authority test: a critic's "obvious" fix is obvious only
+*on its axis* (a security-critic can't see design ramifications), so a clear direction that
+**touches design or spec still surfaces to the user**; only clear-and-in-spec goes straight to
+the implementer.
+
+**Surfaces to change.**
+- Every critic agent def — reverse the "does not suggest alternatives" clause, scoped to a
+  fix *direction on its own axis only*, not a design.
+- Report-schemas doc — critics carry an optional fix-direction field in the body; `route`
+  grammar unaffected (still `accept`/`fix`/`decide`/`redrive`).
+- SKILL step 11 + guardrails ladder — add the proactive branch (clear→implementer,
+  ambiguous/design→user) ahead of the reactive `alternatives-explorer` path, which stays as
+  the implementer-failed fallback.
+
+**Open questions.**
+- Does an axis-scoped "fix direction" bleed critics back into design work the split was meant to
+  prevent (a critic tunnel-visioning on its own fix and under-reporting)? The scoping is the
+  guard; confirm it holds.
+- Whether this makes the orphaned advisory agents cuttable: options-gathering moves onto the
+  critic (obvious case) or the user (ambiguous case), so `alternatives-explorer` becomes optional
+  and `researcher`/`verifier` — already never spawned anywhere in the flow — genuinely droppable.
+  Decide cut-vs-wire for those in the same pass.
+
 ## Lower severity (fold into the phase noted)
 
 - **Debugger worktree must be discarded** (Phase A / item 2) — line 71; correct behavior
