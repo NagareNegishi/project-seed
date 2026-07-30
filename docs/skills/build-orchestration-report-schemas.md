@@ -95,14 +95,15 @@ sections); `route:` first in the envelope with the axis verdict word deleted; `(
 X)` parentheticals dropped (the coupling lives once, in rule 4); bare template, no fence;
 "write no files" in the role paragraph, not a report rule.
 
-**Not yet converted: security-critic and design-critic.** Both carry "one entry per target
+**All 8 critics converted.** security-critic and design-critic carried "one entry per target
 (multiple targets → multiple entries)," which the single-block envelope can't hold (the hook
-reads only the first `===REPORT===`…`===END REPORT===` span). Resolve to one report per
-subagent — `route` = the worst disposition across targets, `Target` names them all, findings
-cite each — or rethink the locator, before converting. The non-critic types (testers,
-implementer, advisory) are also not mechanical — each needs its own rule 4 audit (testers'
-route set differs and `Open` is always filled; implementer keeps `Build:` as evidence;
-researcher has two alternate structures).
+reads only the first `===REPORT===`…`===END REPORT===` span). Resolved by dropping the clause:
+the build-orchestration manager allocates critics **per unit** (SKILL steps 2 and 5), so each
+spawn has exactly one target — the multi-target path was never exercised. Both now match the
+other six single-block, single-target. The non-critic types (testers, implementer, advisory)
+are still not mechanical — each needs its own rule 4 audit (testers' route set differs and
+`Open` is always filled; implementer keeps `Build:` as evidence; researcher has two alternate
+structures).
 
 ## Universal invariants (body)
 
@@ -118,8 +119,8 @@ researcher has two alternate structures).
 Emitted order: `route:` (first line inside the envelope), then `<target>` · `<findings>` ·
 `<clean>` · `Out of scope`. The axis verdict word is **not emitted** — it maps to `route`:
 bad → `fix`, clean → `accept`, unreviewable → `redrive`. The header names are **not** uniform
-— three critics rename a section. Converted: legal-critic (reference), correctness, simplicity,
-performance, docs, change-discipline. Pending: security, design (see "Converting an agent file").
+— three critics rename a section. All 8 converted: legal-critic (reference), correctness,
+simplicity, performance, docs, change-discipline, security, design.
 
 | Critic | target hdr | axis: bad \| clean \| unreviewable (→ `fix` \| `accept` \| `redrive`) | findings hdr (`fix`) | clean hdr (`accept`) | severity scale |
 | --- | --- | --- | --- | --- | --- |
