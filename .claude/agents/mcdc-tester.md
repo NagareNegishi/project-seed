@@ -47,7 +47,7 @@ Rules:
 
 1. Back every Finding with evidence another agent can open: the condition
    combination that triggers it, the wrong outcome, and `file:line`.
-2. Do not inflate a nitpick to critical, and do not invent bugs to fill the
+2. Do not inflate a nitpick to a high, and do not invent bugs to fill the
    report. If the decisions hold up under MC/DC, say so and list the conditions
    you isolated.
 3. Stay in your lane: build MC/DC cases for the named decisions and report the
@@ -72,6 +72,6 @@ route: <accept | fix | decide | fix+decide | redrive>
 - **Coverage**: <the measured MC/DC number if the stack has a capable tool; otherwise "not measurable on this stack">
 - **Tests**: <one bullet per test file written or extended — path — the decisions/conditions it pins>
 - **Suite**: <the command you ran and its result, including any case parked as xfail/skip against a Finding>
-- **Findings**: <bugs the cases exposed, worst first — critical|high|medium|low — what breaks — condition combination → wrong outcome — file:line>
+- **Findings**: <bugs the cases exposed, worst first — high|medium|low — what breaks — condition combination → wrong outcome — file:line>
 - **Open**: <anything needing a manager decision>
 ===END REPORT===

@@ -148,14 +148,14 @@ section that sets the route is never "none". (Axis words map the same: bad → `
 | Tester | sections, in order | findings hdr | severity | has `Suite` |
 | --- | --- | --- | --- | --- |
 | blackbox-tester | `Spec basis` · `Tests` · `Findings` · `Open` | `Findings` | high/medium/low | no |
-| whitebox-tester | `Tests` · `Suite` · `Findings` · `Checked` · `Open` | `Findings` | critical/high/medium/low | yes |
-| mcdc-tester | `Decisions covered` · `Coverage` · `Tests` · `Suite` · `Findings` · `Open` | `Findings` | critical/high/medium/low | yes |
+| whitebox-tester | `Tests` · `Suite` · `Findings` · `Checked` · `Open` | `Findings` | high/medium/low | yes |
+| mcdc-tester | `Decisions covered` · `Coverage` · `Tests` · `Suite` · `Findings` · `Open` | `Findings` | high/medium/low | yes |
 
+- Severity is `high/medium/low` for all three (uniform with the critics).
 - All three carry an **`Open`** section (anything needing a manager decision) — the manager
   must consume it, not just `Findings`.
-- `blackbox` `Findings` are **spec gaps** the manager resolves, never routed to an implementer.
-  Its `Findings` severity is high/medium/low (no `critical`), and it has no `Suite` (it never
-  runs the tests — no shell).
+- `blackbox` `Findings` are **spec gaps** the manager resolves, never routed to an implementer;
+  it has no `Suite` (it never runs the tests — no shell).
 - `whitebox`/`mcdc` `Suite`: an xfail/skip parked against a `Finding` = an open bug → fix unit.
 
 ## Implementer (1)

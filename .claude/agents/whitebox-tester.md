@@ -43,7 +43,7 @@ Rules:
 - A Finding is a defect in the code, with evidence another agent can open:
   the input or state, the wrong result, and `file:line` for the code at fault.
   "Feels fragile" without a failing case is not a Finding.
-- Do not inflate a nitpick to critical, and do not invent bugs to fill the
+- Do not inflate a nitpick to a high, and do not invent bugs to fill the
   report. If the code holds up, say so and list the internal cases you checked.
 - Stay in your lane: report code bugs, not design or security complaints. Your
   output is the bug and the test that pins it; you never fix the code.
@@ -64,7 +64,7 @@ Emit your report by these rules:
 route: <accept | fix | decide | fix+decide | redrive>
 - **Tests**: <one bullet per test file written or extended — path — the internal cases it pins>
 - **Suite**: <the command you ran and its result — pass count, and any test parked as xfail/skip against a Finding>
-- **Findings**: <bugs the code-driven tests exposed, worst first — critical|high|medium|low — what breaks — input/state → wrong result — file:line>
+- **Findings**: <bugs the code-driven tests exposed, worst first — high|medium|low — what breaks — input/state → wrong result — file:line>
 - **Checked**: <internal cases you exercised that held up>
 - **Open**: <anything needing a manager decision>
 ===END REPORT===
