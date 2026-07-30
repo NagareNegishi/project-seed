@@ -87,36 +87,41 @@ Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 
 ## Enforcement-hook parameters (settled this session)
 
+The routing signal is no longer a verdict word or a section set — it is the first-line
+`route:` field defined in `build-orchestration-report-format.md` (approach A: the report
+format carries one normalized disposition natively). This doc stays the source of truth
+for the **body sections**; the hook and the manager route on `route`.
+
 For the `SubagentStop` hook that will validate reports (build next session):
 - **Event / inputs** (verified against code.claude.com/docs/en/hooks): `SubagentStop`
-  receives `agent_type` (selects schema), `last_assistant_message` (report text),
-  `agent_id` (loop-guard key), `transcript_path`, `permission_mode`.
+  receives `agent_type` (selects the legal `route` value-set), `last_assistant_message`
+  (report text), `agent_id` (loop-guard key), `transcript_path`, `permission_mode`.
 - **Block mechanism**: emit `{"decision":"block","reason":"…"}` (exit 0) → the subagent
   continues and re-emits before its report reaches the manager. Exit 2 also blocks.
 - **Loop-guard**: docs expose **no** `stop_hook_active`-style field for SubagentStop, so
   track a per-`agent_id` block count in a state file and **fail open after 2** — then the
-  manager's consumption fail-safe (`can't place it → unreviewable`) catches it.
-- **Check the minimum the manager routes on**, not every bullet, to limit drift against
-  the agent files. Per-agent minimums implied by the tables above:
-  - critics: `Verdict:` present with a value in that critic's triple, plus the matching
-    required section (`Problems`/`Risks`/`Challenged`/`Checked`/`Out of scope`).
-  - blackbox: `Findings` + `Open`. whitebox/mcdc: `Findings` + `Open` + `Suite`.
-  - implementer: `Build`. debugger: `Root cause`. verifier: `Verdict:` + `Claims`.
-  - researcher: `Answer` **or** `Needed`. alternatives-explorer: `Recommendation`.
+  manager's consumption fail-safe (`can't place it → redrive`) catches it.
+- **Validate `route`, not the body sections.** The check is: the envelope markers are
+  present, and the first line inside is `route:` with a token-set legal for that
+  `agent_type` (value-sets in report-format.md). The body sections below are read by the
+  human/manager, not routed on — so the hook does not police their headers, keeping its
+  surface off the agent files' prose.
 
 ## Open decisions for next session
 
-1. **SKILL Critics bullet is subtly wrong for legal-critic.** It routes bad on
-   "`Problems` populated", but legal emits findings under `Risks` → a legal risk currently
-   reads as clean. Fix: route on the findings section per critic (`Problems` **or**
-   `Risks`), or route on the `Verdict` word via the table above. Decide which and patch the
-   SKILL. (`.claude/skills/build-orchestration/SKILL.md`, "Reports — demand and consume".)
+1. **Legal-critic `Risks`-reads-as-clean — resolved by `route`.** Routing no longer reads
+   section names, so legal's findings under `Risks` can't misroute; a legal risk emits
+   `route: fix` like any critic. Closed when the SKILL rebinds to `route`
+   (report-format.md "Next steps" #2).
 2. **Block-and-retry vs warn-only.** Block bounces a malformed report back to the subagent
    (stronger, can loop → needs the guard). Warn-only injects the problem as
    `hookSpecificOutput.additionalContext` for the manager and never blocks (simpler, no
    loop). Pick one.
-3. **Drift control.** The section names here duplicate the agent files. Either keep the
-   hook's check to the per-agent minimums above (small surface) or generate the schema
-   from one place. Decide before the hook hardcodes headers.
+3. **Drift control — narrowed.** The hook checks only the `route` value-set per
+   `agent_type` (small, stable surface), not the body headers, so it no longer duplicates
+   the agent files' section names.
 4. **Non-uniform severity scale** (critical only on 4 of 8 critics) — confirm the manager's
    "critical/high block close-out" rule reads correctly on the high-topped axes.
+5. **Locator-envelope enforcement** — how the report's delimiters are specified in the
+   agent files without confusing report-format for instruction (design in
+   report-format.md "Locator envelope").

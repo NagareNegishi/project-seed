@@ -57,31 +57,31 @@ hardening it.
    critic's verdict is an axis-specific 3-way (`incorrect`/`correct`, `unsound`/`sound`,
    …; only `unreviewable` shared), so a well-formed report misrouted silently — worst case
    an axis-bad verdict read as `clean`.
-   **Consumption side `DONE`** — SKILL "Reports — demand and consume" now routes every
-   family on *which section is populated*, not the verdict word, with a fail-safe: a report
-   it cannot place → `unreviewable`, never clean. Contract pinned per agent: critics route
-   on `Problems`/`Out of scope`; testers add `Open`; debugger no-repro is `Root cause:
-   none`; researcher ambiguity is the `Needed` structure; verifier is `Verdict: FAIL`.
+   **Consumption side `DONE` (interim), superseded by format change.** SKILL "Reports —
+   demand and consume" first routed on *which section is populated*, not the verdict word,
+   with a fail-safe. That is being replaced by **approach A: change the report format at
+   the source** so every report carries one normalized first-line `route:` field
+   (`accept`/`fix`/`decide`/`redrive`, `+`-combinable) — the manager and hook route on
+   `route`, not on section names. Design + per-agent mapping in
+   `build-orchestration-report-format.md`.
    **Enforcement side — pulled forward from Phase C.** A `SubagentStop` hook keyed on
-   `agent_type` validates `last_assistant_message` against that per-agent schema and
-   `decision: block`s a malformed report back to the subagent before it reaches the
-   manager. Grouped here, not in Phase C, because the report shapes are already stable
-   (authoring §2, promoted agents), the hook has no Phase-B dependency, and it shares no
-   machinery with items 5–7 (those are PreToolUse/session-mode). The consumption fail-safe
-   already makes a malformed report *safe* (respawn); the hook upgrades that to fixed-in-
-   place — so it is a reinforcement, not load-bearing for correctness. Needs docs citation
-   + user sign-off before writing (CLAUDE.md).
+   `agent_type` validates that `last_assistant_message` carries the locator envelope and a
+   `route:` value legal for that agent, and `decision: block`s a malformed report before it
+   reaches the manager. It is a **pure validator**, not a converter (a converter would have
+   to parse 16 flavors of NL prose — rejected). Grouped here, not in Phase C, because the
+   report shapes are stable, the hook has no Phase-B dependency, and it shares no machinery
+   with items 5–7. The consumption fail-safe already makes a malformed report *safe*
+   (redrive); the hook upgrades that to fixed-in-place. Needs docs citation + user sign-off
+   before writing (CLAUDE.md).
    **Report schemas collected** — `build-orchestration-report-schemas.md` transcribes all
-   16 agent reports (every section + condition) as the single source both the hook and the
-   manager routing bind to; the next session builds the hook and reconciles the SKILL from
-   that doc alone. Reading them in full surfaced non-uniform critic sections a grep hid:
-   legal uses `Risks` (not `Problems`), design uses `Challenged` (not `Checked`),
-   change-discipline leads with `Mandate` (not `Target`), legal keeps a standing note in
-   `Out of scope`, and `critical` severity exists on only 4 of 8 critics.
-   **Open (next session):** the SKILL Critics bullet routes bad on `Problems` populated but
-   legal emits `Risks` → a legal risk currently reads as clean (fix pending); loop-guard
-   against a persistently malformed agent; block-and-retry vs warn-only; drift control on
-   the duplicated section names. Full list in the schema doc's "Open decisions".
+   16 agent bodies (every section + condition); `route` maps from those. It stays the
+   source of truth for body sections; `report-format.md` owns the `route` field the hook
+   and manager bind to.
+   **Open (next session):** apply `route` to the 16 agent files; rebind the SKILL to
+   `route` (this closes the legal `Risks`-reads-as-clean bug — routing no longer touches
+   section names); design the locator-envelope enforcement without confusing format for
+   instruction; loop-guard; block-and-retry vs warn-only. Full list in report-format.md and
+   the schema doc's "Open decisions".
 
 ## Phase B — durable state infrastructure
 
