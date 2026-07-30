@@ -22,10 +22,18 @@ reports", `docs/agents/authoring.md` §2/§10 (the shared-shape rule these deriv
 
 ## Critics (8) — shared 5-section shape, with per-critic deviations
 
-Section order is: `<target>` · `Verdict` · `<findings>` · `<clean>` · `Out of scope`.
-The header names are **not** uniform — three critics rename a section:
+Emitted order is: `route:` (first line inside the envelope), then `<target>` ·
+`<findings>` · `<clean>` · `Out of scope`. The axis verdict word is **not emitted** — it
+maps to `route`: bad → `fix`, clean → `accept`, unreviewable → `redrive`. The header names
+are **not** uniform — three critics rename a section:
 
-| Critic | target hdr | Verdict: bad \| clean \| unreviewable | findings hdr (if bad) | clean hdr (if clean) | severity scale |
+Conversion status: legal-critic (reference) and correctness, simplicity, performance,
+docs, change-discipline emit `route`. **security-critic and design-critic are not yet
+converted** — their "one entry per target (multiple targets → multiple entries)" clause
+must be resolved against the single-block envelope first (see report-format.md "Rollout
+order").
+
+| Critic | target hdr | axis: bad \| clean \| unreviewable (→ `fix` \| `accept` \| `redrive`) | findings hdr (`fix`) | clean hdr (`accept`) | severity scale |
 | --- | --- | --- | --- | --- | --- |
 | correctness-critic | `Target` | `incorrect` \| `correct` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
 | security-critic | `Target` | `vulnerable` \| `clean` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
@@ -36,10 +44,11 @@ The header names are **not** uniform — three critics rename a section:
 | legal-critic | `Target` | `risks-found` \| `none-found` \| `unreviewable` | **`Risks`** | `Checked` | high/medium/low |
 | change-discipline-critic | **`Mandate`** | `undisciplined` \| `disciplined` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
 
-Deviations that break naive routing:
-- **legal-critic findings live under `Risks`, not `Problems`.** Routing bad on
-  "`Problems` populated" misses every legal risk → silent clean. (Current SKILL bug — see
-  Open decisions.)
+Per-critic deviations (they no longer affect routing — `route` is uniform — but the
+manager and hook still read these headers):
+- **legal-critic findings live under `Risks`, not `Problems`.** Under the old
+  section-name routing this misrouted to a silent clean; `route` closes it — a legal risk
+  emits `route: fix` like any critic.
 - **design-critic's clean section is `Challenged`, not `Checked`.**
 - **change-discipline-critic's first section is `Mandate`, not `Target`.**
 - **legal-critic keeps a standing legal-advice note in `Out of scope` that always stays**,
@@ -48,8 +57,10 @@ Deviations that break naive routing:
   carry `critical`; simplicity, performance, docs, legal top out at `high`. The manager's
   "critical/high block close-out" means "high" is the top block-trigger on those four axes.
 
-Every critic: `Verdict` is exactly the 3-way above; `<findings>` required iff bad;
-`<clean>` required iff clean; `Out of scope` required iff unreviewable.
+Every critic: `route` is `fix` (a finding) | `accept` (clean) | `redrive` (unreviewable),
+from the axis words above; the routed section is filled — `<findings>` for `fix`,
+`<clean>` for `accept`, `Out of scope` for `redrive` — and every section still appears,
+"none" when empty.
 
 ## Testers (3) — no `Verdict`
 

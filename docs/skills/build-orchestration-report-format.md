@@ -136,8 +136,15 @@ other critics:
 
 ## Rollout order
 
-Critics first — the 8 share the shape above and convert off the `report-schemas.md` table.
-The other types are not mechanical; audit each before applying:
+Critics first. Six convert mechanically off the `report-schemas.md` table — legal-critic
+(done, reference) plus correctness, simplicity, performance, docs, change-discipline
+(done). **security-critic and design-critic need a decision before converting:** both carry
+"One entry per target (multiple targets → multiple entries)," which the single-block
+locator envelope can't hold (the hook reads only the first `===REPORT===`…`===END REPORT===`
+span). Resolve to one report per subagent — `route` = the worst disposition across targets,
+`Target` names them all, findings cite each — or keep multi-entry and rethink the locator.
+
+The other types are not mechanical either; audit each before applying:
 - **testers**: no `Verdict`; route set differs (`accept | decide | redrive`, `+fix` for
   whitebox/mcdc); `Open` is a section every tester fills.
 - **implementer**: `Build: pass|fail` stays as evidence; the disposition moves to `route`.
