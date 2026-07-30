@@ -31,3 +31,9 @@ a skill drove them (see `../permissions/v4-gh-allowlist.md`).
 - [github-issue-creator-decisions.md](github-issue-creator-decisions.md):
   decision log for the `github-issue-creator` skill (draft-only scope, output
   format, structure).
+- `build-orchestration*.md`: design ledger for the `build-orchestration` skill —
+  [build-orchestration.md](build-orchestration.md) (SKILL.md spec source),
+  [build-orchestration-design-notes.md](build-orchestration-design-notes.md) (rationale),
+  [build-orchestration-risks.md](build-orchestration-risks.md) (risk backlog), and
+  [build-orchestration-report-schemas.md](build-orchestration-report-schemas.md) (the
+  single source of truth for every worker's report structure).

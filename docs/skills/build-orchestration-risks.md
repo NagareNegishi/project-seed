@@ -70,9 +70,18 @@ hardening it.
    machinery with items 5–7 (those are PreToolUse/session-mode). The consumption fail-safe
    already makes a malformed report *safe* (respawn); the hook upgrades that to fixed-in-
    place — so it is a reinforcement, not load-bearing for correctness. Needs docs citation
-   + user sign-off before writing (CLAUDE.md). **Open:** loop-guard against a persistently
-   malformed agent; keep the schema check to the minimum the manager routes on, to limit
-   drift against the agent files.
+   + user sign-off before writing (CLAUDE.md).
+   **Report schemas collected** — `build-orchestration-report-schemas.md` transcribes all
+   16 agent reports (every section + condition) as the single source both the hook and the
+   manager routing bind to; the next session builds the hook and reconciles the SKILL from
+   that doc alone. Reading them in full surfaced non-uniform critic sections a grep hid:
+   legal uses `Risks` (not `Problems`), design uses `Challenged` (not `Checked`),
+   change-discipline leads with `Mandate` (not `Target`), legal keeps a standing note in
+   `Out of scope`, and `critical` severity exists on only 4 of 8 critics.
+   **Open (next session):** the SKILL Critics bullet routes bad on `Problems` populated but
+   legal emits `Risks` → a legal risk currently reads as clean (fix pending); loop-guard
+   against a persistently malformed agent; block-and-retry vs warn-only; drift control on
+   the duplicated section names. Full list in the schema doc's "Open decisions".
 
 ## Phase B — durable state infrastructure
 
