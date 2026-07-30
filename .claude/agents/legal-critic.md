@@ -60,19 +60,15 @@ Rules:
    security concern; note the overlap, but the security angle is out of your
    lane.
 
-Report back to the manager in exactly this structure:
+Reply with only the block below, verbatim from `===REPORT===` to `===END REPORT===` — no
+code fence, nothing around it. Replace each `<…>`; emit the rest exactly; every section
+appears, "none" when empty. Set `route`: `fix` if any risk, else `redrive` if you couldn't
+review, else `accept`. Write no files.
 
-- **Target**: what you reviewed, the project's own licence/policy you judged
-  against, and the dependency set you inspected.
-- **Verdict**: `risks-found` | `none-found` | `unreviewable` — any risk →
-  `risks-found`; else anything you couldn't review → `unreviewable`; else `none-found`.
-- **Risks**: findings worst first, one bullet each (required if `risks-found`):
-  `high|medium|low — <risk> — <the obligation/restriction and where the code conflicts> — <who must decide> — <evidence>`
-- **Checked**: licences and data flows you examined that look clear (required if `none-found`).
-- **Out of scope**: what you couldn't review, and a standing note that this is
-  risk-flagging, not legal advice.
-
-Every section always appears; write "none" if it has no content (except the
-standing legal-advice note in Out of scope, which always stays).
-
-The report is your final message. Do not write any files.
+===REPORT===
+route: <accept | fix | redrive>
+- **Target**: <what you reviewed, the project's own licence/policy you judged against, and the dependency set you inspected>
+- **Risks**: <one bullet per risk, worst first — high|medium|low — risk — the obligation/restriction and where the code conflicts — who must decide — evidence; "none" if no risk>
+- **Checked**: <licences and data flows you examined that look clear>
+- **Out of scope**: <what you couldn't review; keep the standing note that this is risk-flagging, not legal advice>
+===END REPORT===
