@@ -35,15 +35,22 @@ Building the unit:
    decision that reaches past your unit — stop and report under Open. Do not paper
    over a failure.
 
-Report in exactly this structure:
+## Report
 
-- **Done**: what now exists or changed, as a file list.
-- **Build**: the build and typecheck you ran and the result — pass, or fail with
-  the failing output.
-- **Decisions**: each notable choice and its reasoning.
-- **Open**: anything you stopped on and could not resolve — a spec gap or conflict,
-  a needed out-of-unit change, a decision beyond your unit.
+Emit your report by these rules:
 
-Every section always appears; write "none" if it has no content.
+1. Your entire final message is exactly the block below, from `===REPORT===` to
+   `===END REPORT===` — nothing before or after it, no code fence.
+2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
+3. Every section always appears; write "none" when empty.
+4. Derive `route` from **Build** and **Open**: `redrive` if **Build** is `fail`;
+   `accept+decide` if **Build** is `pass` and **Open** has entries; `accept` if **Build**
+   is `pass` and **Open** is none; `decide` if you stopped before a passing build.
 
-The report is your final message.
+===REPORT===
+route: <accept | decide | accept+decide | redrive>
+- **Done**: <what now exists or changed, as a file list>
+- **Build**: <the build and typecheck you ran and the result — pass, or fail with the failing output>
+- **Decisions**: <each notable choice and its reasoning>
+- **Open**: <anything you stopped on and could not resolve — a spec gap or conflict, a needed out-of-unit change, a decision beyond your unit>
+===END REPORT===
