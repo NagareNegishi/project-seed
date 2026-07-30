@@ -51,11 +51,28 @@ hardening it.
    *Ride-along (debugger-worktree-discard):* deferred to Phase A follow-up — still just
    the line-71 reminder, no mechanism yet.
 
-3. **Report consumption assumes fields the manager can't guarantee.** *(severity #8)* Line
-   115 imposes no format, yet lines 118–133 route on specific tokens (`Verdict`, `Suite`,
-   `Root cause`). A critic phrasing its verdict differently misroutes silently — worst
-   case `axis-bad` read as `clean`. Settle the consumption contract; it is the other half
-   of the flow.
+3. **Report consumption assumes fields the manager can't guarantee.** *(severity #8)* The
+   consume section routed on literal tokens (`clean`, `axis-bad`, `"Ambiguous"`, `"could
+   not reproduce"`) that 7 of 8 critics and the researcher/debugger never emit — each
+   critic's verdict is an axis-specific 3-way (`incorrect`/`correct`, `unsound`/`sound`,
+   …; only `unreviewable` shared), so a well-formed report misrouted silently — worst case
+   an axis-bad verdict read as `clean`.
+   **Consumption side `DONE`** — SKILL "Reports — demand and consume" now routes every
+   family on *which section is populated*, not the verdict word, with a fail-safe: a report
+   it cannot place → `unreviewable`, never clean. Contract pinned per agent: critics route
+   on `Problems`/`Out of scope`; testers add `Open`; debugger no-repro is `Root cause:
+   none`; researcher ambiguity is the `Needed` structure; verifier is `Verdict: FAIL`.
+   **Enforcement side — pulled forward from Phase C.** A `SubagentStop` hook keyed on
+   `agent_type` validates `last_assistant_message` against that per-agent schema and
+   `decision: block`s a malformed report back to the subagent before it reaches the
+   manager. Grouped here, not in Phase C, because the report shapes are already stable
+   (authoring §2, promoted agents), the hook has no Phase-B dependency, and it shares no
+   machinery with items 5–7 (those are PreToolUse/session-mode). The consumption fail-safe
+   already makes a malformed report *safe* (respawn); the hook upgrades that to fixed-in-
+   place — so it is a reinforcement, not load-bearing for correctness. Needs docs citation
+   + user sign-off before writing (CLAUDE.md). **Open:** loop-guard against a persistently
+   malformed agent; keep the schema check to the minimum the manager routes on, to limit
+   drift against the agent files.
 
 ## Phase B — durable state infrastructure
 

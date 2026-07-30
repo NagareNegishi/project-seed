@@ -136,20 +136,23 @@ final message.
 
 Consume each family:
 
-- **Critics** — read `Verdict`. Axis-bad → triage `Problems` by severity into
-  batched fix units; critical/high block close-out, low → build-log accepted risk.
-  `unreviewable` → stage the missing input and respawn, or record the uncovered
-  axis. `clean` → record `Checked`, proceed.
-- **Testers** — no `Verdict`. Read `Findings`, and for whitebox/mcdc the `Suite`
-  line: an xfail/skip parked against a Finding is an open bug → fix unit. Blackbox
-  `Findings` are spec gaps for you to resolve, not an implementer.
-- **researcher / verifier** — a researcher "Ambiguous" reply bounces back to you;
-  pair a researched answer with `verifier`, and a verifier `FAIL` blocks acting on
-  it.
+- **Critics** — route on which section is populated, not the `Verdict` word (it
+  differs per critic). `Problems` populated → triage by severity into batched fix
+  units; critical/high block close-out, low → build-log accepted risk. `Out of
+  scope` populated → stage the missing input and respawn, or record the uncovered
+  axis. Both empty → record `Checked`, proceed. Cannot place it → treat as
+  `unreviewable`, never clean.
+- **Testers** — no `Verdict`. Read `Findings` and `Open`, and for whitebox/mcdc the
+  `Suite` line: an xfail/skip parked against a Finding is an open bug → fix unit.
+  Resolve blackbox `Findings` and every `Open` item yourself; never route one to an
+  implementer.
+- **researcher / verifier** — a researcher's ambiguous-task reply (its `Needed`
+  section, no `Answer`) bounces back to you; pair a researched answer with
+  `verifier`, and a verifier `Verdict: FAIL` blocks acting on it.
 - **alternatives-explorer** — take its single `Recommendation` into a design
   decision, then a fix unit.
-- **debugger** — `Root cause` + `Fix location` feed the next fix unit; "could not
-  reproduce" is an escalation, not a fix.
+- **debugger** — `Root cause` + `Fix location` feed the next fix unit; `Root cause:
+  none` (no reproduction) is an escalation, not a fix.
 
 ## The record
 
