@@ -86,8 +86,9 @@ token; (2) no standalone verdict/status line — `route` replaces it; (3) conten
 unchanged.
 
 **Critics share one shape — legal-critic is the reviewed reference.** Copy its `## Report`
-section from the file; per critic only two things change, both from the Critics table below:
-the section names in rule 4 and the severity scale. Structure: one final `## Report` heading
+section from the file; per critic only the target/clean header names change (Critics table
+below) — findings are always `Problems`, severity always `high/medium/low`. Structure: one
+final `## Report` heading
 (last in the file, everything above is how to do the job); rules 1–3 verbatim, rule 4 derives
 `route` from the filled sections; `route:` first in the envelope, no axis verdict word; bare
 template, no fence.
@@ -108,35 +109,33 @@ the single-block envelope can't hold it (the hook reads only the first
 
 ## Critics (8) — shared 5-section shape, with per-critic deviations
 
-Emitted order: `route:` (first line inside the envelope), then `<target>` · `<findings>` ·
+Emitted order: `route:` (first line inside the envelope), then `<target>` · `Problems` ·
 `<clean>` · `Out of scope`. The axis verdict word is **not emitted** — it maps to `route`:
-bad → `fix`, clean → `accept`, unreviewable → `redrive`. The header names are **not** uniform
-— three critics rename a section. All 8 converted: legal-critic (reference), correctness,
-simplicity, performance, docs, change-discipline, security, design.
+bad → `fix`, clean → `accept`, unreviewable → `redrive`. Findings sit under `Problems` and the
+severity scale is `high/medium/low` for all 8; only the target and clean header names deviate
+(two critics). All 8 converted: legal-critic (reference), correctness, simplicity, performance,
+docs, change-discipline, security, design.
 
-| Critic | target hdr | axis: bad \| clean \| unreviewable (→ `fix` \| `accept` \| `redrive`) | findings hdr (`fix`) | clean hdr (`accept`) | severity scale |
-| --- | --- | --- | --- | --- | --- |
-| correctness-critic | `Target` | `incorrect` \| `correct` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
-| security-critic | `Target` | `vulnerable` \| `clean` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
-| design-critic | `Target` | `unsound` \| `sound` \| `unreviewable` | `Problems` | **`Challenged`** | critical/high/medium/low |
-| simplicity-critic | `Target` | `overcomplicated` \| `simple` \| `unreviewable` | `Problems` | `Checked` | high/medium/low |
-| performance-critic | `Target` | `inefficient` \| `efficient` \| `unreviewable` | `Problems` | `Checked` | high/medium/low |
-| docs-critic | `Target` | `deficient` \| `sufficient` \| `unreviewable` | `Problems` | `Checked` | high/medium/low |
-| legal-critic | `Target` | `risks-found` \| `none-found` \| `unreviewable` | **`Risks`** | `Checked` | high/medium/low |
-| change-discipline-critic | **`Mandate`** | `undisciplined` \| `disciplined` \| `unreviewable` | `Problems` | `Checked` | critical/high/medium/low |
+| Critic | target hdr | axis: bad \| clean \| unreviewable (→ `fix` \| `accept` \| `redrive`) | findings hdr (`fix`) | clean hdr (`accept`) |
+| --- | --- | --- | --- | --- |
+| correctness-critic | `Target` | `incorrect` \| `correct` \| `unreviewable` | `Problems` | `Checked` |
+| security-critic | `Target` | `vulnerable` \| `clean` \| `unreviewable` | `Problems` | `Checked` |
+| design-critic | `Target` | `unsound` \| `sound` \| `unreviewable` | `Problems` | **`Challenged`** |
+| simplicity-critic | `Target` | `overcomplicated` \| `simple` \| `unreviewable` | `Problems` | `Checked` |
+| performance-critic | `Target` | `inefficient` \| `efficient` \| `unreviewable` | `Problems` | `Checked` |
+| docs-critic | `Target` | `deficient` \| `sufficient` \| `unreviewable` | `Problems` | `Checked` |
+| legal-critic | `Target` | `risks-found` \| `none-found` \| `unreviewable` | `Problems` | `Checked` |
+| change-discipline-critic | **`Mandate`** | `undisciplined` \| `disciplined` \| `unreviewable` | `Problems` | `Checked` |
 
 Per-critic deviations (they no longer affect routing — `route` is uniform — but the manager
 and hook still read these headers):
-- **legal-critic findings live under `Risks`, not `Problems`.** Under the old section-name
-  routing this misrouted to a silent clean; `route` closes it — a legal risk emits `route: fix`
-  like any critic.
-- **design-critic's clean section is `Challenged`, not `Checked`.**
-- **change-discipline-critic's first section is `Mandate`, not `Target`.**
+- **design-critic's clean section is `Challenged`, not `Checked`.** ("angles you attacked that
+  held up" — a sharper instruction than generic `Checked`.)
+- **change-discipline-critic's first section is `Mandate`, not `Target`.** It names the task the
+  change was meant to accomplish — the baseline the diff is judged against — content no other
+  critic carries; a generic `Target` would blur it.
 - **legal-critic keeps a standing legal-advice note in `Out of scope` that always stays**,
   even when everything else is "none".
-- **Severity scale is not uniform.** Only correctness, security, design, change-discipline
-  carry `critical`; simplicity, performance, docs, legal top out at `high`. The manager's
-  "critical/high block close-out" means "high" is the top block-trigger on those four axes.
 
 Every critic: every section fills independently and always appears ("none" when empty);
 `route` is then *derived* from which are filled — `fix` if the findings section has an
@@ -196,5 +195,4 @@ converter. Needs docs citation + user sign-off before writing (CLAUDE.md).
 
 Open: block-and-retry vs warn-only (block bounces a malformed report back, stronger but can
 loop; warn-only injects the problem as `hookSpecificOutput.additionalContext` and never
-blocks); confirm the "critical/high block close-out" rule reads correctly on the high-topped
-axes (severity not uniform across critics).
+blocks).

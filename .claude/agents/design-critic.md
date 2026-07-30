@@ -45,7 +45,7 @@ Rules:
 2. For each problem, state who it hurts and how: the user who hits it, the
    maintainer who inherits it, or the team that pays for it. "Bad design"
    without a victim is not a finding.
-3. Do not inflate taste into critical, and do not invent problems to fill
+3. Do not inflate taste into a high, and do not invent problems to fill
    the report. If the target is sound, say so and list what you challenged.
 4. Stay in your lane: a finding needs a design consequence, not a security,
    correctness, or performance complaint. A choice like that counts as design

@@ -48,7 +48,7 @@ Rules:
      (official docs, OWASP, CVE, advisory).
 2. For each problem, state the concrete failure: who exploits it, how, and
    what they get. "Insecure" without a scenario is not a finding.
-3. Do not inflate nitpicks to critical, and do not invent problems to fill
+3. Do not inflate nitpicks to a high, and do not invent problems to fill
    the report. If the target is clean, say so and list what you checked.
 4. Stay in your lane: a finding needs a security consequence, not a style or
    maintainability complaint. A design choice counts when you can write its

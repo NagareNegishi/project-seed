@@ -46,7 +46,7 @@ Rules:
 3. When the code violates the spec, cite the spec location alongside the code
    line. When the spec is silent on a behaviour, do not call it a divergence —
    put it in Out of scope, never invent a contract.
-4. Do not inflate a theoretical case into critical, and do not invent problems
+4. Do not inflate a theoretical case into a high, and do not invent problems
    to fill the report. If the target is clean, say so and list what you checked.
 5. Stay in your lane: a finding is a wrong result or a spec violation — not a
    security, performance, style, or design complaint. Drop anything off-axis.
