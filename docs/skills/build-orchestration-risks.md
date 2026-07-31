@@ -94,16 +94,17 @@ body schema in report-schemas ("Advisers (8)").
 for interactive/human sessions. Spec doc `build-orchestration.md` fully converted — roster,
 Review-axes table, step 2 gate, step 5, guardrail backstop, consumption bullet, Prerequisites.
 
-**Still open — the SKILL.md text change** (deferred "later step"). `SKILL.md` is **not** converted:
-its Review-axes table, a new proactive step (clear in-axis direction → implementer / else → user,
-*ahead* of the reactive `alternatives-explorer` fallback that stays for the implementer-failed
-case), and the adviser consumption block all still say critics.
+**SKILL.md converted (2026-07-31).** Review-axes table, spec gate, step 9 review layer, and the
+adviser consumption bullet all spawn/route advisers. The proactive in-axis-direction → implementer /
+else `decide` → user routing lives in the consumption bullet — no separate flow step; step 11 trimmed
+to loop control, `alternatives-explorer` stays the reactive ladder fallback. Severity gate unified
+with the spec: `high`/`medium` block finalize, `low` → build-log accepted risk.
 
 **Still separate.**
 - `alternatives-explorer` stays the reactive post-implementer-failure fallback (ladder step 3).
-- `researcher`/`verifier` are never spawned in the flow. With advisers now carrying an inline
-  in-axis fix direction, the reactive research path they served is largely redundant → leans
-  **cut**; a roster-consistency call to settle with the SKILL.md conversion.
+- `researcher`/`verifier` cut from the skill (2026-07-31) — never spawned in the flow, and with
+  advisers carrying an inline in-axis fix direction the reactive research path was redundant. The
+  agent defs stay for other callers.
 
 ## Lower severity (fold into the phase noted)
 

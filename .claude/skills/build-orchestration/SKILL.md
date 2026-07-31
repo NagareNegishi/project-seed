@@ -154,10 +154,6 @@ Legal tokens per agent, and the consumption behind them:
   stopped before a passing build → do **not** integrate; resolve the `Open` blocker,
   then send the implementer back to finish. `redrive`: `Build: fail` → escalation
   ladder.
-- **researcher** — `accept` \| `decide`. `decide` (its `Needed` ambiguity) bounces
-  back to you; it never emits `redrive`.
-- **verifier** — `accept` \| `redrive`. `redrive` (a claim failed) blocks acting on
-  the researched answer.
 - **alternatives-explorer** — `accept`. Take the single `Recommendation` into a
   design decision, then a fix unit.
 - **debugger** — `fix` \| `decide` \| `fix+decide` \| `redrive`. `fix`: `Root cause`
@@ -168,7 +164,7 @@ Legal tokens per agent, and the consumption behind them:
 
 - **Prompt-log** — log every subagent's exact prompt to `build-orchestration/prompt-log/`
   as you spawn it, under the `S<N>-<role>-<n>` id scheme (roles: `impl`, `blackbox`,
-  `whitebox`, `mcdc`, `adviser`, `debug`, `research`, `verify`, `altex`). Capture
+  `whitebox`, `mcdc`, `adviser`, `debug`, `altex`). Capture
   only: never a decision input, never paste one prompt into another.
 - **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
   per session, committed with the session's work at finalize (step 13). Keep only what a later session needs: the
