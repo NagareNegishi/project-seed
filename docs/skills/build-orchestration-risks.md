@@ -83,50 +83,68 @@ Built on the corrected flow and the state file.
    user; undefined behavior — hang, or invent a decision and record it as the user's. Reuses
    the session-mode introspection from #7.
 
-## Proposal — critic-suggested fixes (not yet sequenced)
+## Adviser family — critics that carry a fix direction (decided; current active work)
 
-Large change, not yet accepted; documented here so the decision has context. Touches the
-SKILL, every critic agent def, and the report-schemas doc — sequence into a phase once decided.
+Decided 2026-07-31. Ahead of the SKILL text polish. Adds 8 agent files, updates the
+report-schemas doc and the SKILL; critic defs are **not** touched.
 
 **The hole.** When a critic surfaces a problem the manager has no fix for, the flow's only move
 is to route it to an `implementer` as a fix unit. But an implementer needs to be told *what* to
 build, so the manager must guess an approach and dispatch **blind**. Options (`alternatives-explorer`)
 are reachable only *reactively*, gated behind the escalation ladder: two failed implementer
 attempts → `debugger` → then alternatives. There is no path from "problem with no known fix"
-straight to getting an approach before dispatch.
+straight to getting an approach before dispatch. The point of the skill is that the manager
+offloads implementation thinking — every axis it reviews should be able to hand a direction back,
+not leave the manager inventing one.
 
-**Root cause.** Critics report problems but are contracted *not* to suggest fixes (every critic
-def: "does not fix anything, suggest alternatives, or judge design"). So the fix direction never
-rides along with the problem, even when the critic — the actor with the most context on it —
-has an obvious one.
+**Root cause.** Critics are contracted *not* to suggest fixes ("does not fix anything, suggest
+alternatives, or judge design"), so the fix direction never rides along with the problem even
+when the critic — the actor with the most context on it — has an obvious one.
 
-**Proposed change.** Let a critic emit an axis-scoped **fix direction** alongside a problem, and
-route on it:
-- critic gives one clear, obvious fix direction → manager routes to an `implementer` as a now-bounded unit;
-- no direction given, or multiple with no clear winner → surface to the user.
+**Decision — a parallel adviser family, not a change to the critics.** Reversing the no-suggest
+clause inside the critics was rejected: a human reading a critique wants the problem, not the
+agent pre-committing to a fix that biases the call, whereas the manager-agent needs the opposite.
+Same finding, different consumer → two agents.
 
-Composed with the manager's existing authority test: a critic's "obvious" fix is obvious only
-*on its axis* (a security-critic can't see design ramifications), so a clear direction that
-**touches design or spec still surfaces to the user**; only clear-and-in-spec goes straight to
-the implementer.
+- **New one-stage adviser family, all 8 axes.** An adviser = its critic's review **plus** a
+  scoped fix direction, produced in the same spawn (the reviewer already holds the most context
+  on the fix, so adding the direction there is near-free and avoids a cold second spawn).
+- **All 8, not a subset.** Leaving any axis without an adviser leaves the manager inventing fixes
+  on that axis, which defeats the skill's premise.
+- **This skill spawns advisers, not critics.** An adviser is a superset of its critic, so the
+  Review-axes table swaps 8 critics → 8 advisers; `mcdc-tester`/`debugger` unchanged. The critics
+  go unused by the skill and are kept only for interactive/human sessions.
 
-**Surfaces to change.**
-- Every critic agent def — reverse the "does not suggest alternatives" clause, scoped to a
-  fix *direction on its own axis only*, not a design.
-- Report-schemas doc — critics carry an optional fix-direction field in the body; `route`
-  grammar unaffected (still `accept`/`fix`/`decide`/`redrive`).
-- SKILL step 11 + guardrails ladder — add the proactive branch (clear→implementer,
-  ambiguous/design→user) ahead of the reactive `alternatives-explorer` path, which stays as
-  the implementer-failed fallback.
+**Route grammar (per adviser).** `accept` (clean, no problem) \| `fix` (one clear in-axis
+direction → implementer, carry the direction) \| `decide` (zero / multiple directions, or one
+that touches design or spec → user) \| `redrive` (unreviewable). The scoping guard: a fix is
+"obvious" only *on its own axis* (a security-adviser can't see design ramifications), so any
+direction reaching beyond its axis routes to `decide`, never straight to the implementer.
 
-**Open questions.**
-- Does an axis-scoped "fix direction" bleed critics back into design work the split was meant to
-  prevent (a critic tunnel-visioning on its own fix and under-reporting)? The scoping is the
-  guard; confirm it holds.
-- Whether this makes the orphaned advisory agents cuttable: options-gathering moves onto the
-  critic (obvious case) or the user (ambiguous case), so `alternatives-explorer` becomes optional
-  and `researcher`/`verifier` — already never spawned anywhere in the flow — genuinely droppable.
-  Decide cut-vs-wire for those in the same pass.
+**Change set (~11 files).**
+- **8 new `*-adviser` agent defs** in `.claude/agents/` (1:1 suffix swap on the critic names:
+  `correctness-adviser`, `security-adviser`, …).
+- **Report-schemas doc** — add the adviser family: their route value-sets, and the new
+  fix-direction body section. `route` grammar itself unchanged (`accept`/`fix`/`decide`/`redrive`).
+- **SKILL** — Review-axes table (swap the 8 agents), step 11 (proactive branch clear→implementer
+  / else→user, *ahead* of the reactive `alternatives-explorer` fallback, which stays for the
+  implementer-failed case), and the Reports section (adviser consumption block).
+
+**Dedup, not 8 copies.** An adviser is a near-copy of its critic; 8 copy-pasted pairs will drift.
+Factor the shared axis-review body into one reference both the critic and its adviser point at
+(the move `new-skills.md` plans for `code-commenting`/`comment-audit`) so only the suggest-clause
+differs. Settle the exact mechanism when drafting the first adviser.
+
+**Build approach.** Draft one adviser end-to-end (agent def + schemas entry + its slice of the
+SKILL), get it reviewed, then model the other 7 on it.
+
+**Resolved / still separate.**
+- The bleed-back worry (a critic tunnel-visioning on its own fix and under-reporting) is moot for
+  the critics — they are untouched. For advisers the axis-scoping is the guard: in-axis direction
+  only, anything cross-axis → `decide`.
+- `alternatives-explorer` stays as the reactive post-implementer-failure fallback (ladder step 3).
+- `researcher`/`verifier` are never spawned anywhere in the flow — a separate roster-consistency
+  item (wire a spawn path or cut them), not part of this change.
 
 ## Lower severity (fold into the phase noted)
 
