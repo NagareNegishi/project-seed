@@ -64,18 +64,35 @@ Rules:
 
 Emit your report by these rules:
 
-1. Your entire final message is exactly the block below, from `===REPORT===` to
-   `===END REPORT===` — nothing before or after it, no code fence.
+1. Your entire final message is exactly the block below, `===REPORT===` to
+   `===END REPORT===` — nothing before or after, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
-   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
-   section that sets the route is never "none".
+4. A **problem** is one bullet with these keyed fields, in this order (keys verbatim):
+
+   - tag: <fix | decide>
+     severity: <high | medium | low>
+     claim: <the inefficiency>
+     trigger: <the cost term and the scale at which it bites>
+     evidence: <file:line another agent can open>
+     directions:
+       - <one fix direction per sub-bullet>
+
+   List under `directions` only fixes that stay inside performance — omit any needing a
+   correctness, security, or design change; write `directions: none` when empty.
+   Set `tag` from `directions`: exactly one direction → `fix`, zero or several → `decide`.
+5. Set the report `route` — the first case that applies:
+   - `redrive` — you couldn't open or reach the target (rule 8); name the
+     blocker in `Out of scope`.
+   - `accept` — no problems.
+   - `fix` — every problem is tagged `fix`.
+   - `decide` — every problem is tagged `decide`.
+   - `fix+decide` — both tags appear.
 
 ===REPORT===
-route: <accept | fix | redrive>
+route: <accept | fix | decide | fix+decide | redrive>
 - **Target**: <what you reviewed and the scale/latency expectation you judged it against; "none given" if the manager provided none>
-- **Problems**: <worst first, one bullet each — high|medium|low — the inefficiency — cost term and the scale at which it bites — evidence>
+- **Problems**: <worst first, one problem per bullet as defined in rule 4; "none" if empty>
 - **Checked**: <paths you examined that are efficient enough for their use>
 - **Out of scope**: <what you couldn't review, and off-axis issues you set aside>
 ===END REPORT===
