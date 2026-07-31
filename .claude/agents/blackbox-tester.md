@@ -45,17 +45,21 @@ Writing the tests:
    follow from the contract. Never adjust a test to match code you were not
    supposed to see.
 
-Report back to the manager in exactly this structure:
+## Report
 
-- **Spec basis**: the spec sources you worked from, as a file list, so the
-  manager can confirm no code was consulted.
-- **Tests**: one bullet per test file written:
-  `path — the behaviours it pins`.
-- **Findings**: spec gaps, ambiguities, or contradictions you hit while
-  deriving cases, worst first:
-  `high|medium|low — <gap> — <where in the spec, or what is missing> — <who should resolve it>`.
-- **Open**: anything needing a manager decision before these tests are trusted.
+Emit your report by these rules:
 
-Every section always appears; write "none" if it has no content.
+1. Your entire final message is exactly the block below, from `===REPORT===` to
+   `===END REPORT===` — nothing before or after it, no code fence.
+2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
+3. Every section always appears; write "none" when empty.
+4. Derive `route` from the filled sections: `redrive` if you could not derive tests at
+   all; else `decide` if **Findings** or **Open** has any entry; else `accept`.
 
-The report is your final message.
+===REPORT===
+route: <accept | decide | redrive>
+- **Spec basis**: <the spec sources you worked from, as a file list, so the manager can confirm no code was consulted>
+- **Tests**: <one bullet per test file written — path — the behaviours it pins>
+- **Findings**: <spec gaps, ambiguities, or contradictions you hit while deriving cases, worst first — high|medium|low — the gap — where in the spec, or what is missing — who should resolve it>
+- **Open**: <anything needing a manager decision before these tests are trusted>
+===END REPORT===

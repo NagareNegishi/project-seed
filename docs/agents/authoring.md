@@ -203,10 +203,12 @@ changed the spec since.
   Explore/Plan agents skip CLAUDE.md + git status. (So an agent re-stating CLAUDE.md
   constraints is redundant-but-harmless, not required.)
 
-## 12. Tester confinement (enforced, verified 2026-07-23)
+## 12. Black-box tester confinement (path-jail, verified 2026-07-23)
 
-Write-capable testers (`blackbox`, `whitebox`) are confined by the system, not the
-prompt, to the files the manager stages for that spawn.
+`blackbox-tester` is the one write-capable agent with no `Bash`, so a `PreToolUse`
+path-jail actually confines it — to the files the manager stages, by the system, not
+the prompt. The Bash-carrying testers (`whitebox`, `mcdc`) cannot be jailed this way
+and run in a worktree instead (§13).
 
 - **Mechanism** — the one per-subagent, all-tools lever is frontmatter
   `hooks.PreToolUse`. `Read`/`Edit`/`Write` go through the permission system, not the
@@ -215,13 +217,46 @@ prompt, to the files the manager stages for that spawn.
   `Read|Edit|Write`) runs a path-jail script that `realpath -m`-resolves the target
   and denies (exit 2) anything outside a fixed root.
 - **Plumbing** — `.claude/hooks/agent-scope-jail.sh` (path jail, logs to
-  `.agent-scope/.jail.log`); fixed gitignored scope root `.agent-scope/`; the tester
-  frontmatter's `hooks.PreToolUse`. The manager stages only permitted files in
-  (spec-only for blackbox, spec+impl for whitebox), spawns the tester pointed at the
-  root, moves results out, clears it. Blackbox and whitebox share the one root, so
-  they must be serialized.
-- **Seams** — `Bash` reaches any file, so a `Bash`-capable variant can't be jailed
-  (blackbox was trimmed to `Read, Write, Edit` for this reason). Config loads at
-  session start with **no hot-reload**, so the jail is only validatable from a fresh
-  session. `bypassPermissions` / `acceptEdits` parent mode overrides the jail — the
-  manager must confirm the session mode before spawning.
+  `.agent-scope/.jail.log`); fixed gitignored scope root `.agent-scope/`; the blackbox
+  frontmatter's `hooks.PreToolUse`. The manager stages only the spec in, spawns
+  blackbox pointed at the root, moves the written tests out, clears it.
+- **Seams** — `Bash` reaches any file, so a `Bash`-capable variant can't be jailed;
+  this is *why* blackbox is trimmed to `Read, Write, Edit` and the other testers use
+  §13. Config loads at session start with **no hot-reload**, so the jail is only
+  validatable from a fresh session. `bypassPermissions` / `acceptEdits` parent mode
+  overrides the jail — the manager must confirm the session mode before spawning.
+
+## 13. Bash-agent isolation (worktree, best-effort)
+
+Every `Bash`-carrying subagent (`implementer`, `whitebox`, `mcdc`, `debugger`) escapes
+the §12 path-jail, so its confinement is manager-side and best-effort: it works in its
+own git worktree, and its edits reach the branch only through the manager's
+audit+merge. `.claude/scripts/agent-worktree.sh` (`add|audit|merge|remove`) runs this
+lifecycle; the agent runs no git and is never the integration gate.
+
+- **Two shapes** — the worktree differs by role:
+  - `implementer`: `add` with the test dirs, sparse-checkout prunes them, so it builds
+    from the spec and cannot read, run, or overfit to the suite (symmetric with
+    `blackbox`, which never sees the implementation). `merge` permits its source paths.
+  - `whitebox` / `mcdc`: `add` with no test dirs = full checkout, since they need
+    tests+impl to run the suite. `merge` permits only the test dirs, so a stray source
+    edit shows out-of-scope and merge refuses it.
+  - `debugger`: full checkout, `remove`d unmerged. It only diagnoses, but `Bash` could
+    still write to the tree; discarding the worktree contains any such change so
+    nothing crosses back — the containment does not rely on its prompt.
+- **The gate is structural** — `audit` stages the worktree and lists every changed path
+  outside the permitted set; `merge` refuses on any violation and otherwise transfers
+  the in-scope paths by patch (`git apply --index`), never a branch-merge. The agent
+  runs no git and worktrees never auto-sync, so a forgotten audit still cannot leak a
+  violation.
+- **Best-effort** — a worktree removes files from the working set, it does not deny
+  filesystem access: `Bash` can still `realpath` its way to the main checkout on disk.
+  Backstops: the manager stages nothing extra, the agent's own file-set contract, the
+  `no-git-jail`/`git-readonly-jail` fence hooks, and the merge audit on return.
+- **Parallelism** — separate worktrees give parallel agents disjoint trees and resolve
+  overlapping file sets; serialize only when two units must edit the same file.
+- **Assumes** the build the agent runs does not require files the worktree omits. For
+  the implementer's pruned checkout: true where tests compile as a separate target; if
+  a stack builds tests and source as one unit, exclude only the test *sources* the
+  manager wrote, not shared fixtures the build needs. The full-checkout roles have no
+  such constraint.
