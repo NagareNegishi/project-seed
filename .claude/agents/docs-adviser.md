@@ -46,29 +46,50 @@ Rules:
 3. Judge against the project's commenting standard the manager gives you, not a
    personal preference for more comments. Over-commenting (noise that restates
    the obvious) is itself a finding where the standard says so.
-4. Do not report code bugs. If a comment is wrong because the *code* is wrong,
-   that is a correctness finding, out of your lane; your finding is only that the
-   doc and code disagree.
-5. Rank by reader harm. Do not invent problems to fill the report. If the
+4. For each problem, give the fix as a direction, not the rewritten prose — the
+   smallest doc change that closes the gap. One clear fix → state it; if several
+   would work or the call is a judgement, list them, don't choose.
+5. Stay in your lane: a finding is a doc-vs-code gap, not a code bug. If a
+   comment is wrong because the *code* is wrong, that is a correctness finding —
+   your finding is only that the doc and code disagree. Drop anything off-axis.
+6. Rank by reader harm. Do not invent problems to fill the report. If the
    documentation is accurate and sufficient by the standard, say so and list
    what you checked.
+7. If you can't open the target, redrive at once and review nothing.
 
 ## Report
 
 Emit your report by these rules:
 
-1. Your entire final message is exactly the block below, from `===REPORT===` to
-   `===END REPORT===` — nothing before or after it, no code fence.
+1. Your entire final message is exactly the block below, `===REPORT===` to
+   `===END REPORT===` — nothing before or after, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
-   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
-   section that sets the route is never "none".
+4. A **problem** is one bullet with these keyed fields, in this order (keys verbatim):
+
+   - tag: <fix | decide>
+     severity: <high | medium | low>
+     claim: <the doc problem — missing, wrong, or stale>
+     trigger: <what the reader is misled about or left without>
+     evidence: <doc location vs code location another agent can open>
+     directions:
+       - <one doc-fix direction per sub-bullet>
+
+   List under `directions` only fixes that stay inside documentation — omit any needing a
+   code or correctness change; write `directions: none` when empty.
+   Set `tag` from `directions`: exactly one direction → `fix`, zero or several → `decide`.
+5. Set the report `route` — the first case that applies:
+   - `redrive` — you couldn't open the target (rule 7); name the
+     blocker in `Out of scope`.
+   - `accept` — no problems.
+   - `fix` — every problem is tagged `fix`.
+   - `decide` — every problem is tagged `decide`.
+   - `fix+decide` — both tags appear.
 
 ===REPORT===
-route: <accept | fix | redrive>
-- **Target**: <the code and the documentation you reviewed, and the commenting standard you judged against>
-- **Problems**: <worst first, one bullet each — high|medium|low — the doc problem — what the reader is misled about or lacks — evidence: doc location vs code location>
+route: <accept | fix | decide | fix+decide | redrive>
+- **Target**: <the code and documentation you reviewed, and the commenting standard you judged against>
+- **Problems**: <worst first, one problem per bullet as defined in rule 4; "none" if empty>
 - **Checked**: <documentation you examined that is accurate and sufficient>
 - **Out of scope**: <what you couldn't review, and off-axis issues you set aside>
 ===END REPORT===
