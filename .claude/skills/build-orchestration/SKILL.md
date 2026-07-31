@@ -138,12 +138,11 @@ verdict word. Tokens, `+`-combinable: `accept` consume as-is · `fix` → fix un
 
 Legal tokens per agent, and the consumption behind them:
 
-- **Advisers** — `accept` \| `fix` \| `redrive`. `fix`: triage the `Problems` by
-  severity into batched fix units — a `high` must be fixed before finalize;
-  `medium`/`low` → fix, or record in the build-log as accepted risk. `redrive`:
-  stage the missing input and respawn. `accept`: record its clean section. On any
-  route, an `Out of scope` entry naming an unreviewed area is a coverage hole —
-  restage and respawn, or record the uncovered axis.
+- **Advisers** — `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive`. `fix`: batch the
+  `fix`-tagged problems into fix units by severity, each dispatched to an implementer with its
+  `directions`; `high` blocks finalize, `medium`/`low` fix or log as accepted risk. `decide`:
+  surface to the user, never an implementer. `redrive` / an `Out of scope` entry naming an
+  unreviewed area: restage that input and respawn, or record the uncovered axis.
 - **blackbox-tester** — `accept` \| `decide` \| `redrive`. `Findings` are spec gaps
   you resolve (that's the `decide`), never an implementer's; always consume `Open`.
 - **whitebox / mcdc-tester** — `accept` \| `fix` \| `decide` \| `fix+decide` \|
