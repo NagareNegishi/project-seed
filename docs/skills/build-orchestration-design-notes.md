@@ -23,6 +23,19 @@ the skill is; this one holds *why* the calls were made and what's still open.
   Correctness was the biggest v1 hole: the only defence against a logic bug was the
   test agents; nothing read the merged code hunting the edge case the tests never
   encoded.
+- **Advisers = critic + fix direction; the skill spawns them instead of the critics.**
+  When a critic surfaces a problem the manager has no fix for, its only move is to
+  dispatch an `implementer` **blind** (options via `alternatives-explorer` are reachable
+  only reactively, behind the escalation ladder). So each axis gets a one-stage
+  **adviser**: its critic's review *plus* a scoped in-axis fix direction, produced in the
+  same spawn — the reviewer already holds the most context on the fix, so adding it is
+  near-free and skips a cold second spawn. A **parallel family, not a reversal** of the
+  critics' no-suggest clause: a human reading a critique wants the problem unbiased by a
+  pre-committed fix; the manager-agent wants the direction — same finding, different
+  consumer, two agents. All 8 axes, else the manager invents fixes on the uncovered one.
+  The `*-critic` twins stay for interactive/human sessions. Scoping guard: an adviser
+  gives in-axis directions only; anything cross-axis → `decide` (to the user), never
+  straight to an implementer. Built 2026-07-31; status in risks "Adviser family".
 - **Only `security` + `design` gate the spec pre-build.** Their drafts are written
   for idea targets ("either an idea … or an implementation"). The other axes are
   code-only ("you receive an implementation"), so they cannot review a spec — an
@@ -107,6 +120,6 @@ frontmatter.
 ## Still open
 
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
-  `researcher`/critic agents; `verify-fanout` stays its own planning-time
+  adviser agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside
   a build session depends on how that workflow lands. Revisit once it is built.

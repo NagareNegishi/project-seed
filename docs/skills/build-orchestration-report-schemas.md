@@ -141,8 +141,7 @@ and hook still read these headers):
 Every critic: every section fills independently and always appears ("none" when empty);
 `route` is then *derived* from which are filled — `fix` if the findings section has an
 entry, else `redrive` if `Out of scope` names something unreviewable, else `accept`. The
-section that sets the route is never "none". (Axis words map the same: bad → `fix`, clean
-→ `accept`, unreviewable → `redrive`.)
+section that sets the route is never "none".
 
 ## Advisers (8) — critic shape plus a per-problem fix direction
 

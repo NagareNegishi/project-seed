@@ -83,73 +83,33 @@ Built on the corrected flow and the state file.
    user; undefined behavior — hang, or invent a decision and record it as the user's. Reuses
    the session-mode introspection from #7.
 
-## Adviser family — critics that carry a fix direction (decided; current active work)
+## Adviser family — critics that carry a fix direction — `DONE` (built 2026-07-31)
 
-Decided 2026-07-31. Ahead of the SKILL text polish. Adds 8 agent files, updates the
-report-schemas doc and the SKILL; critic defs are **not** touched.
+Rationale in design-notes ("Advisers = critic + fix direction"); route grammar and per-problem
+body schema in report-schemas ("Advisers (8)").
 
-**The hole.** When a critic surfaces a problem the manager has no fix for, the flow's only move
-is to route it to an `implementer` as a fix unit. But an implementer needs to be told *what* to
-build, so the manager must guess an approach and dispatch **blind**. Options (`alternatives-explorer`)
-are reachable only *reactively*, gated behind the escalation ladder: two failed implementer
-attempts → `debugger` → then alternatives. There is no path from "problem with no known fix"
-straight to getting an approach before dispatch. The point of the skill is that the manager
-offloads implementation thinking — every axis it reviews should be able to hand a direction back,
-not leave the manager inventing one.
+**Built.** 8 `*-adviser` defs in `.claude/agents/` (1:1 suffix swap, `correctness-adviser` …
+`change-discipline-adviser`); report-schemas carries the family. The skill spawns advisers
+**everywhere**, spec gate included (resolved 2026-07-31); the `*-critic` twins are untouched, kept
+for interactive/human sessions. Spec doc `build-orchestration.md` fully converted — roster,
+Review-axes table, step 2 gate, step 5, guardrail backstop, consumption bullet, Prerequisites.
 
-**Root cause.** Critics are contracted *not* to suggest fixes ("does not fix anything, suggest
-alternatives, or judge design"), so the fix direction never rides along with the problem even
-when the critic — the actor with the most context on it — has an obvious one.
+**Still open — the SKILL.md text change** (deferred "later step"). `SKILL.md` is **not** converted:
+its Review-axes table, a new proactive step (clear in-axis direction → implementer / else → user,
+*ahead* of the reactive `alternatives-explorer` fallback that stays for the implementer-failed
+case), and the adviser consumption block all still say critics.
 
-**Decision — a parallel adviser family, not a change to the critics.** Reversing the no-suggest
-clause inside the critics was rejected: a human reading a critique wants the problem, not the
-agent pre-committing to a fix that biases the call, whereas the manager-agent needs the opposite.
-Same finding, different consumer → two agents.
-
-- **New one-stage adviser family, all 8 axes.** An adviser = its critic's review **plus** a
-  scoped fix direction, produced in the same spawn (the reviewer already holds the most context
-  on the fix, so adding the direction there is near-free and avoids a cold second spawn).
-- **All 8, not a subset.** Leaving any axis without an adviser leaves the manager inventing fixes
-  on that axis, which defeats the skill's premise.
-- **This skill spawns advisers, not critics.** An adviser is a superset of its critic, so the
-  Review-axes table swaps 8 critics → 8 advisers; `mcdc-tester`/`debugger` unchanged. The critics
-  go unused by the skill and are kept only for interactive/human sessions.
-
-**Route grammar (per adviser).** `accept` (clean, no problem) \| `fix` (one clear in-axis
-direction → implementer, carry the direction) \| `decide` (zero / multiple directions, or one
-that touches design or spec → user) \| `redrive` (unreviewable). The scoping guard: a fix is
-"obvious" only *on its own axis* (a security-adviser can't see design ramifications), so any
-direction reaching beyond its axis routes to `decide`, never straight to the implementer.
-
-**Change set (~11 files).**
-- **8 new `*-adviser` agent defs** in `.claude/agents/` (1:1 suffix swap on the critic names:
-  `correctness-adviser`, `security-adviser`, …).
-- **Report-schemas doc** — add the adviser family: their route value-sets, and the new
-  fix-direction body section. `route` grammar itself unchanged (`accept`/`fix`/`decide`/`redrive`).
-- **SKILL** — Review-axes table (swap the 8 agents), step 11 (proactive branch clear→implementer
-  / else→user, *ahead* of the reactive `alternatives-explorer` fallback, which stays for the
-  implementer-failed case), and the Reports section (adviser consumption block).
-
-**Dedup.** Advisers are full copies of their critics — no shared-body mechanism (a cold subagent
-can't resolve a file pointer). Keep the shared "Hunt for" block byte-identical by convention;
-CI-grep it if drift bites.
-
-**Build approach.** Draft one adviser end-to-end (agent def + schemas entry + its slice of the
-SKILL), get it reviewed, then model the other 7 on it.
-
-**Resolved / still separate.**
-- The bleed-back worry (a critic tunnel-visioning on its own fix and under-reporting) is moot for
-  the critics — they are untouched. For advisers the axis-scoping is the guard: in-axis direction
-  only, anything cross-axis → `decide`.
-- `alternatives-explorer` stays as the reactive post-implementer-failure fallback (ladder step 3).
-- `researcher`/`verifier` are never spawned anywhere in the flow — a separate roster-consistency
-  item (wire a spawn path or cut them), not part of this change.
+**Still separate.**
+- `alternatives-explorer` stays the reactive post-implementer-failure fallback (ladder step 3).
+- `researcher`/`verifier` are never spawned in the flow. With advisers now carrying an inline
+  in-axis fix direction, the reactive research path they served is largely redundant → leans
+  **cut**; a roster-consistency call to settle with the SKILL.md conversion.
 
 ## Lower severity (fold into the phase noted)
 
 - **Debugger worktree must be discarded** (Phase A / item 2) — line 71; correct behavior
   relies on the manager remembering not to merge and to `remove`.
 - **Visibility-widening rule** (Phase C / item 5) — line 79 is undetectable without a careful
-  diff read; its real enforcer (change-discipline-critic) only deploys "when the diff smells."
+  diff read; its real enforcer (change-discipline-adviser) only deploys "when the diff smells."
 - **Prompt-log completeness** (Phase B / item 4) — easy to drop in parallel batches; nothing
   reconciles the log against actual spawns.
