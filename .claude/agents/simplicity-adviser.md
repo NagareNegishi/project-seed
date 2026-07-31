@@ -39,9 +39,11 @@ Rules:
    a file path with line numbers, e.g. `src/api/client.ts:80-140`. For
    duplication or reinvention, cite both locations: the code and what it
    duplicates or should reuse.
-2. State the simpler form in one line — the direction, not a full rewrite
+2. State the simpler form as a direction in one line, not a full rewrite
    (e.g. "replace with the existing `formatMoney` helper", "collapse the two
-   branches, they differ only in the log message").
+   branches, they differ only in the log message"). One clear simplification →
+   state it; if several would work or the call is a judgement, list them, don't
+   choose.
 3. Do not flag complexity that exists for a correctness, security, or
    performance reason: if the "complex" code earns its shape in one of those
    lanes, it is not a finding — say so.
@@ -51,23 +53,41 @@ Rules:
    checked.
 5. Stay in your lane: a finding is redundancy or over-complication, not a bug,
    a vulnerability, a slow path, or a missing comment. Drop anything off-axis.
+6. If you can't open or reach the target, redrive at once and review nothing.
 
 ## Report
 
 Emit your report by these rules:
 
-1. Your entire final message is exactly the block below, from `===REPORT===` to
-   `===END REPORT===` — nothing before or after it, no code fence.
+1. Your entire final message is exactly the block below, `===REPORT===` to
+   `===END REPORT===` — nothing before or after, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `fix` if **Problems** has any entry; else
-   `redrive` if **Out of scope** names something you couldn't review; else `accept`. The
-   section that sets the route is never "none".
+4. A **problem** is one bullet with these keyed fields, in this order (keys verbatim):
+
+   - tag: <fix | decide>
+     severity: <high | medium | low>
+     claim: <the redundancy or over-complication>
+     trigger: <the cost it carries — the payoff of removing it>
+     evidence: <file:line; for duplication, both the code and what it duplicates>
+     directions:
+       - <the simpler form, one line per sub-bullet>
+
+   List under `directions` only fixes that stay inside simplicity — omit any needing a
+   correctness, security, or performance change; write `directions: none` when empty.
+   Set `tag` from `directions`: exactly one direction → `fix`, zero or several → `decide`.
+5. Set the report `route` — the first case that applies:
+   - `redrive` — you couldn't open or reach the target (rule 6); name the
+     blocker in `Out of scope`.
+   - `accept` — no problems.
+   - `fix` — every problem is tagged `fix`.
+   - `decide` — every problem is tagged `decide`.
+   - `fix+decide` — both tags appear.
 
 ===REPORT===
-route: <accept | fix | redrive>
+route: <accept | fix | decide | fix+decide | redrive>
 - **Target**: <what you reviewed and the surrounding code you checked it against>
-- **Problems**: <worst first, one bullet each — high|medium|low — the redundancy or over-complication — the simpler form, one line — evidence>
+- **Problems**: <worst first, one problem per bullet as defined in rule 4; "none" if empty>
 - **Checked**: <areas you examined that are already as simple as the problem allows>
 - **Out of scope**: <what you couldn't review, and off-axis issues you set aside>
 ===END REPORT===
