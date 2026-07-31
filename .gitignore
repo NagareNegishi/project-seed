@@ -20,6 +20,9 @@ build-orchestration/prompt-log/*
 !build-orchestration/prompt-log/README.md
 !build-orchestration/prompt-log/_template.md
 
+# Escalation strike count — live scratch
+build-orchestration/strike-count.md
+
 # Per-subagent path-jail scope root (agent-scope-jail.sh); throwaway staging + log
 .agent-scope/
 
