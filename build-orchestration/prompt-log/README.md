@@ -32,13 +32,12 @@ are gitignored and never committed.
 
 ## Entry ID
 
-`S<session>-<role>-<n>` — e.g. `S6-impl-2`, `S6-critic-1`. Roles:
+`S<session>-<role>-<n>` — e.g. `S6-impl-2`, `S6-adviser-1`. Roles:
 
-`impl` · `blackbox` · `whitebox` · `mcdc` · `critic` · `debug` · `research` ·
-`verify` · `altex`
+`impl` · `blackbox` · `whitebox` · `mcdc` · `adviser` · `debug` · `altex`
 
-`critic` covers all eight review-layer critics; the `· <agent-type> ·` field on
-the capture header carries the specific axis (`security-critic`). IDs are stable
+`adviser` covers all eight review-layer advisers; the `· <agent-type> ·`
+field on the capture header carries the specific axis (`security-adviser`). IDs are stable
 across capture, evaluation, and allocation.
 
 ## evaluations.md format
@@ -67,15 +66,15 @@ leave them until then.
 ```markdown
 ## S<N> · <unit>
 
-- deployed: <critics spawned>            ← cross-refs the capture entry IDs
-- skipped:  <critic — one-line reason>, …
+- deployed: <advisers spawned>           ← cross-refs the capture entry IDs
+- skipped:  <adviser — one-line reason>, …
 - grade (deferred):
-    waste: <critic spawned, returned empty on this unit-shape — or none>
-    miss:  <critic skipped, a defect slipped in its axis — or none observed>
-    kind:  <allocation-miss | critic-miss | none>
+    waste: <adviser spawned, returned empty on this unit-shape — or none>
+    miss:  <adviser skipped, a defect slipped in its axis — or none observed>
+    kind:  <allocation-miss | adviser-miss | none>
 - fix: <change to an allocation rule in build-orchestration — or none>
 ```
 
 `kind` separates the two failures that need different fixes: `allocation-miss`
-(skipped the critic that would have caught it → widen the allocation rule) from
-`critic-miss` (spawned it, it missed anyway → sharpen that agent).
+(skipped the adviser that would have caught it → widen the allocation rule) from
+`adviser-miss` (spawned it, it missed anyway → sharpen that agent).
