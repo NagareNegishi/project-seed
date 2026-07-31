@@ -117,8 +117,38 @@ frontmatter.
   twice, then discard the worktree and re-spawn or escalate. Rationale: the manager blindly
   restoring a path can break in-scope code that referenced it; the worker owns the relocation.
 
+## Escalation strike count
+
+Built 2026-07-31 (risks item 4). The ladder's per-unit strike count lived only in the manager's
+context — the first thing summarization drops, so thrash returned as unrecognized re-attempts.
+Fix: `build-orchestration/strike-count.md` (gitignored), one line per unit as `<unit>: <n>/2`
+keyed to the `agent-worktree.sh` slug. Created fresh at Prerequisites; seeded `0/2` when a unit's
+implementer spawns (Spawning rules); bumped on a build failure (rung 1) or that unit's implementer
+scope-refusal; re-read before every escalation decision.
+
+- **Re-read on decision, not on context loss.** The trigger is stateless — consult the file every
+  time the ladder decides — so it survives summarization without the manager having to notice the
+  loss happened.
+- **Per-unit, implementer-keyed.** Both strike sources attach to an implementer's unit. whitebox/
+  mcdc run over the whole tree, not a unit, so their rare scope-refusals stay on the ladder's
+  ephemeral "at most twice" with no durable line; debugger and blackbox never merge, so cannot
+  refuse.
+- **Strikes only — three candidates cut.** The file is one durable lookup, not bookkeeping that
+  duplicates another record. A per-spawn ledger duplicated the prompt-log; adviser "clean axis"
+  dispositions are re-derivable from `Deploy when` (re-running a passed adviser is safe, not a
+  loop); accepted risk already lands in `build-log/` at finalize. What remains is the one piece of
+  state whose loss actually restarts a loop.
+- **No history kept.** One overwritten file: the only consumer is the live manager and the count
+  is dead after the session — unlike `build-log/` (permanent) and `prompt-log/` (deferred).
+- **Does not carry Phase C's state.** Item 5 (deployment floor) expected to record adviser
+  deployment here; with dispositions cut, this file holds strikes only, and item 5 builds its own.
+
 ## Still open
 
+- **Who may accept a risk?** The adviser-consumption rule routes an unfixed `low` finding
+  straight to `build-log/` as accepted risk — a manager call, with no user sign-off. Risk
+  acceptance is a shipping decision; it may belong to the user (a `decide`), like the spec gate.
+  A consumption-rule question, independent of the strike count. Revisit.
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
   adviser agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside

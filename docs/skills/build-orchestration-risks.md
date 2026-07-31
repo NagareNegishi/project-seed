@@ -28,11 +28,13 @@ Companion: `build-orchestration-design-notes.md` (rationale).
 
 ## Phase B — durable state infrastructure
 
-4. **Anti-thrash state is in-context only.** *(sev #3)* The escalation ladder counts strikes per
-   unit; nothing durable holds the count, which advisers ran clean, or which findings were
-   accepted as risk. Long-session summarization drops these first → thrash returns as unrecognized
-   re-attempts. Add a session-state file the later fixes record into. *Rides along:* prompt-log
-   reconciliation.
+4. **Anti-thrash state is in-context only.** *(sev #3)* `DONE` — the ladder's per-unit strike
+   count lived only in context (first thing summarization drops → thrash as unrecognized
+   re-attempts). Fix: `build-orchestration/strike-count.md` (gitignored, `<unit>: <n>/2`) —
+   created fresh at Prerequisites, seeded when a unit's implementer spawns, bumped on build
+   failure or implementer scope-refusal, re-read before each escalation decision. Scoped to
+   strikes only (adviser dispositions and accepted-risk tracking cut). Rationale: design-notes
+   "Escalation strike count".
 
 ## Phase C — discipline & enforcement
 
@@ -40,8 +42,8 @@ Built on the corrected flow and the state file.
 
 5. **Subjective "Deploy when" triggers let advisers get skipped.** *(sev #6)* Review axes deploy
    on manager judgment with no floor; `correctness-adviser` (biggest v1 hole) is easiest to wave
-   off as "trivial logic," and under-deployment is silent. Add a floor + record deployment into
-   the Phase-B state. *Rides along:* visibility-widening enforcement.
+   off as "trivial logic," and under-deployment is silent. Add a floor + its own deployment record
+   (item 4's strike file holds strikes only). *Rides along:* visibility-widening enforcement.
 
 6. **Manager can implement source itself — no structural fence.** *(sev #1)* The role preamble
    bars the manager from editing source, but the main session keeps `Edit`/`Write`/`Bash` and
@@ -71,5 +73,6 @@ Built on the corrected flow and the state file.
   it and to `remove`.
 - **Visibility-widening rule** (Phase C / item 5) — undetectable without a careful diff read; its
   enforcer (`change-discipline-adviser`) only deploys "when the diff smells."
-- **Prompt-log completeness** (Phase B / item 4) — easy to drop in parallel batches; nothing
-  reconciles the log against actual spawns.
+- **Prompt-log completeness** (standalone) — easy to drop in parallel batches; nothing
+  reconciles the log against actual spawns. Considered for item 4's file and cut (guards only a
+  gitignored artifact).
