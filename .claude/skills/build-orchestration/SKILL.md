@@ -2,7 +2,7 @@
 name: build-orchestration
 description: >
   Run a multi-agent build session: the main session acts as manager — cutting a
-  goal into units, spawning implementer, tester, and critic subagents, and running
+  goal into units, spawning implementer, tester, and adviser subagents, and running
   the test-and-review loop to completion under anti-thrash guardrails.
 disable-model-invocation: true
 ---
@@ -33,7 +33,7 @@ what to build for that unit, reconciled from the inputs above.
 
 ## Session flow
 
-1. Spawn `design-critic` and/or `security-critic` over the unit's *spec*, each
+1. Spawn `design-adviser` and/or `security-adviser` over the unit's *spec*, each
    only if the spec meets its `Deploy when` trigger (Review axes). Neither → skip
    to step 4.
 2. Surface the gate findings to the user; the call is theirs, not yours to
@@ -51,7 +51,7 @@ what to build for that unit, reconciled from the inputs above.
    blackbox tests are landed, run the build and the blackbox suite (via `<test command>`).
 7. On failure, follow the escalation ladder (Guardrails).
 8. Once the units are merged and green, spawn `whitebox-tester`.
-9. When both suites pass, spawn the review layer: each critic by its `Deploy
+9. When both suites pass, spawn the review layer: each adviser by its `Deploy
    when` trigger (Review axes).
 10. Consume each reviewer report (Reports — demand and consume).
 11. Route each finding to an implementer as a fix unit; one whose fix needs a
@@ -103,19 +103,19 @@ what to build for that unit, reconciled from the inputs above.
 
 ## Review axes
 
-Each critic owns one axis. Deploy per unit by the `Deploy when` column below, not
-all-always. Critics report problems, never fix.
+Each adviser owns one axis. Deploy per unit by the `Deploy when` column below, not
+all-always.
 
 | Axis | Agent | Deploy when |
 | --- | --- | --- |
-| Correctness (logic, edge cases, contract) | `correctness-critic` | the unit has non-trivial logic or branching (near-default) |
-| Security risk | `security-critic` | the unit touches auth, input handling, crypto, file/network I/O, or secrets |
-| Design / architecture | `design-critic` | the unit adds or changes an abstraction, interface, or module boundary |
-| Redundancy, over-complication | `simplicity-critic` | the diff is large or tangled |
-| Performance, efficiency | `performance-critic` | the unit loops over unbounded data, hits the DB, or sits on a hot path |
-| Documentation, comments | `docs-critic` | the unit changes public API or user-facing docs |
-| Legal, licensing, compliance | `legal-critic` | the unit adds a dependency or copied / third-party code |
-| Change discipline (diff vs. its mandate) | `change-discipline-critic` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
+| Correctness (logic, edge cases, contract) | `correctness-adviser` | the unit has non-trivial logic or branching (near-default) |
+| Security risk | `security-adviser` | the unit touches auth, input handling, crypto, file/network I/O, or secrets |
+| Design / architecture | `design-adviser` | the unit adds or changes an abstraction, interface, or module boundary |
+| Redundancy, over-complication | `simplicity-adviser` | the diff is large or tangled |
+| Performance, efficiency | `performance-adviser` | the unit loops over unbounded data, hits the DB, or sits on a hot path |
+| Documentation, comments | `docs-adviser` | the unit changes public API or user-facing docs |
+| Legal, licensing, compliance | `legal-adviser` | the unit adds a dependency or copied / third-party code |
+| Change discipline (diff vs. its mandate) | `change-discipline-adviser` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
 | Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines |
 | Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) |
 
@@ -138,7 +138,7 @@ verdict word. Tokens, `+`-combinable: `accept` consume as-is · `fix` → fix un
 
 Legal tokens per agent, and the consumption behind them:
 
-- **Critics** — `accept` \| `fix` \| `redrive`. `fix`: triage the `Problems` by
+- **Advisers** — `accept` \| `fix` \| `redrive`. `fix`: triage the `Problems` by
   severity into batched fix units — a `high` must be fixed before finalize;
   `medium`/`low` → fix, or record in the build-log as accepted risk. `redrive`:
   stage the missing input and respawn. `accept`: record its clean section. On any
@@ -171,7 +171,7 @@ Legal tokens per agent, and the consumption behind them:
 
 - **Prompt-log** — log every subagent's exact prompt to `build-orchestration/prompt-log/`
   as you spawn it, under the `S<N>-<role>-<n>` id scheme (roles: `impl`, `blackbox`,
-  `whitebox`, `mcdc`, `critic`, `debug`, `research`, `verify`, `altex`). Capture
+  `whitebox`, `mcdc`, `adviser`, `debug`, `research`, `verify`, `altex`). Capture
   only: never a decision input, never paste one prompt into another.
 - **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
   per session, committed with the session's work at finalize (step 13). Keep only what a later session needs: the
