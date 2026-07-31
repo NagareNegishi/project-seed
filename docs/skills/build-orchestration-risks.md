@@ -130,10 +130,9 @@ direction reaching beyond its axis routes to `decide`, never straight to the imp
   / else→user, *ahead* of the reactive `alternatives-explorer` fallback, which stays for the
   implementer-failed case), and the Reports section (adviser consumption block).
 
-**Dedup, not 8 copies.** An adviser is a near-copy of its critic; 8 copy-pasted pairs will drift.
-Factor the shared axis-review body into one reference both the critic and its adviser point at
-(the move `new-skills.md` plans for `code-commenting`/`comment-audit`) so only the suggest-clause
-differs. Settle the exact mechanism when drafting the first adviser.
+**Dedup.** Advisers are full copies of their critics — no shared-body mechanism (a cold subagent
+can't resolve a file pointer). Keep the shared "Hunt for" block byte-identical by convention;
+CI-grep it if drift bites.
 
 **Build approach.** Draft one adviser end-to-end (agent def + schemas entry + its slice of the
 SKILL), get it reviewed, then model the other 7 on it.

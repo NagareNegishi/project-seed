@@ -2,9 +2,9 @@
 name: correctness-adviser
 description: Delegate a landed implementation to this agent to find where it
   computes the wrong answer — logic errors, missed edge cases, off-by-ones,
-  broken error handling, or divergence from the spec. It reports correctness
-  problems only; it does not fix, write tests, or judge style, security, or
-  performance.
+  broken error handling, or divergence from the spec — and get a scoped fix
+  direction with each finding. It advises correctness only; it does not apply
+  fixes, write tests, or judge style, security, or performance.
 tools: Read, Grep, Glob
 model: opus
 ---

@@ -4,7 +4,7 @@ The single source of truth for every worker's report: the machine-routable `rout
 carries, the locator envelope that frames it, and the body sections behind it. Two consumers
 bind here — the manager's consumption routing (SKILL "Reports — demand and consume") and the
 planned `SubagentStop` format-enforcement hook (risk backlog item 3). Body sections are
-transcribed verbatim from the 16 `.claude/agents/*.md` files; update this doc in the same
+transcribed verbatim from the 24 `.claude/agents/*.md` files; update this doc in the same
 change as any agent report edit, and do not route on anything not recorded here.
 
 Companion: `build-orchestration-risks.md` item 3 (why the route field exists),
@@ -15,7 +15,7 @@ Companion: `build-orchestration-risks.md` item 3 (why the route field exists),
 Each report is machine-routable **without a wrapper**: the format carries one normalized
 first-line disposition, `route:`, so neither manager nor hook parses natural-language prose.
 (Chosen over an envelope wrapper — a second copy of the disposition — and over a middle
-converter, which would have to parse 16 flavors of NL prose; the `SubagentStop` hook stays a
+converter, which would have to parse 24 flavors of NL prose; the `SubagentStop` hook stays a
 pure validator, never a converter.)
 
 `route` **replaces** each report's axis-specific verdict/status line (`Verdict: vulnerable`,
@@ -38,7 +38,7 @@ integrate/land/use); verifier `FAIL` → `redrive` (re-drive or discard the rese
 `decide`; implementer with an open decision → `accept+decide` (the code still merges, a call
 pends), not a bare `decide` that would hold integration.
 
-### Per-agent mapping (all 16)
+### Per-agent mapping (all 24)
 
 `route` values each agent can legally emit — the hook's per-agent check is exactly this
 value-set:
@@ -46,6 +46,7 @@ value-set:
 | Agent(s) | legal `route` values | mapped from |
 | --- | --- | --- |
 | the 8 critics | `accept` \| `fix` \| `redrive` | good verdict / bad verdict / `unreviewable` |
+| the 8 advisers | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / all problems `fix` / all `decide` / both tags / `unreviewable` |
 | blackbox-tester | `accept` \| `decide` \| `redrive` | clean / spec-gap `Findings` or `Open` / can't produce. (Gaps are manager calls → `decide`, never `fix`.) |
 | whitebox-tester, mcdc-tester | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / bug `Findings` / `Open` / both / can't produce |
 | implementer | `accept` \| `decide` \| `accept+decide` \| `redrive` | build pass & no open / `Open` only / integrate but a call pends / `Build: fail` |
@@ -58,7 +59,7 @@ value-set:
 
 Markers frame the report so its `route` line and body are findable even if the agent adds
 stray preamble — and specifying that in the agent file must not blur "text to emit literally"
-against "instructions about the job." Markers are **constant across all 16 files** (no
+against "instructions about the job." Markers are **constant across all 24 files** (no
 per-agent fill):
 
 ```
@@ -79,8 +80,8 @@ route: <tokens>
   each `<…>` is replaced with content.
 ## Editing or adding an agent report
 
-All 16 are converted (per-agent value-sets in the mapping table above; body shapes in the
-family sections below). This is the recipe for the next report edit or a new agent. Per agent:
+All 24 carry `route` — the 16 originals converted, the 8 advisers authored with it (per-agent
+value-sets in the mapping table above; body shapes in the family sections below). This is the recipe for the next report edit or a new agent. Per agent:
 (1) `route: <legal value-set>` as the first report line, with a one-line rule mapping outcome →
 token; (2) no standalone verdict/status line — `route` replaces it; (3) content sections
 unchanged.
@@ -100,7 +101,7 @@ the single-block envelope can't hold it (the hook reads only the first
 
 ## Universal invariants (body)
 
-- **Every section always appears; write "none" when empty.** Holds for all 16 except
+- **Every section always appears; write "none" when empty.** Holds for all 24 except
   `alternatives-explorer` (no such note; structure still fixed). Absence of a section = a
   malformed report, not an empty one.
 - **The report is the agent's final message** (`Agent` tool result / `last_assistant_message`).
@@ -142,6 +143,37 @@ Every critic: every section fills independently and always appears ("none" when 
 entry, else `redrive` if `Out of scope` names something unreviewable, else `accept`. The
 section that sets the route is never "none". (Axis words map the same: bad → `fix`, clean
 → `accept`, unreviewable → `redrive`.)
+
+## Advisers (8) — critic shape plus a per-problem fix direction
+
+An adviser is its critic's review **plus** a scoped in-axis fix direction, produced in the same
+spawn (risks doc "Adviser family"). The skill spawns advisers, not critics; the critics stay for
+human sessions. Same envelope and same `Target` / `Checked` / `Out of scope` headers as the
+matching critic — the deviation is `Problems`: each problem is a keyed multi-field bullet that
+carries its own directions, so the manager can route a finding to an implementer without a cold
+second spawn.
+
+Per-problem bullet (keys verbatim, in order):
+
+```
+- tag: <fix | decide>
+  severity: <high | medium | low>
+  claim: <wrong result or spec violation>
+  trigger: <input/state → wrong result>
+  evidence: <file:line>
+  directions:
+    - <one in-axis fix direction per sub-bullet>
+```
+
+- `directions` lists only same-axis fixes; a fix reaching into design, spec, security, or
+  performance is omitted (→ `directions: none`). Scoping guard: an adviser can't see cross-axis
+  ramifications, so a cross-axis fix is a decision, never a straight-to-implementer `fix`.
+- Per-problem `tag`: exactly one direction → `fix`; zero or several → `decide`.
+
+`route` (report-level, `+`-combined from the tags — not a grammar change; whitebox/mcdc already
+combine): `redrive` if the target/spec was unopenable, else `accept` if no problems, else `fix` /
+`decide` / `fix+decide` by which tags appear. The severity scale stays `high/medium/low`, uniform
+with the critics.
 
 ## Testers (3) — no `Verdict`
 
