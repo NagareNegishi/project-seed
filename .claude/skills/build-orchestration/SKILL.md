@@ -54,10 +54,8 @@ what to build for that unit, reconciled from the inputs above.
 9. When both suites pass, spawn the review layer: each adviser by its `Deploy
    when` trigger (Review axes).
 10. Consume each reviewer report (Reports — demand and consume).
-11. Route each finding to an implementer as a fix unit; one whose fix needs a
-    design or spec decision surfaces to the user first and dispatches only once
-    the decision is recorded. Rerun both suites; repeat until the reports are
-    clean, or log the remainder as accepted risk (build-log).
+11. Rerun both suites after each fix batch; repeat until the reports are clean, or
+    log the remainder as accepted risk (build-log).
 12. Write the record (below).
 13. Finalize onto your branch. Each `merge` committed the unit as disposable scaffolding
     so the integration could be a real `git merge`; those commits must not become your
