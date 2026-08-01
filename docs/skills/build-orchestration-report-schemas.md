@@ -49,7 +49,7 @@ value-set:
 | the 8 advisers | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / all problems `fix` / all `decide` / both tags / `unreviewable` |
 | blackbox-tester | `accept` \| `decide` \| `redrive` | clean / spec-gap `Findings` or `Open` / can't produce. (Gaps are manager calls → `decide`, never `fix`.) |
 | whitebox-tester, mcdc-tester | `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive` | clean / bug `Findings` / `Open` / both / can't produce |
-| implementer | `accept` \| `decide` \| `accept+decide` \| `redrive` | build pass & no open / `Open` only / integrate but a call pends / `Build: fail` |
+| implementer | `accept` \| `decide` \| `accept+decide` \| `redrive` | build pass & no open / `Build: none` (stopped before build) + `Open` / integrate but a call pends / `Build: fail` |
 | debugger | `fix` \| `decide` \| `fix+decide` \| `redrive` | root cause found / `Open` / both / no-repro (`Root cause: none`) |
 | researcher | `accept` \| `decide` | researched `Answer` / `Needed` ambiguity (no `redrive` — it always delivers a conclusion; answer quality is the verifier's `FAIL`) |
 | verifier | `accept` \| `redrive` | `PASS` / `FAIL` |
