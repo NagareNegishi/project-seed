@@ -207,23 +207,42 @@ Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 | verifier | `Claims` · `Notes` | Overall PASS/FAIL → `route` (`redrive` if any `Claims` bullet is `fail`, else `accept`); the standalone `Verdict` section is **deleted** (pure disposition). `redrive` blocks acting on the researched answer. |
 | alternatives-explorer | `Goal` · `Constraints` · `Alternatives` · `Recommendation` | take the single `Recommendation` into a design decision, then a fix unit. (No "every section none" note; structure still fixed.) |
 
-## Enforcement hook (SubagentStop — built later)
+## Enforcement hook (SubagentStop — decided 2026-08-01, not yet built)
 
-Keyed on `agent_type`: validates that the envelope markers are present and the first non-empty
-line inside is `route:` with a token-set legal for that agent. A **pure validator**, not a
-converter. Needs docs citation + user sign-off before writing (CLAUDE.md).
+Keyed on `agent_type`: a **pure validator** (never a converter) that blocks a malformed report so
+the subagent re-emits before it reaches the manager. Config work — needs a code.claude.com docs
+citation + user sign-off before the `.claude/settings.json` write (CLAUDE.md).
 
-- **Inputs** (verified vs code.claude.com/docs/en/hooks): `agent_type` (selects the legal
-  `route` value-set), `last_assistant_message` (report text), `agent_id` (loop-guard key),
-  `transcript_path`, `permission_mode`.
-- **Block**: `{"decision":"block","reason":"…"}` (exit 0; exit 2 also blocks) → the subagent
-  continues and re-emits before its report reaches the manager.
-- **Loop-guard**: docs expose no `stop_hook_active`-style field for `SubagentStop`, so track a
-  per-`agent_id` block count in a state file and **fail open after 2** — then the manager's
-  consumption fail-safe (can't place it → `redrive`) catches it.
-- **Validate `route`, not the body sections** — keeps the hook's surface off the agent files'
-  prose.
+**Roster — only the 14 agent types this skill spawns** (SKILL.md): the 8 advisers, the 3 testers,
+implementer, debugger, alternatives-explorer. Critics, verifier, and researcher never appear in
+the flow, so the hook does not cover them (a report from one is passed through, not validated).
 
-Open: block-and-retry vs warn-only (block bounces a malformed report back, stronger but can
-loop; warn-only injects the problem as `hookSpecificOutput.additionalContext` and never
-blocks).
+**What it validates**, in order:
+1. Envelope markers present (`===REPORT===` … `===END REPORT===`).
+2. First non-empty line inside is `route:` with a token-set legal for that `agent_type` — the
+   **exact** set, `+`-combos included (per-agent mapping table above; `route-spec.json` is the
+   machine copy).
+3. Section-presence: the agent's expected sections all appear in order, and the route-setting
+   section is not "none" (e.g. `fix` ⇒ the findings section has an entry). Structural match on
+   order/shape, **not** literal header text and **not** prose semantics — keeps the hook's surface
+   off the agent files' wording.
+
+**Behavior — block, not warn** (decided): `{"decision":"block","reason":"…"}` (exit 0; exit 2 also
+blocks) → the subagent continues and re-emits. Warn-only (`hookSpecificOutput.additionalContext`)
+was rejected: it never bounces, so it only relocates the redrive back onto the manager — which is
+the burden the hook exists to remove.
+
+**Loop-guard**: docs expose no `stop_hook_active`-style field for `SubagentStop`, so track a
+per-`agent_id` block count in a gitignored state file and **fail open after 2** — then the
+manager's consumption fail-safe (can't place it → `redrive`) catches it.
+
+**Inputs** (per code.claude.com/docs/en/hooks; re-cite before the settings write): `agent_type`
+(selects the legal `route` value-set), `last_assistant_message` (report text), `agent_id`
+(loop-guard key), `transcript_path`, `permission_mode`.
+
+**Files**:
+- `.claude/hooks/route-guard.sh` — bash + `jq`, logic only, zero agent names in the script.
+- `.claude/hooks/route-spec.json` — per-agent conditions (legal route strings, ordered sections,
+  route→required-section rule); machine source of truth, this doc keeps the rationale.
+- `.claude/skills/build-orchestration/route-block-count` — loop-guard scratch (gitignored, like
+  `strike-count.md`).

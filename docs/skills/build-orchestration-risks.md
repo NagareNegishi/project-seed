@@ -23,8 +23,9 @@ Companion: `build-orchestration-design-notes.md` (rationale).
    every report carries a first-line `route:` field; manager routes on `route`, not section names
    (all 16 agents converted; SKILL "Reports — demand and consume" rebound). Grammar + schemas:
    `build-orchestration-report-schemas.md`.
-   **Open:** build the `SubagentStop` validator hook (block-vs-warn, loop-guard — needs docs
-   citation + user sign-off).
+   **Open:** build the `SubagentStop` validator hook — design decided 2026-08-01 (block +
+   route + section-presence, 14-agent roster; three-file layout in report-schemas "Enforcement
+   hook"); pending docs citation + user sign-off before the `.claude/settings.json` write.
 
 ## Phase B — durable state infrastructure
 
