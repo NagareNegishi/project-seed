@@ -19,13 +19,10 @@ Companion: `build-orchestration-design-notes.md` (rationale).
    **Resolved:** a true merge conflict makes the manager edit markers in a source file — this is
    legitimate merge glue, not a fenced act (item 6 accepted, no hook).
 
-3. **Report consumption assumed verdict words the manager can't guarantee.** *(sev #8)* Fixed —
-   every report carries a first-line `route:` field; manager routes on `route`, not section names
-   (all 16 agents converted; SKILL "Reports — demand and consume" rebound). Grammar + schemas:
-   `build-orchestration-report-schemas.md`.
-   **Open:** build the `SubagentStop` validator hook — design decided 2026-08-01 (block +
-   route + section-presence, 14-agent roster; three-file layout in report-schemas "Enforcement
-   hook"); pending docs citation + user sign-off before the `.claude/settings.json` write.
+3. **Report consumption assumed verdict words the manager can't guarantee.** *(sev #8)* `DONE` —
+   every report carries a first-line `route:` field; manager routes on `route`, not section names.
+   Enforced by the `SubagentStop` hook `route-guard.sh` (block + section-presence, 14-agent
+   roster, `route-spec.json` conditions). Schemas + hook: `build-orchestration-report-schemas.md`.
 
 ## Phase B — durable state infrastructure
 

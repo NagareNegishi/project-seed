@@ -207,42 +207,21 @@ Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
 | verifier | `Claims` · `Notes` | Overall PASS/FAIL → `route` (`redrive` if any `Claims` bullet is `fail`, else `accept`); the standalone `Verdict` section is **deleted** (pure disposition). `redrive` blocks acting on the researched answer. |
 | alternatives-explorer | `Goal` · `Constraints` · `Alternatives` · `Recommendation` | take the single `Recommendation` into a design decision, then a fix unit. (No "every section none" note; structure still fixed.) |
 
-## Enforcement hook (SubagentStop — decided 2026-08-01, not yet built)
+## Enforcement hook (SubagentStop — `route-guard.sh`)
 
-Keyed on `agent_type`: a **pure validator** (never a converter) that blocks a malformed report so
-the subagent re-emits before it reaches the manager. Config work — needs a code.claude.com docs
-citation + user sign-off before the `.claude/settings.json` write (CLAUDE.md).
+A **pure validator**, never a converter: blocks a malformed report so the subagent re-emits before
+the manager consumes it. Covers only the 14 agent types the skill spawns (8 advisers, 3 testers,
+implementer, debugger, alternatives-explorer); any other `agent_type` passes through unvalidated.
 
-**Roster — only the 14 agent types this skill spawns** (SKILL.md): the 8 advisers, the 3 testers,
-implementer, debugger, alternatives-explorer. Critics, verifier, and researcher never appear in
-the flow, so the hook does not cover them (a report from one is passed through, not validated).
+Validates, in order: (1) envelope markers present; (2) first non-empty line is `route:` with a
+token-set legal for that `agent_type` — exact set, `+`-combos included; (3) the expected sections
+appear in order and the route-setting section is not "none" (e.g. `fix` ⇒ findings has an entry).
+Structural match on order/shape, not header text or prose.
 
-**What it validates**, in order:
-1. Envelope markers present (`===REPORT===` … `===END REPORT===`).
-2. First non-empty line inside is `route:` with a token-set legal for that `agent_type` — the
-   **exact** set, `+`-combos included (per-agent mapping table above; `route-spec.json` is the
-   machine copy).
-3. Section-presence: the agent's expected sections all appear in order, and the route-setting
-   section is not "none" (e.g. `fix` ⇒ the findings section has an entry). Structural match on
-   order/shape, **not** literal header text and **not** prose semantics — keeps the hook's surface
-   off the agent files' wording.
+Block is `{"decision":"block","reason":"…"}` (exit 0). Loop-guard: `SubagentStop` exposes no
+`stop_hook_active`, so a per-`agent_id` count in `build-orchestration/route-block-count` (gitignored
+scratch) **fails open after 2** — then the manager's "can't route → redrive" fail-safe catches it.
 
-**Behavior — block, not warn** (decided): `{"decision":"block","reason":"…"}` (exit 0; exit 2 also
-blocks) → the subagent continues and re-emits. Warn-only (`hookSpecificOutput.additionalContext`)
-was rejected: it never bounces, so it only relocates the redrive back onto the manager — which is
-the burden the hook exists to remove.
-
-**Loop-guard**: docs expose no `stop_hook_active`-style field for `SubagentStop`, so track a
-per-`agent_id` block count in a gitignored state file and **fail open after 2** — then the
-manager's consumption fail-safe (can't place it → `redrive`) catches it.
-
-**Inputs** (per code.claude.com/docs/en/hooks; re-cite before the settings write): `agent_type`
-(selects the legal `route` value-set), `last_assistant_message` (report text), `agent_id`
-(loop-guard key), `transcript_path`, `permission_mode`.
-
-**Files**:
-- `.claude/hooks/route-guard.sh` — bash + `jq`, logic only, zero agent names in the script.
-- `.claude/hooks/route-spec.json` — per-agent conditions (legal route strings, ordered sections,
-  route→required-section rule); machine source of truth, this doc keeps the rationale.
-- `.claude/skills/build-orchestration/route-block-count` — loop-guard scratch (gitignored, like
-  `strike-count.md`).
+Files: `route-guard.sh` (bash + `jq`, no agent names) reads `route-spec.json` — the per-agent
+conditions and machine source of truth; this doc keeps the rationale, edit both together. Event
+schema per code.claude.com/docs/en/hooks.
