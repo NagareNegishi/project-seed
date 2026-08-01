@@ -47,20 +47,18 @@ Built on the corrected flow and the state file.
    from the proposed general deployment record — the prompt-log already shows what deployed, so
    skips are inferable; no new state. Visibility-widening enforcement deferred, not folded in.
 
-6. **Manager can implement source itself — no structural fence.** *(sev #1)* `ACCEPTED — not a
-   real risk.` The manager legitimately needs `Edit`/`Write`/`Bash` throughout, so a block is
-   wrong and a nudge needs a source-vs-not discriminator this seed repo can't express. What's at
-   stake is only delegation discipline, and it's already backstopped: finalize (step 13) surfaces
-   the full integrated diff to the user, and the review layer (step 9) reads it regardless of
-   author. Merge-glue markers (item 2) are legitimate manager edits, not a fenced act.
+6. **Manager can implement source itself.** *(sev #1)* `ACCEPTED — not a real risk.` The manager
+   legitimately needs `Edit`/`Write`/`Bash` throughout, so no block is possible; delegation
+   discipline is backstopped by the finalize diff (step 13) and the author-blind review (step 9).
 
-7. **Permission-mode self-check has no mechanism.** *(sev #2)* The spawning rule to confirm the
-   session isn't in `bypassPermissions`/`acceptEdits` has no tool that reports the mode → narrated
-   no-op. Shares a prerequisite with #8: teach the manager to read its session mode.
+7. **Permission-mode self-check.** *(sev #2)* `ACCEPTED — not a real risk.` A `PreToolUse` `deny`
+   hook blocks in every mode including `bypassPermissions` (verified 2026-08-01, CC 2.1.207), so
+   the blackbox jail (§12) is mode-independent; the rule was removed from SKILL/design.
 
-8. **User gate blocks; autonomous runs have no user.** *(sev #7)* The spec-gate decision (steps
-   2–3) surfaces to the user as the sole path. In a loop/background context there is no user →
-   hang, or invent a decision recorded as the user's. Reuses #7's session-mode introspection.
+8. **User gate blocks; autonomous runs have no user.** *(sev #7)* `ACCEPTED — not a real risk.`
+   The skill is interactive by design (`disable-model-invocation`, many user gates), so the no-user
+   scenario is outside its envelope; the manager resolving the gate itself is already forbidden by
+   steps 2–3 ("not yours to resolve").
 
 ## Done
 

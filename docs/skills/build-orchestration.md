@@ -78,8 +78,6 @@ session; the workers are subagents.
   forbid making a private symbol public, or otherwise expanding the API surface,
   just to test it. An untestable-through-the-public-surface private is a Finding,
   not a licence to widen it.
-- **Confirm the session mode before any write-capable spawn.** `bypassPermissions` /
-  `acceptEdits` override the path-jail — check before spawning.
 - **Isolate every Bash agent in a worktree.** `implementer`, `whitebox`, `mcdc`, and
   `debugger` write through `Bash`, which no `PreToolUse` hook can intercept, so confine
   them structurally: each gets its own worktree (`.claude/scripts/agent-worktree.sh`),
