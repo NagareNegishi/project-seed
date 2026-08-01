@@ -57,10 +57,11 @@ Emit your report by these rules:
 3. Every section always appears; write "none" when empty. If you could not reproduce the
    failure, **Failure** holds what you tried and what you would need, and every other
    section is "none".
-4. Derive `route` from the filled sections: `fix+decide` if **Root cause** names a cause
-   and **Open** has entries; `fix` if **Root cause** names a cause and **Open** is none;
-   `decide` if **Root cause** is `none` and **Open** has entries; `redrive` if both
-   **Root cause** and **Open** are `none`.
+4. Set the report `route` — the first case that applies:
+   - `redrive` — both **Root cause** and **Open** are `none`.
+   - `fix+decide` — **Root cause** names a cause and **Open** has entries.
+   - `fix` — **Root cause** names a cause and **Open** is none.
+   - `decide` — **Root cause** is `none` and **Open** has entries.
 
 ===REPORT===
 route: <fix | decide | fix+decide | redrive>
