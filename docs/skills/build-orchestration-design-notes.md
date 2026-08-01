@@ -1,7 +1,7 @@
 # Build Orchestration — design notes
 
-Companion to `build-orchestration.md` (the skill-source spec). That doc says *what*
-the skill is; this one holds *why* the calls were made and what's still open.
+Companion to the live skill `.claude/skills/build-orchestration/SKILL.md`. That doc is
+*what* the skill does; this one holds *why* the calls were made and what's still open.
 
 ## Why these calls (rationale)
 
@@ -51,6 +51,23 @@ the skill is; this one holds *why* the calls were made and what's still open.
   planning; `build-log/` (committed) + `prompt-log/` (gitignored) are runtime logs,
   parented under their source rather than a generic `logs/` another tool would claim.
   `.agent-scope/` is jail staging, not a log.
+- **Guardrails = two levers + a backstop.** A stuck agent optimises for a green check,
+  not the goal. Lever 1 freezes the acceptance check (once the blackbox suite is
+  accepted, the code under judgement can't edit its judge); Lever 2 is the escalation
+  ladder (2 strikes → diagnose, don't re-attempt); the backstop `change-discipline-adviser`
+  judges the diff against its mandate — the one review no quality axis does. Levers
+  prevent in-loop, the backstop catches the rest.
+- **Report format defers to each agent.** No single imposed shape — agents share only a
+  resemblance (evidence per finding, honest ranking where severity applies, every section
+  present, report as the final message); only critics/advisers carry
+  `Target · Problems · Checked · Out of scope`. The one field the skill *does* impose is
+  the machine-routable `route` line (`build-orchestration-report-schemas.md`). Template:
+  `docs/agents/authoring.md` §2 (+§10).
+- **Minimum roster to run.** `blackbox-tester`, `whitebox-tester`, `security-adviser`,
+  `design-adviser` — the floor below which the skill can't do its job; Prerequisites
+  confirms each and stops if one is absent.
+- **Stack-agnostic.** Test command and dirs are `<placeholder>` markers, never a concrete
+  runner — no project specifics, so the seed stays portable.
 
 ## Tune after a real run
 
@@ -133,16 +150,15 @@ scope-refusal; re-read before every escalation decision.
   mcdc run over the whole tree, not a unit, so their rare scope-refusals stay on the ladder's
   ephemeral "at most twice" with no durable line; debugger and blackbox never merge, so cannot
   refuse.
-- **Strikes only — three candidates cut.** The file is one durable lookup, not bookkeeping that
-  duplicates another record. A per-spawn ledger duplicated the prompt-log; adviser "clean axis"
-  dispositions are re-derivable from `Deploy when` (re-running a passed adviser is safe, not a
-  loop); accepted risk already lands in `build-log/` at finalize. What remains is the one piece of
-  state whose loss actually restarts a loop.
+- **Strikes only — nothing else.** The file is one durable lookup, not bookkeeping that
+  duplicates another record. Four candidates were cut: a per-spawn ledger (duplicated the
+  prompt-log); adviser "clean axis" dispositions (re-derivable from `Deploy when` — re-running a
+  passed adviser is safe, not a loop); accepted risk (already lands in `build-log/` at finalize);
+  and the deployment floor (Review-axes `Must` column — skips are inferable from the prompt-log,
+  so it needs no state of its own). What remains is the one piece of state whose loss restarts a
+  loop.
 - **No history kept.** One overwritten file: the only consumer is the live manager and the count
   is dead after the session — unlike `build-log/` (permanent) and `prompt-log/` (deferred).
-- **Holds strikes only.** The deployment floor (the Review-axes `Must` column) once expected to
-  record adviser deployment here; with dispositions cut, this file holds strikes only, and the
-  floor needs no state of its own — skips are inferable from the prompt-log.
 
 ## Backlog (closed)
 
