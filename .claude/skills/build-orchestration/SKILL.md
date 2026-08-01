@@ -55,8 +55,7 @@ what to build for that unit, reconciled from the inputs above.
 7. On failure, follow the escalation ladder (Guardrails).
 8. Once the units are merged and green, spawn `whitebox-tester`.
 9. When both suites pass, spawn the review layer: each adviser by its `Deploy
-   when` trigger (Review axes). A trigger marked **Must** is not discretionary —
-   when its condition holds, deploy; you may not wave it off as trivial.
+   when` trigger (Review axes).
 10. Consume each reviewer report (Reports — demand and consume).
 11. Rerun both suites after each fix batch; repeat until the reports are clean, or
     log the remainder as accepted risk (build-log).
@@ -106,21 +105,22 @@ what to build for that unit, reconciled from the inputs above.
 
 ## Review axes
 
-Each adviser owns one axis. Deploy per unit by the `Deploy when` column below, not
-all-always.
+Each adviser owns one axis; deploy per unit by its `Deploy when` condition, not
+all-always. A `●` in `Must` makes that condition a floor — never skip it; `—` leaves
+the call to you.
 
-| Axis | Agent | Deploy when |
-| --- | --- | --- |
-| Correctness (logic, edge cases, contract) | `correctness-adviser` | the unit has non-trivial logic or branching (near-default) |
-| Security risk | `security-adviser` | the unit touches auth, input handling, crypto, file/network I/O, or secrets |
-| Design / architecture | `design-adviser` | the unit adds or changes an abstraction, interface, or module boundary |
-| Redundancy, over-complication | `simplicity-adviser` | the diff is large or tangled |
-| Performance, efficiency | `performance-adviser` | the unit loops over unbounded data, hits the DB, or sits on a hot path |
-| Documentation, comments | `docs-adviser` | the unit changes public API or user-facing docs |
-| Legal, licensing, compliance | `legal-adviser` | the unit adds a dependency or copied / third-party code |
-| Change discipline (diff vs. its mandate) | `change-discipline-adviser` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
-| Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines |
-| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) |
+| Axis | Agent | Deploy when | Must |
+| --- | --- | --- | --- |
+| Correctness (logic, edge cases, contract) | `correctness-adviser` | the unit has non-trivial logic or branching (near-default) | ● |
+| Security risk | `security-adviser` | the unit touches auth, input handling, crypto, file/network I/O, or secrets | ● |
+| Design / architecture | `design-adviser` | the unit adds or changes an abstraction, interface, or module boundary | — |
+| Redundancy, over-complication | `simplicity-adviser` | the diff is large or tangled | — |
+| Performance, efficiency | `performance-adviser` | the unit loops over unbounded data, hits the DB, or sits on a hot path | — |
+| Documentation, comments | `docs-adviser` | the unit changes public API or user-facing docs | — |
+| Legal, licensing, compliance | `legal-adviser` | the unit adds a dependency or copied / third-party code | ● |
+| Change discipline (diff vs. its mandate) | `change-discipline-adviser` | the diff smells: scope creep, weakened or deleted tests, an outsized diff | — |
+| Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines | — |
+| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) | — |
 
 ## Guardrails against thrashing
 
