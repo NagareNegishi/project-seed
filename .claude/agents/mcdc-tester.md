@@ -62,9 +62,12 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `redrive` if you could not run the suite at
-   all; else `fix+decide` if both **Findings** and **Open** have entries; `fix` if only
-   **Findings** does; `decide` if only **Open** does; `accept` if neither.
+4. Set the report `route` — the first case that applies:
+   - `redrive` — you could not run the suite at all.
+   - `fix+decide` — both **Findings** and **Open** have entries.
+   - `fix` — only **Findings** has entries.
+   - `decide` — only **Open** has entries.
+   - `accept` — neither does.
 
 ===REPORT===
 route: <accept | fix | decide | fix+decide | redrive>
