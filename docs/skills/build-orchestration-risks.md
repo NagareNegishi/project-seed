@@ -16,8 +16,8 @@ Companion: `build-orchestration-design-notes.md` (rationale).
 2. **Parallel merges cause base drift with no assigned fixer.** *(sev #5)* `DONE` — real
    `git merge` through `agent-worktree.sh` (audit refuses out-of-scope paths; scaffold commits
    collapse at `finalize`). Mechanism: design-notes "Bash-agent isolation".
-   **Open thread:** a true merge conflict makes the manager edit markers in a source file —
-   collides with the manager-source fence (item 6); fold the merge-glue exception into that hook.
+   **Resolved:** a true merge conflict makes the manager edit markers in a source file — this is
+   legitimate merge glue, not a fenced act (item 6 accepted, no hook).
 
 3. **Report consumption assumed verdict words the manager can't guarantee.** *(sev #8)* Fixed —
    every report carries a first-line `route:` field; manager routes on `route`, not section names
@@ -45,10 +45,12 @@ Built on the corrected flow and the state file.
    off as "trivial logic," and under-deployment is silent. Add a floor + its own deployment record
    (item 4's strike file holds strikes only). *Rides along:* visibility-widening enforcement.
 
-6. **Manager can implement source itself — no structural fence.** *(sev #1)* The role preamble
-   bars the manager from editing source, but the main session keeps `Edit`/`Write`/`Bash` and
-   bypasses the worktree+audit gate every worker routes through. A prompt line can't hold a
-   tool-carrying agent → needs a hook. Absorbs the item-2 merge-glue exception.
+6. **Manager can implement source itself — no structural fence.** *(sev #1)* `ACCEPTED — not a
+   real risk.` The manager legitimately needs `Edit`/`Write`/`Bash` throughout, so a block is
+   wrong and a nudge needs a source-vs-not discriminator this seed repo can't express. What's at
+   stake is only delegation discipline, and it's already backstopped: finalize (step 13) surfaces
+   the full integrated diff to the user, and the review layer (step 9) reads it regardless of
+   author. Merge-glue markers (item 2) are legitimate manager edits, not a fenced act.
 
 7. **Permission-mode self-check has no mechanism.** *(sev #2)* The spawning rule to confirm the
    session isn't in `bypassPermissions`/`acceptEdits` has no tool that reports the mode → narrated
