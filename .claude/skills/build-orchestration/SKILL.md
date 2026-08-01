@@ -97,8 +97,6 @@ what to build for that unit, reconciled from the inputs above.
 - Spawning an `implementer` for a unit → add its `strike-count.md` line, `<unit>: 0/2`.
 - Never pass the test files to an implementer.
 - Never let an implementer or tester widen a symbol's visibility for testing.
-- Before any write-capable spawn, confirm the session is not in `bypassPermissions`
-  or `acceptEdits`.
 - For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
   there. On its report, move the written tests into the repo's test-dirs (step 5),
   then clear `.agent-scope/`.
