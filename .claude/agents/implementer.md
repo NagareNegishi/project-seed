@@ -45,7 +45,8 @@ Emit your report by these rules:
 3. Every section always appears; write "none" when empty.
 4. Derive `route` from **Build** and **Open**: `redrive` if **Build** is `fail`;
    `accept+decide` if **Build** is `pass` and **Open** has entries; `accept` if **Build**
-   is `pass` and **Open** is none; `decide` if you stopped before a passing build.
+   is `pass` and **Open** is none; `decide` if you stopped before a passing build — **Open**
+   names what stopped you.
 
 ===REPORT===
 route: <accept | decide | accept+decide | redrive>
