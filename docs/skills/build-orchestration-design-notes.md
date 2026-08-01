@@ -36,6 +36,9 @@ Companion to the live skill `.claude/skills/build-orchestration/SKILL.md`. That 
   The `*-critic` twins stay for interactive/human sessions. Scoping guard: an adviser
   gives in-axis directions only; anything cross-axis → `decide` (to the user), never
   straight to an implementer. Built 2026-07-31.
+- **Unfixed `low` = unresolved risk, not accepted.** The manager logs it to `build-log/` and
+  moves on; acceptance stays the user's call at finalize. No per-finding `decide` gate — the
+  honest label carries it. Decided 2026-08-01.
 - **Only `security` + `design` gate the spec pre-build.** Their drafts are written
   for idea targets ("either an idea … or an implementation"). The other axes are
   code-only ("you receive an implementation"), so they cannot review a spec — an
@@ -153,7 +156,7 @@ scope-refusal; re-read before every escalation decision.
 - **Strikes only — nothing else.** The file is one durable lookup, not bookkeeping that
   duplicates another record. Four candidates were cut: a per-spawn ledger (duplicated the
   prompt-log); adviser "clean axis" dispositions (re-derivable from `Deploy when` — re-running a
-  passed adviser is safe, not a loop); accepted risk (already lands in `build-log/` at finalize);
+  passed adviser is safe, not a loop); unresolved risk (already lands in `build-log/` at finalize);
   and the deployment floor (Review-axes `Must` column — skips are inferable from the prompt-log,
   so it needs no state of its own). What remains is the one piece of state whose loss restarts a
   loop.
@@ -176,18 +179,3 @@ closed as **not real risks**, kept here so they are not re-raised:
 - **User gate in an autonomous run.** The skill is interactive by design
   (`disable-model-invocation`, user gates), so a no-user run is outside its envelope, and the
   manager resolving a gate itself is already forbidden (flow steps 2–3).
-
-## Still open
-
-- **Visibility-widening enforcement.** A fix that widens a symbol's visibility only to make it
-  testable slips through unless someone reads the diff closely; the only guard is
-  `change-discipline-adviser`, which deploys just "when the diff smells." No durable enforcement;
-  deferred, not folded into the deployment floor.
-- **Who may accept a risk?** The adviser-consumption rule routes an unfixed `low` finding
-  straight to `build-log/` as accepted risk — a manager call, with no user sign-off. Risk
-  acceptance is a shipping decision; it may belong to the user (a `decide`), like the spec gate.
-  A consumption-rule question, independent of the strike count. Revisit.
-- **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
-  adviser agents; `verify-fanout` stays its own planning-time
-  external-verification path. Whether the manager can *offer* `verify-fanout` inside
-  a build session depends on how that workflow lands. Revisit once it is built.
