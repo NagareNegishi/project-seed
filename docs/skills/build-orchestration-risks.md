@@ -40,10 +40,12 @@ Companion: `build-orchestration-design-notes.md` (rationale).
 
 Built on the corrected flow and the state file.
 
-5. **Subjective "Deploy when" triggers let advisers get skipped.** *(sev #6)* Review axes deploy
-   on manager judgment with no floor; `correctness-adviser` (biggest v1 hole) is easiest to wave
-   off as "trivial logic," and under-deployment is silent. Add a floor + its own deployment record
-   (item 4's strike file holds strikes only). *Rides along:* visibility-widening enforcement.
+5. **Subjective "Deploy when" triggers let advisers get skipped.** *(sev #6)* `DONE` — the real
+   hole was narrow: only `correctness` (near-default, highest value, silent skip) and the
+   objectively-triggered `security`/`legal`. Fix: a `Must` column in the Review axes table marks
+   those three `●`; the note makes `●` a floor ("never skip"), `—` stays judgment. Scoped down
+   from the proposed general deployment record — the prompt-log already shows what deployed, so
+   skips are inferable; no new state. Visibility-widening enforcement deferred, not folded in.
 
 6. **Manager can implement source itself — no structural fence.** *(sev #1)* `ACCEPTED — not a
    real risk.` The manager legitimately needs `Edit`/`Write`/`Bash` throughout, so a block is
