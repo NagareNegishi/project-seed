@@ -192,8 +192,9 @@ with the critics.
 ## Implementer (1)
 
 Sections, in order: `Done` · `Build` · `Decisions` · `Open`.
-- `Build` = the build/typecheck run and its result: **`pass`, or `fail` with the failing
-  output** — the manager's escalation-ladder trigger.
+- `Build` = the build/typecheck run and its result: **`pass`; `fail` with the failing
+  output; or `none` if it stopped before running the build** — the manager's escalation-ladder
+  trigger. `fail` (build ran, failed) → `redrive`; `none` (never reached the build) → `decide`.
 - `Open` = anything it stopped on (spec gap/conflict, a needed out-of-unit change, a decision
   beyond its unit) → a manager decision.
 - Every section always appears; "none" when empty.

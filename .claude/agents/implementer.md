@@ -45,13 +45,13 @@ Emit your report by these rules:
 3. Every section always appears; write "none" when empty.
 4. Derive `route` from **Build** and **Open**: `redrive` if **Build** is `fail`;
    `accept+decide` if **Build** is `pass` and **Open** has entries; `accept` if **Build**
-   is `pass` and **Open** is none; `decide` if you stopped before a passing build — **Open**
-   names what stopped you.
+   is `pass` and **Open** is none; `decide` if you stopped before a passing build — **Build**
+   is `none` and **Open** names what stopped you.
 
 ===REPORT===
 route: <accept | decide | accept+decide | redrive>
 - **Done**: <what now exists or changed, as a file list>
-- **Build**: <the build and typecheck you ran and the result — pass, or fail with the failing output>
+- **Build**: <the build and typecheck you ran and the result — pass; fail with the failing output; or none if you stopped before running it>
 - **Decisions**: <each notable choice and its reasoning>
 - **Open**: <anything you stopped on and could not resolve — a spec gap or conflict, a needed out-of-unit change, a decision beyond your unit>
 ===END REPORT===
