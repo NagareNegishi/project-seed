@@ -55,7 +55,8 @@ what to build for that unit, reconciled from the inputs above.
 7. On failure, follow the escalation ladder (Guardrails).
 8. Once the units are merged and green, spawn `whitebox-tester`.
 9. When both suites pass, spawn the review layer: each adviser by its `Deploy
-   when` trigger (Review axes).
+   when` trigger (Review axes). A trigger marked **Must** is not discretionary —
+   when its condition holds, deploy; you may not wave it off as trivial.
 10. Consume each reviewer report (Reports — demand and consume).
 11. Rerun both suites after each fix batch; repeat until the reports are clean, or
     log the remainder as accepted risk (build-log).
