@@ -5,6 +5,10 @@
 # skill only after user review, never committed
 docs/notes.md
 
+# Session baton — session-end/session-start handoff; local per-session state,
+# never committed. The template stays tracked to hold the shape.
+docs/session/baton.md
+
 # Local issue/PR drafts — github-issue-creator, pr-draft, and their publish
 # skills write here; drafts are ephemeral working files, never committed
 .github/drafts/
@@ -15,6 +19,12 @@ docs/notes.md
 build-orchestration/prompt-log/*
 !build-orchestration/prompt-log/README.md
 !build-orchestration/prompt-log/_template.md
+
+# Escalation strike count — live scratch
+build-orchestration/strike-count.md
+
+# SubagentStop route-guard loop-guard — live scratch
+build-orchestration/route-block-count
 
 # Per-subagent path-jail scope root (agent-scope-jail.sh); throwaway staging + log
 .agent-scope/

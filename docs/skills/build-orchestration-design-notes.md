@@ -1,7 +1,7 @@
 # Build Orchestration — design notes
 
-Companion to `build-orchestration.md` (the skill-source spec). That doc says *what*
-the skill is; this one holds *why* the calls were made and what's still open.
+Companion to the live skill `.claude/skills/build-orchestration/SKILL.md`. That doc is
+*what* the skill does; this one holds *why* the calls were made and what's still open.
 
 ## Why these calls (rationale)
 
@@ -35,7 +35,7 @@ the skill is; this one holds *why* the calls were made and what's still open.
   consumer, two agents. All 8 axes, else the manager invents fixes on the uncovered one.
   The `*-critic` twins stay for interactive/human sessions. Scoping guard: an adviser
   gives in-axis directions only; anything cross-axis → `decide` (to the user), never
-  straight to an implementer. Built 2026-07-31; status in risks "Adviser family".
+  straight to an implementer. Built 2026-07-31.
 - **Only `security` + `design` gate the spec pre-build.** Their drafts are written
   for idea targets ("either an idea … or an implementation"). The other axes are
   code-only ("you receive an implementation"), so they cannot review a spec — an
@@ -51,6 +51,23 @@ the skill is; this one holds *why* the calls were made and what's still open.
   planning; `build-log/` (committed) + `prompt-log/` (gitignored) are runtime logs,
   parented under their source rather than a generic `logs/` another tool would claim.
   `.agent-scope/` is jail staging, not a log.
+- **Guardrails = two levers + a backstop.** A stuck agent optimises for a green check,
+  not the goal. Lever 1 freezes the acceptance check (once the blackbox suite is
+  accepted, the code under judgement can't edit its judge); Lever 2 is the escalation
+  ladder (2 strikes → diagnose, don't re-attempt); the backstop `change-discipline-adviser`
+  judges the diff against its mandate — the one review no quality axis does. Levers
+  prevent in-loop, the backstop catches the rest.
+- **Report format defers to each agent.** No single imposed shape — agents share only a
+  resemblance (evidence per finding, honest ranking where severity applies, every section
+  present, report as the final message); only critics/advisers carry
+  `Target · Problems · Checked · Out of scope`. The one field the skill *does* impose is
+  the machine-routable `route` line (`build-orchestration-report-schemas.md`). Template:
+  `docs/agents/authoring.md` §2 (+§10).
+- **Minimum roster to run.** `blackbox-tester`, `whitebox-tester`, `security-adviser`,
+  `design-adviser` — the floor below which the skill can't do its job; Prerequisites
+  confirms each and stops if one is absent.
+- **Stack-agnostic.** Test command and dirs are `<placeholder>` markers, never a concrete
+  runner — no project specifics, so the seed stays portable.
 
 ## Tune after a real run
 
@@ -117,8 +134,59 @@ frontmatter.
   twice, then discard the worktree and re-spawn or escalate. Rationale: the manager blindly
   restoring a path can break in-scope code that referenced it; the worker owns the relocation.
 
+## Escalation strike count
+
+Built 2026-07-31. The ladder's per-unit strike count lived only in the manager's
+context — the first thing summarization drops, so thrash returned as unrecognized re-attempts.
+Fix: `build-orchestration/strike-count.md` (gitignored), one line per unit as `<unit>: <n>/2`
+keyed to the `agent-worktree.sh` slug. Created fresh at Prerequisites; seeded `0/2` when a unit's
+implementer spawns (Spawning rules); bumped on a build failure (rung 1) or that unit's implementer
+scope-refusal; re-read before every escalation decision.
+
+- **Re-read on decision, not on context loss.** The trigger is stateless — consult the file every
+  time the ladder decides — so it survives summarization without the manager having to notice the
+  loss happened.
+- **Per-unit, implementer-keyed.** Both strike sources attach to an implementer's unit. whitebox/
+  mcdc run over the whole tree, not a unit, so their rare scope-refusals stay on the ladder's
+  ephemeral "at most twice" with no durable line; debugger and blackbox never merge, so cannot
+  refuse.
+- **Strikes only — nothing else.** The file is one durable lookup, not bookkeeping that
+  duplicates another record. Four candidates were cut: a per-spawn ledger (duplicated the
+  prompt-log); adviser "clean axis" dispositions (re-derivable from `Deploy when` — re-running a
+  passed adviser is safe, not a loop); accepted risk (already lands in `build-log/` at finalize);
+  and the deployment floor (Review-axes `Must` column — skips are inferable from the prompt-log,
+  so it needs no state of its own). What remains is the one piece of state whose loss restarts a
+  loop.
+- **No history kept.** One overwritten file: the only consumer is the live manager and the count
+  is dead after the session — unlike `build-log/` (permanent) and `prompt-log/` (deferred).
+
+## Backlog (closed)
+
+The hardening backlog is complete: the documented flow (blackbox integration, base-drift merges,
+route-based report consumption), the durable strike-count state, and the deployment floor all
+landed; enforcement is the `route-guard.sh` `SubagentStop` hook. Three holes were reviewed and
+closed as **not real risks**, kept here so they are not re-raised:
+
+- **Manager may implement source itself.** No block is possible — it needs `Edit`/`Write`/`Bash`
+  throughout — so delegation is backstopped by the finalize diff (flow step 13) and the
+  author-blind review (step 9).
+- **Permission-mode self-check.** A `PreToolUse` deny fires in every mode including
+  `bypassPermissions` (verified 2026-08-01, CC 2.1.207), so the blackbox jail is
+  mode-independent; no self-check needed.
+- **User gate in an autonomous run.** The skill is interactive by design
+  (`disable-model-invocation`, user gates), so a no-user run is outside its envelope, and the
+  manager resolving a gate itself is already forbidden (flow steps 2–3).
+
 ## Still open
 
+- **Visibility-widening enforcement.** A fix that widens a symbol's visibility only to make it
+  testable slips through unless someone reads the diff closely; the only guard is
+  `change-discipline-adviser`, which deploys just "when the diff smells." No durable enforcement;
+  deferred, not folded into the deployment floor.
+- **Who may accept a risk?** The adviser-consumption rule routes an unfixed `low` finding
+  straight to `build-log/` as accepted risk — a manager call, with no user sign-off. Risk
+  acceptance is a shipping decision; it may belong to the user (a `decide`), like the spec gate.
+  A consumption-rule question, independent of the strike count. Revisit.
 - **Relationship to `verify-fanout`.** Kept separate for now: build uses the inline
   adviser agents; `verify-fanout` stays its own planning-time
   external-verification path. Whether the manager can *offer* `verify-fanout` inside

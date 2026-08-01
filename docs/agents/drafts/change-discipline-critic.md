@@ -10,8 +10,8 @@ no acceptance test weakened to pass, no visibility widened for test convenience,
 no symptom papered over in place of a real fix. It is the backstop against
 specification gaming — the behaviour a stuck agent falls into when it optimises
 for a green check instead of the goal. It reports problems and stops; the
-manager decides whether to reject the unit. See the guardrails section of
-`docs/skills/build-orchestration.md`.
+manager decides whether to reject the unit. See the `Guardrails against thrashing`
+section of `.claude/skills/build-orchestration/SKILL.md`.
 
 ## Definition
 
@@ -100,8 +100,8 @@ The report is your final message. Do not write any files.
   see scope creep, a weakened test, or a symptom-patch. This is the only critic
   whose subject is the change rather than the code.
 - Written as the backstop to the two process levers in
-  [../../skills/build-orchestration.md](../../skills/build-orchestration.md) (frozen
-  acceptance check + escalation ladder), which *prevent* most gaming in the
+  [../../skills/build-orchestration-design-notes.md](../../skills/build-orchestration-design-notes.md)
+  (frozen acceptance check + escalation ladder), which *prevent* most gaming in the
   loop. This catches what the levers miss. Prevention is primary; this is
   defence in depth.
 - Separate agent, not the manager's own integration check, on purpose: the

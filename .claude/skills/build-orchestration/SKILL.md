@@ -17,6 +17,9 @@ own edits are limited to docs, config, and merge glue.
 Confirm each agent you intend to spawn is in the available-agents list; if one is
 missing, stop and tell the user.
 
+Create `build-orchestration/strike-count.md` empty, overwriting any existing file
+(Guardrails).
+
 ## Establish the goal
 
 Reconcile three inputs; none alone is authoritative:
@@ -80,8 +83,8 @@ what to build for that unit, reconciled from the inputs above.
   - On the report, `merge <unit> <permitted-path>...` — permit the implementer's source
     paths, a tester's test-dirs only. Merge nothing from the debugger. Route the two
     failures differently:
-    - Scope refusal (out-of-scope path): push it back to the same worker (escalation
-      ladder, strike 1).
+    - Scope refusal (out-of-scope path): push it back to the same worker; for an
+      implementer unit, bump its `strike-count.md` line (Guardrails).
     - Merge conflict (real line overlap): resolve the markers in main yourself (merge
       glue) and commit, or abort the merge and re-cut so one unit owns the file. Never
       an implementer's job; never a strike.
@@ -91,37 +94,38 @@ what to build for that unit, reconciled from the inputs above.
 - Background by default. Run synchronously only when the next allocation depends
   on the result.
 - Batch small findings into one fix unit, not one agent each.
+- Spawning an `implementer` for a unit → add its `strike-count.md` line, `<unit>: 0/2`.
 - Never pass the test files to an implementer.
 - Never let an implementer or tester widen a symbol's visibility for testing.
-- Before any write-capable spawn, confirm the session is not in `bypassPermissions`
-  or `acceptEdits`.
 - For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
   there. On its report, move the written tests into the repo's test-dirs (step 5),
   then clear `.agent-scope/`.
 
 ## Review axes
 
-Each adviser owns one axis. Deploy per unit by the `Deploy when` column below, not
-all-always.
+Each adviser owns one axis; deploy per unit by its `Deploy when` condition, not
+all-always. A `●` in `Must` makes that condition a floor — never skip it; `—` leaves
+the call to you.
 
-| Axis | Agent | Deploy when |
-| --- | --- | --- |
-| Correctness (logic, edge cases, contract) | `correctness-adviser` | the unit has non-trivial logic or branching (near-default) |
-| Security risk | `security-adviser` | the unit touches auth, input handling, crypto, file/network I/O, or secrets |
-| Design / architecture | `design-adviser` | the unit adds or changes an abstraction, interface, or module boundary |
-| Redundancy, over-complication | `simplicity-adviser` | the diff is large or tangled |
-| Performance, efficiency | `performance-adviser` | the unit loops over unbounded data, hits the DB, or sits on a hot path |
-| Documentation, comments | `docs-adviser` | the unit changes public API or user-facing docs |
-| Legal, licensing, compliance | `legal-adviser` | the unit adds a dependency or copied / third-party code |
-| Change discipline (diff vs. its mandate) | `change-discipline-adviser` | the diff smells: scope creep, weakened or deleted tests, an outsized diff |
-| Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines |
-| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) |
+| Axis | Agent | Deploy when | Must |
+| --- | --- | --- | --- |
+| Correctness (logic, edge cases, contract) | `correctness-adviser` | the unit has non-trivial logic or branching (near-default) | ● |
+| Security risk | `security-adviser` | the unit touches auth, input handling, crypto, file/network I/O, or secrets | ● |
+| Design / architecture | `design-adviser` | the unit adds or changes an abstraction, interface, or module boundary | — |
+| Redundancy, over-complication | `simplicity-adviser` | the diff is large or tangled | — |
+| Performance, efficiency | `performance-adviser` | the unit loops over unbounded data, hits the DB, or sits on a hot path | — |
+| Documentation, comments | `docs-adviser` | the unit changes public API or user-facing docs | — |
+| Legal, licensing, compliance | `legal-adviser` | the unit adds a dependency or copied / third-party code | ● |
+| Change discipline (diff vs. its mandate) | `change-discipline-adviser` | the diff smells: scope creep, weakened or deleted tests, an outsized diff | — |
+| Decision-coverage testing (optional) | `mcdc-tester` | the unit is decision-dense: auth, pricing, validation, state machines | — |
+| Root-cause diagnosis on failure | `debugger` | the escalation ladder stalls (Guardrails) | — |
 
 ## Guardrails against thrashing
 
-- **Escalation ladder** — after 2 strikes you diagnose, you do not re-attempt:
-  1. Attempt fails → feed the exact failure back to the same implementer via
-     `SendMessage` (context intact). At most twice.
+- **Escalation ladder** — after 2 strikes you diagnose, you do not re-attempt; re-read the
+  unit's `strike-count.md` line before each escalation decision.
+  1. Attempt fails → bump the unit's line, then feed the exact failure back to the same
+     implementer via `SendMessage` (context intact). At most twice.
   2. Still failing → **stop changing code. Spawn `debugger` for the root cause.**
      No further edit until the cause is named.
   3. Cause named but the fix fights the design → `alternatives-explorer`, or

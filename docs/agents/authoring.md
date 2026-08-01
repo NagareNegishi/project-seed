@@ -223,8 +223,10 @@ and run in a worktree instead (§13).
 - **Seams** — `Bash` reaches any file, so a `Bash`-capable variant can't be jailed;
   this is *why* blackbox is trimmed to `Read, Write, Edit` and the other testers use
   §13. Config loads at session start with **no hot-reload**, so the jail is only
-  validatable from a fresh session. `bypassPermissions` / `acceptEdits` parent mode
-  overrides the jail — the manager must confirm the session mode before spawning.
+  validatable from a fresh session. The jail is **mode-independent**: a `PreToolUse`
+  `deny` fires and blocks in every permission mode — `acceptEdits` / `bypassPermissions`
+  included, for a subagent-frontmatter hook under a bypass parent (verified 2026-08-01,
+  CC 2.1.207). No session-mode check is needed before spawning.
 
 ## 13. Bash-agent isolation (worktree, best-effort)
 

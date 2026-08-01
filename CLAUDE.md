@@ -31,6 +31,7 @@ Promote to CLAUDE.md or a skill only with user review. Mechanism: `docs/notes-sy
   say in one line what could not be verified.
 - Ask clarifying questions as plain text; do not use the AskUserQuestion tool.
 - Verify version numbers, pricing, and API signatures against official docs, not memory.
+- Scope discipline (YAGNI): understand the real goal, then make the smallest change that meets it.
 
 ## Project Overview
 
