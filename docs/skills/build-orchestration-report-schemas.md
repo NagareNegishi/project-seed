@@ -3,12 +3,11 @@
 The single source of truth for every worker's report: the machine-routable `route` field it
 carries, the locator envelope that frames it, and the body sections behind it. Two consumers
 bind here — the manager's consumption routing (SKILL "Reports — demand and consume") and the
-planned `SubagentStop` format-enforcement hook (risk backlog item 3). Body sections are
+`SubagentStop` format-enforcement hook (`route-guard.sh`). Body sections are
 transcribed verbatim from the 24 `.claude/agents/*.md` files; update this doc in the same
 change as any agent report edit, and do not route on anything not recorded here.
 
-Companion: `build-orchestration-risks.md` item 3 (why the route field exists),
-`build-orchestration.md` "Consuming reports", `docs/agents/authoring.md` §2/§10.
+Companion: `build-orchestration.md` "Consuming reports", `docs/agents/authoring.md` §2/§10.
 
 ## The `route` field
 
@@ -146,7 +145,7 @@ section that sets the route is never "none".
 ## Advisers (8) — critic shape plus a per-problem fix direction
 
 An adviser is its critic's review **plus** a scoped in-axis fix direction, produced in the same
-spawn (risks doc "Adviser family"). The skill spawns advisers, not critics; the critics stay for
+spawn (design-notes "Advisers = critic + fix direction"). The skill spawns advisers, not critics; the critics stay for
 human sessions. Same envelope and same `Target` / `Checked` / `Out of scope` headers as the
 matching critic — the deviation is `Problems`: each problem is a keyed multi-field bullet that
 carries its own directions, so the manager can route a finding to an implementer without a cold

@@ -35,7 +35,7 @@ the skill is; this one holds *why* the calls were made and what's still open.
   consumer, two agents. All 8 axes, else the manager invents fixes on the uncovered one.
   The `*-critic` twins stay for interactive/human sessions. Scoping guard: an adviser
   gives in-axis directions only; anything cross-axis → `decide` (to the user), never
-  straight to an implementer. Built 2026-07-31; status in risks "Adviser family".
+  straight to an implementer. Built 2026-07-31.
 - **Only `security` + `design` gate the spec pre-build.** Their drafts are written
   for idea targets ("either an idea … or an implementation"). The other axes are
   code-only ("you receive an implementation"), so they cannot review a spec — an
@@ -119,7 +119,7 @@ frontmatter.
 
 ## Escalation strike count
 
-Built 2026-07-31 (risks item 4). The ladder's per-unit strike count lived only in the manager's
+Built 2026-07-31. The ladder's per-unit strike count lived only in the manager's
 context — the first thing summarization drops, so thrash returned as unrecognized re-attempts.
 Fix: `build-orchestration/strike-count.md` (gitignored), one line per unit as `<unit>: <n>/2`
 keyed to the `agent-worktree.sh` slug. Created fresh at Prerequisites; seeded `0/2` when a unit's
@@ -140,11 +140,33 @@ scope-refusal; re-read before every escalation decision.
   state whose loss actually restarts a loop.
 - **No history kept.** One overwritten file: the only consumer is the live manager and the count
   is dead after the session — unlike `build-log/` (permanent) and `prompt-log/` (deferred).
-- **Does not carry Phase C's state.** Item 5 (deployment floor) expected to record adviser
-  deployment here; with dispositions cut, this file holds strikes only, and item 5 builds its own.
+- **Holds strikes only.** The deployment floor (the Review-axes `Must` column) once expected to
+  record adviser deployment here; with dispositions cut, this file holds strikes only, and the
+  floor needs no state of its own — skips are inferable from the prompt-log.
+
+## Backlog (closed)
+
+The hardening backlog is complete: the documented flow (blackbox integration, base-drift merges,
+route-based report consumption), the durable strike-count state, and the deployment floor all
+landed; enforcement is the `route-guard.sh` `SubagentStop` hook. Three holes were reviewed and
+closed as **not real risks**, kept here so they are not re-raised:
+
+- **Manager may implement source itself.** No block is possible — it needs `Edit`/`Write`/`Bash`
+  throughout — so delegation is backstopped by the finalize diff (flow step 13) and the
+  author-blind review (step 9).
+- **Permission-mode self-check.** A `PreToolUse` deny fires in every mode including
+  `bypassPermissions` (verified 2026-08-01, CC 2.1.207), so the blackbox jail is
+  mode-independent; no self-check needed.
+- **User gate in an autonomous run.** The skill is interactive by design
+  (`disable-model-invocation`, user gates), so a no-user run is outside its envelope, and the
+  manager resolving a gate itself is already forbidden (flow steps 2–3).
 
 ## Still open
 
+- **Visibility-widening enforcement.** A fix that widens a symbol's visibility only to make it
+  testable slips through unless someone reads the diff closely; the only guard is
+  `change-discipline-adviser`, which deploys just "when the diff smells." No durable enforcement;
+  deferred, not folded into the deployment floor.
 - **Who may accept a risk?** The adviser-consumption rule routes an unfixed `low` finding
   straight to `build-log/` as accepted risk — a manager call, with no user sign-off. Risk
   acceptance is a shipping decision; it may belong to the user (a `decide`), like the spec gate.
