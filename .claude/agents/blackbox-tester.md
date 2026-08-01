@@ -53,8 +53,10 @@ Emit your report by these rules:
    `===END REPORT===` — nothing before or after it, no code fence.
 2. Emit everything outside `<…>` verbatim; fill each `<…>` with your content.
 3. Every section always appears; write "none" when empty.
-4. Derive `route` from the filled sections: `redrive` if you could not derive tests at
-   all; else `decide` if **Findings** or **Open** has any entry; else `accept`.
+4. Set the report `route` — the first case that applies:
+   - `redrive` — you could not derive tests at all.
+   - `decide` — **Findings** or **Open** has any entry.
+   - `accept` — neither does.
 
 ===REPORT===
 route: <accept | decide | redrive>
