@@ -58,7 +58,7 @@ what to build for that unit, reconciled from the inputs above.
    when` trigger (Review axes).
 10. Consume each reviewer report (Reports — demand and consume).
 11. Rerun both suites after each fix batch; repeat until the reports are clean, or
-    log the remainder as accepted risk (build-log).
+    log the remainder to build-log as unresolved risk.
 12. Write the record (below).
 13. Finalize onto your branch. Each `merge` committed the unit as disposable scaffolding
     so the integration could be a real `git merge`; those commits must not become your
@@ -142,7 +142,7 @@ Legal tokens per agent, and the consumption behind them:
 
 - **Advisers** — `accept` \| `fix` \| `decide` \| `fix+decide` \| `redrive`. `fix`: batch the
   `fix`-tagged problems into fix units by severity, each dispatched to an implementer with its
-  `directions`; `high`/`medium` block finalize, `low` → build-log accepted risk. `decide`:
+  `directions`; `high`/`medium` block finalize, `low` → build-log as unresolved risk. `decide`:
   surface to the user, never an implementer. `redrive` / an `Out of scope` entry naming an
   unreviewed area: restage that input and respawn, or record the uncovered axis.
 - **blackbox-tester** — `accept` \| `decide` \| `redrive`. `Findings` are spec gaps
@@ -173,6 +173,6 @@ Legal tokens per agent, and the consumption behind them:
 - **Build-log** — write one `build-orchestration/build-log/<yyyy-mm-dd>-<slug>.md`
   per session, committed with the session's work at finalize (step 13). Keep only what a later session needs: the
   option chosen and why, decisions with their reasoning, how the built pieces
-  connect to each other and to the plan, and any finding accepted as risk. Cut
+  connect to each other and to the plan, and any unresolved risk. Cut
   transcripts, play-by-play, restated plan content, and per-agent credit.
 - Run the build-log through the `human-writing` skill before committing.
