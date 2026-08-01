@@ -30,9 +30,7 @@ msg=$(printf '%s' "$payload" | jq -r '.last_assistant_message // ""')
 # verifier, researcher, or any non-orchestration subagent) passes through.
 jq -e --arg a "$agent_type" '.agents[$a]' "$spec" >/dev/null 2>&1 || exit 0
 
-block=""   # the report span, filled once markers are confirmed
-
-# --- helpers (defined before use) -------------------------------------------
+# --- helpers ----------------------------------------------------------------
 
 # body of one section: text after '- **Name**:' through the line before the next '- **X**:'
 get_section() {
@@ -91,7 +89,7 @@ case "$route_line" in
   *) block_now "First line inside the report must be 'route: <tokens>'. Got: '${route_line}'." ;;
 esac
 route_val=${route_line#route:}
-# normalize: split on '+', trim, drop blanks, sort, rejoin — order-independent set key
+# order-independent set key: sort the '+'-joined tokens so 'fix+decide' matches spec key 'decide+fix'
 canon=$(printf '%s' "$route_val" | tr '+' '\n' \
   | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' | grep -v '^$' | sort | paste -sd+ -)
 if ! jq -e --arg a "$agent_type" --arg r "$canon" '.agents[$a].routes[$r]' "$spec" >/dev/null 2>&1; then
