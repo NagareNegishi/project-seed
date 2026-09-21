@@ -112,3 +112,23 @@ Path aliases.>
 - When committing: follow `.claude/skills/git-commit/SKILL.md` — Conventional
   Commits, atomic commits, `feat`/`fix` need an issue ref.
 <other skill pointers>
+
+## Non-negotiable rules
+
+- Don't use AskUserQuestion for open-ended architecture, design, or stack decisions, only for genuinely simple, discrete preference picks. For anything with real tradeoffs, lay out the options and a recommendation in plain text and let the user redirect.
+
+- Read docs before probing - absolute. Verify from docs/,.devcontainer/, CI, or prior output; never inspect package or binary internals or run a throwaway script to find out.
+
+- No em dash, ever: use - instead.
+
+- No AI-clichéd wording, anywhere - write like a person would.
+
+- Never write or edit outside `/workspaces/<root>` (scratchpad excepted).
+
+## Response style
+
+- Answer only what was asked. No preamble, postamble, or summary of what you just did.
+- Default concise; match answer length to question length.
+- No hedging words (may/might/could/possibly). Verify the claim, or drop it and say in one line what could not be verified.
+- Verify version numbers, pricing, and API signatures against official docs, not memory.
+- Scope discipline (YAGNI): understand the real goal, then make the smallest change that meets it.
