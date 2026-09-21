@@ -2,14 +2,15 @@
 name: session-wrapup
 description: >
   Close out a working session: update `docs/progress.md`, report uncommitted
-  and unpushed work, and list the session's decisions and open threads.
+  and unpushed work, list the session's decisions and open threads, then land
+  the ones that belong in a plan doc and lint the plan docs touched.
   Read-only on git — never commits, stages, or pushes.
 disable-model-invocation: true
 ---
 
 # Session Wrapup
 
-Close out the current session: run the three steps below in order. Never commit, stage, or push — all git checks are read-only.
+Close out the current session: run the four steps below in order. Never commit, stage, or push — all git checks are read-only.
 
 ## 1. Update docs/progress.md
 
@@ -38,6 +39,19 @@ From this session's conversation, report:
 
 Skip empty categories rather than padding them.
 
+## 4. Land what belongs in a plan doc
+
+- For each decision above that belongs to an active plan under `docs/plans/`, say
+  which doc's `decisions` section it belongs in, and offer to append it. Never
+  append without the user's word, and never rewrite an existing entry.
+- For each open thread that is a real open question — its answer exists nowhere
+  yet — offer to add it to that doc's `open questions` as one line with a
+  `**Resolved by:**` source. A thread that is just unfinished work is not a
+  question; leave it in the report.
+- Run the plan-doc check exactly as `session-end` defines it, under
+  **Plan-doc check**. Do not restate or vary it here.
+
 ## Output
 
-Present steps 2 and 3 in chat as the wrapup report. Write no file other than `docs/progress.md`.
+Present steps 2, 3, and 4 in chat as the wrapup report. Write no file other than
+`docs/progress.md`, and the plan-doc appends the user accepts in step 4.

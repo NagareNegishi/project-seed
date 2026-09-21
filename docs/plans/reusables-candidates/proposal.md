@@ -135,19 +135,13 @@ Intent only, no checkbox — folder and language wait for the backend stack:
 
 - **TTL cache** — tiny in-memory cache with expiry, ~30 lines. Config
   lookups, token caching, anything too small for Redis.
-- **Env config loader** — read env vars into a typed config object, fail
-  fast on missing keys. Backend-side pattern per language; frontend (Vite)
-  env is compile-time and not shared with it.
 
-## Deliberately skipped (round 2 candidates)
+## Blocked, revisit when unblocked
 
-- Form state / validation orchestration — react-hook-form + zod do it
-  better; a hand-rolled version violates the "small" rule.
-- DataTable — high value but generic tables grow sorting, selection, and
-  virtualization until they become a library. SortableHeader above keeps the
-  reusable kernel.
+Useful, but not buildable yet — each needs one specific input to land
+before it can be proposed:
+
 - Auth helpers (token storage, refresh flow) — too coupled to the auth
   provider to be portable yet. Revisit once two projects share a flow.
-- Charts, virtualized lists, rich text — real library territory.
 - Test utilities — worth its own round once the test stack in CLAUDE.md is
   filled in.

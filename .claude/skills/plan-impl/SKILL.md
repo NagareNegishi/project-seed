@@ -18,13 +18,18 @@ high-level steps. Middle skill in the chain: `plan-product` → **`plan-impl`** 
   tell the user to run an audit pass in `plan-product`. Do not rescan every entry
   to decide, and do not audit `product.md` yourself here.
 - Write to `docs/plans/<slug>/impl.md` — always this path. Regenerating it
-  overwrites freely. Docs only: never change code, run git, or make a network
-  call.
+  overwrites freely, except `## Status`: carry those rows across unchanged, and
+  add `planned` rows for steps that are new. Docs only: never change code, run
+  git, or make a network call.
 
 ## Two marks per step, kept separate
 
 Every step carries a maturity mark **and** a verification mark, stacked on one
 line: `🤖 ai-audited(opus-4.8) · ❔ unverified (net-new)`.
+
+**Exception: a `✅ settled` step drops the verification mark**, keeping only
+`src:` citations that point outside this repo (a vendor doc, an external API
+reference) — a repo-internal citation is redundant once the step is settled.
 
 Maturity — same axis and same rules as `plan-product`:
 
@@ -32,11 +37,8 @@ Maturity — same axis and same rules as `plan-product`:
 🌱 idea   🤖 ai-audited(<model>)   👤 human-ok   ✅ settled
 ```
 
-Advance a step to `🤖 ai-audited(<model>)` on your own. Stamp `👤 human-ok` or
-`✅ settled` only when the user explicitly instructs you to set that mark on a
-named step: ask, wait for the instruction, then stamp — one step per instruction.
-Never stamp either mark on your own initiative, and never reuse one step's
-instruction for another.
+Stamping follows `plan-product`'s rule under **The maturity mark**, applied to
+steps instead of entries. Read it there; it is not restated here.
 
 Verification — this skill leaves almost everything unverified:
 
@@ -59,6 +61,15 @@ leans on something that should already exist but you have not opened it, use
 lowest: 🌱 idea
 🌱 idea 4 · 🤖 ai-audited 2 · 👤 human-ok 0 · ✅ settled 0
 
+## Status
+
+| Step | State | Note |
+|---|---|---|
+| 1 | done | |
+| 2 | in-flight | |
+| 3 | planned | |
+| 4 | dropped | folded into Step 2 |
+
 ## Overview
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
 
@@ -67,7 +78,7 @@ lowest: 🌱 idea
 ## Risks & unknowns
 🌱 idea · ❔ unverified (not checked)
 
-- <feasibility risk, dependency, or thing that could force a redesign.>
+- <risk, one line> - **Resolved by:** <human decision | external fact | vendor answer | plan-verify>
 
 ## Steps
 
@@ -81,21 +92,87 @@ verified later, not now.>
 🤖 ai-audited(opus-4.8) · ❔ unverified (not checked)
 
 <...>
+
+- **Open:** <obligation this step carries> - **Resolved by:** <source>
 ```
 
 ## Rules
 
 - **Stay rough.** High-level steps that expose unknowns and feasibility risks,
   not line-by-line instructions or code on paper.
-- **`Risks & unknowns` is required** — never omit it. If a step depends on
-  something you are unsure exists or works, say so there and mark the step
-  `(not checked)`.
+- **`Risks & unknowns` may be empty.** Never manufacture an entry to fill it.
+  Entries have to pass the admission test below.
+- **Open items in a step body carry the `- **Open:**` marker** (see below).
+  Prose saying something is still outstanding does not count and is not tracked.
 - Each step is a coherent unit of work with a clear boundary — not a micro-task,
   not a mega-task.
 - **Header can't drift.** Update the `## Maturity` header in the same pass as any
   entry. Counts cover every marked entry (Overview, Risks, and each step).
+- **Status lives only in `## Status`.** Never write progress, `Landed:`, or
+  `Remaining:` lines into the Maturity header, the Overview, or a step body, and
+  never invent a status mark. `✅ landed`, `✅ done`, and the like are not marks -
+  the vocabulary is the four maturity marks and the two verification marks, and
+  nothing else goes on a mark line. A caveat attached to a step's state belongs
+  in that step's `Note` column.
 - Never assert a file, function, or library API exists as fact. Phrase such
   steps as intent, and leave them unverified.
+
+## Status: who owns it
+
+`## Status` is the human's. One row per step, state is one of `planned`,
+`in-flight`, `done`, `dropped`. `Note` is free text and usually empty.
+
+- Creating the file: write every row as `planned`.
+- After that, never flip a row on your own initiative. Report the drift you see,
+  and set a row only when the user instructs you to change that named step - one
+  step per instruction, same discipline as the `👤 human-ok` mark.
+- A doc with no `planned` and no `in-flight` rows is finished work. Say so, and
+  offer to archive it.
+- **A step's `Status` row of `done` makes its maturity mark `✅ settled`.** This
+  is mechanical, not a review judgment call, and follows the same instant a
+  `done` row is set — it needs no separate stamping instruction.
+
+## Risks: admission and landing
+
+**Admission.** A risk is admissible only if it could force a redesign, and it
+names what will settle it:
+
+```
+- <risk, one line> - **Resolved by:** <human decision | external fact | vendor answer | plan-verify>
+```
+
+- One line, no body.
+- "A step names code I have not opened" is **not** a risk. That is the step's own
+  `❔ unverified (not checked)` mark. Do not duplicate it here.
+- If reading the repo settles it, read now and fold the finding into the step.
+
+**Landing.** Settling a risk deletes its line. Never annotate it as resolved in
+place, and never record the resolution on the section's mark line.
+
+| The finding | Lands in | Then |
+|---|---|---|
+| a choice with a why | the `product.md` field it shapes, or `decisions` if none fits | delete the risk |
+| a hard limit on the build | `product.md` `constraints` | delete the risk |
+| changes how a step is built | that step's body | delete the risk |
+| proof the step is fine | that step's verification mark | delete the risk |
+| no longer relevant | nowhere | delete the risk |
+
+## Open items in a step body
+
+`Risks & unknowns` is document scope: things that could force a redesign. An
+obligation attached to one step - operator configuration, a legal read, a
+mailbox to provision - stays with its step, in this form:
+
+```
+- **Open:** <the obligation, one line> - **Resolved by:** <human decision | external fact | vendor answer | operator>
+```
+
+- The `- **Open:**` line is one line. Detail may follow as ordinary indented
+  prose beneath it; only the marked line is the entry.
+- Settling one deletes the line, same as a risk, and the finding lands per the
+  table above.
+- Never park an obligation in prose to keep it out of a list. `plan-lint.sh`
+  counts these and reports which steps hold them.
 
 ## human-writing
 
@@ -110,3 +187,4 @@ Do not render the doc in chat. Show the path and offer:
    this rough plan into a verified one. Remind the user `plan-verify` is
    command-only and spends the real verification budget.
 3. **Stop** — the doc stays for later.
+

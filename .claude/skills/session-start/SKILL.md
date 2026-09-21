@@ -15,6 +15,7 @@ Orient from the baton the previous session left.
 
 1. Read `docs/session/baton.md`. If it is missing, say so and offer to start fresh
    (a `session-end` run creates it).
-2. If **Read first** names a doc (not `None`), read that doc before anything else.
-3. Restate to the user, in 2–3 lines: the **Goal** and the **Next task**.
-4. Stop and confirm the next task with the user before acting — never auto-start it.
+2. Read `memory/MEMORY.md` - the store is gitignored and nothing else loads it.
+3. If **Read first** names a doc (not `None`), read that doc before anything else.
+4. Restate to the user, in 2–3 lines: the **Goal** and the **Next task**.
+5. Stop and confirm the next task with the user before acting — never auto-start it.

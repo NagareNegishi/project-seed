@@ -8,6 +8,10 @@ reference docs. New projects start from this repo (GitHub → "Use this template
 
 - `.devcontainer/` — generic container: app service, firewall, Claude Code. Placeholders marked `<placeholder>`.
 - `.claude/` — permissions (`settings.json`), path-scoped rules example, portable skills.
+- `CONTEXT.md` + `context/` — skeleton for a per-project fast-orientation index (parts,
+  seams, invariants, direction), citation-per-line, pulled on demand rather than
+  auto-loaded. Fill in once the architecture settles — `CONTEXT.md` explains the
+  convention; delete both if the project stays small enough that CLAUDE.md covers it.
 - `docs/` — `progress.md` template, `plans/` convention, `reference/` concept docs,
   `notes-system.md` (session-notes convention), `session/` (baton template for the
   `session-start`/`session-end` skills; the filled `baton.md` is gitignored).
@@ -30,7 +34,9 @@ reference docs. New projects start from this repo (GitHub → "Use this template
    authenticate `gh`, run `/label-setup`, and protect the default branch with
    `scripts/protect-main.sh`. The publish and label skills stop until `gh` is
    authenticated.
-7. After the first feature, start updating `docs/progress.md`.
+7. After the first feature, start updating `docs/progress.md`. Once the architecture
+   has settled, fill in `CONTEXT.md` + `context/` (or delete both if the project
+   stays small enough that CLAUDE.md covers orientation on its own).
 
 ## Claude credentials volume
 
@@ -65,6 +71,19 @@ The seed ships paired skills for drafting and publishing GitHub issues and PRs:
 Then the flow is draft (`/pr-draft` or `/github-issue-creator`), review the file,
 publish (`/pr-publish` or `/issue-publish`). Design notes:
 `docs/skills/pr-issue-publish.md`.
+
+## Build orchestration
+
+`build-orchestration` runs a feature build as a multi-agent session. The main Claude
+session acts as manager: it cuts the feature into units and spawns implementer,
+tester, and adviser subagents to build, test, and review the work to completion, with
+guardrails that keep it from thrashing on a unit that won't pass. Run it with
+`/build-orchestration`; it never starts on its own.
+
+It drives the subagent fleet in `.claude/agents/` (catalog in
+[`docs/agents/README.md`](docs/agents/README.md)) and needs a feature plan under
+`docs/plans/<feature>/` to build from. Design notes:
+[`docs/skills/build-orchestration-design-notes.md`](docs/skills/build-orchestration-design-notes.md).
 
 ## Claude attribution
 

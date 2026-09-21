@@ -4,10 +4,18 @@ Drafts for custom subagents, one per file in [`drafts/`](drafts/). Nothing here 
 active: Claude Code only loads agents from `.claude/agents/`, so these files are
 reference only.
 
+The promoted set in `.claude/agents/` is broader than `drafts/`: each critic below
+also ships an `-adviser` counterpart (same axis, plus a scoped fix direction with
+each finding). An adviser is the critic superclass, so it carries no separate draft.
+
 The draft format, the promoted-file anatomy, and the promote/polish process are all
 in [authoring.md](authoring.md).
 
 ## Drafts
+
+Builder:
+
+- [implementer](drafts/implementer.md) — builds one bounded unit from its spec and verifies the build passes; writes source only, never tests, and never outside its unit.
 
 Testers:
 
@@ -15,7 +23,8 @@ Testers:
 - [whitebox-tester](drafts/whitebox-tester.md) — after code lands, adds tests for internal branches, boundaries, and error paths, then runs the suite.
 - [mcdc-tester](drafts/mcdc-tester.md) — optional; designs MC/DC decision-coverage cases for units with dense boolean logic. Complements whitebox-tester.
 
-Review layer (critics — one axis each, problems only, no fixes):
+Review layer (one axis each; each has a critic — problems only — and a promoted
+`-adviser` variant that adds a scoped fix direction):
 
 - [correctness-critic](drafts/correctness-critic.md) — finds logic errors, missed edge cases, and contract violations in the implementation.
 - [security-critic](drafts/security-critic.md) — finds security risks and holes in an idea or implementation.

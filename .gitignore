@@ -31,3 +31,4 @@ build-orchestration/route-block-count
 
 # Bash-agent isolation worktrees (agent-worktree.sh); throwaway
 .agent-worktrees/
+/memory/
