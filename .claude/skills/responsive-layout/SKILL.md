@@ -52,8 +52,10 @@ Schema — file paths relative to the detected root:
 
 1. Read `files.json`. If missing or empty, run scan mode first.
 2. Process files with `"audited": null` one at a time: read the file, apply the checklist, append findings to `issues.md`, set the file's `audited` date. (Re-audit all files only if the user explicitly asks.)
-3. Checklist — names below are Tailwind; look for the equivalent pattern in whatever
-   styling system the project uses. Flag any of:
+3. Target width: 320px. Judge every item below against overflow at 320px,
+   not a vague "narrow window." Checklist — names below are Tailwind; look
+   for the equivalent pattern in whatever styling system the project uses.
+   Flag any of:
    - Fixed widths/heights on containers: `w-[Npx]`, `min-w-[Npx]`, `w-96`+, inline `style` widths
    - Multi-column layout without responsive prefixes: `grid-cols-N` (N ≥ 2) or side-by-side flex rows with no `sm:`/`md:` variant
    - Flex rows of multiple fixed-size children without `flex-wrap`

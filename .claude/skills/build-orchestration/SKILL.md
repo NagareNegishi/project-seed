@@ -20,6 +20,14 @@ missing, stop and tell the user.
 Create `build-orchestration/strike-count.md` empty, overwriting any existing file
 (Guardrails).
 
+Delete `build-orchestration/route-block-count/` if it exists. It holds one
+per-subagent counter written by the `route-guard.sh` validator, and a stale count
+makes that hook stop enforcing early in the new session.
+
+Delete `.agent-scope/` if it exists. It is the `blackbox-tester` path jail's root,
+cleared per unit at step 5, so anything left in it is from a session that aborted
+before that step and would be readable by the next tester.
+
 ## Establish the goal
 
 Reconcile three inputs; none alone is authoritative:
@@ -98,8 +106,11 @@ what to build for that unit, reconciled from the inputs above.
 - Never pass the test files to an implementer.
 - Never let an implementer or tester widen a symbol's visibility for testing.
 - For `blackbox-tester`, stage only the spec into `.agent-scope/`, spawn it pointed
-  there. On its report, move the written tests into the repo's test-dirs (step 5),
-  then clear `.agent-scope/`.
+  there. Every path in its prompt must be inside that root, the write path included:
+  a path jail denies anything outside it, and the general "exact file paths" rule
+  above would otherwise hand it a repo test-dir it cannot write to. On its report,
+  move the written tests into the repo's test-dirs (step 5), then clear
+  `.agent-scope/`.
 
 ## Review axes
 
@@ -137,6 +148,12 @@ Each agent defines its own format; demand it back as the final message with a
 first-line `route:` token. Act on `route`, never on a section's presence or the axis
 verdict word. Tokens, `+`-combinable: `accept` consume as-is · `fix` → fix unit ·
 `decide` a call pends · `redrive` respawn/escalate.
+
+**Unroutable report** — a final message with no report envelope, no `route:` line, or
+a token outside that agent's legal set is treated as `redrive`. Respawn or escalate;
+never infer a route from the sections, and never act on the prose. The
+`route-guard.sh` validator normally catches these first, but it fails open on its own
+faults, so this rule is what backs it.
 
 Legal tokens per agent, and the consumption behind them:
 

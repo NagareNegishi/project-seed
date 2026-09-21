@@ -50,7 +50,7 @@ Routing map: which OWASP Cheat Sheets to fetch for JS/TS projects.
 ### A07 — Authentication Failures
 - Authentication_Cheat_Sheet.md
 - Session_Management_Cheat_Sheet.md
-- JSON_Web_Token_for_Java_Cheat_Sheet.md (JWT guidance applies cross-language)
+- JSON_Web_Token_Cheat_Sheet.md (JWT guidance applies cross-language)
 - Forgot_Password_Cheat_Sheet.md
 - Credential_Stuffing_Prevention_Cheat_Sheet.md
 - Multifactor_Authentication_Cheat_Sheet.md

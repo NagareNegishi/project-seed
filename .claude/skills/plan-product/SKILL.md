@@ -105,10 +105,17 @@ lowest: 🌱 idea
 
 <what this explicitly will not do.>
 
+## decisions
+🌱 idea
+
+- **<topic>:** <what was decided>. Why: <the reason it beat the alternative>.
+- ...
+
 ## open questions
 🌱 idea
 
-<unresolved decisions blocking or shaping the work.>
+- <question, one line> - **Resolved by:** <human decision | external fact | vendor answer>
+- ...
 ```
 
 ## Rules
@@ -116,15 +123,46 @@ lowest: 🌱 idea
 - **Fixed core, optional extras.** The fields above are always present, left
   empty (not deleted) when they don't apply. A project may append its own extra
   fields after `open questions`.
-- **`non-goals` and `open questions`** — never leave them blank by default;
-  press for at least one entry each.
+- **`non-goals`** — never leave it blank by default; press for at least one entry.
+- **`decisions`** — before writing there, check whether an appropriate field already exists; if so, write it there instead.
+- **`open questions` may be empty, and often should be.** Never manufacture one
+  to fill the section. Entries have to pass the admission test below.
 - **Requirements use EARS phrasing** — "When \<trigger>, the system shall
   \<response>".
 - **Header can't drift.** Whatever writes or updates an entry updates the header
   in the same pass. `lowest:` is the lowest mark present; the counts sum to the
   number of entries.
-- Never invent facts to fill a field. An unknown belongs in `open questions`, not
-  a confident-looking guess.
+- Never invent facts to fill a field. An unknown that passes the admission test
+  belongs in `open questions`; anything else you go and find out. Never write a
+  confident-looking guess.
+
+## Open questions: admission and landing
+
+**Admission.** Write an entry only if the answer exists nowhere yet. Format:
+
+```
+- <question, one line> - **Resolved by:** <human decision | external fact | vendor answer>
+```
+
+- One line, question form, no body. A question needing a paragraph is a decision
+  waiting on the user: ask them.
+- `Resolved by:` names the source that will produce the answer, and that source
+  is always outside this repo: a call the user has to make, a fact about the
+  world, a vendor's answer.
+- If the answer is already somewhere in the repo (code, `docs/`, `context/`) the
+  entry is not admissible. Read it now, write the finding into the section it
+  belongs in, and add nothing here. Same when you simply have not checked yet.
+
+**Landing.** Resolving a question deletes its line. Never annotate it as
+resolved in place, and never record the resolution on the section's mark line.
+
+| The answer | Lands in | Then |
+|---|---|---|
+| chose X over Y, with the why | the field it shapes, or `decisions` if none fits | delete the question |
+| a hard limit the build must respect | `constraints` | delete the question |
+| changes what gets built | `goal` / `requirements` | delete the question |
+| rules something out | `non-goals` | delete the question |
+| no longer relevant | nowhere | delete the question |
 
 ## human-writing
 

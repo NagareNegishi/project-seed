@@ -54,7 +54,7 @@ Reference issues in a footer line: `Refs #<n>` (related) or `Closes #<n>` (this 
 
 ## Attribution
 
-Never add a `Co-Authored-By` trailer or any Claude author identity to a commit — policy `docs/permissions/v3-no-coauthor.md`, enforced by a hook.
+Never add a `Co-Authored-By` trailer, a generated-with line, or any Claude author identity to a commit. Enforced by `.claude/hooks/coauthor-guard.sh`, which also denies identity overrides and file-fed commit messages.
 
 ## Words banned in message text
 
