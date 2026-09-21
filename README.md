@@ -8,6 +8,10 @@ reference docs. New projects start from this repo (GitHub → "Use this template
 
 - `.devcontainer/` — generic container: app service, firewall, Claude Code. Placeholders marked `<placeholder>`.
 - `.claude/` — permissions (`settings.json`), path-scoped rules example, portable skills.
+- `CONTEXT.md` + `context/` — skeleton for a per-project fast-orientation index (parts,
+  seams, invariants, direction), citation-per-line, pulled on demand rather than
+  auto-loaded. Fill in once the architecture settles — `CONTEXT.md` explains the
+  convention; delete both if the project stays small enough that CLAUDE.md covers it.
 - `docs/` — `progress.md` template, `plans/` convention, `reference/` concept docs,
   `notes-system.md` (session-notes convention), `session/` (baton template for the
   `session-start`/`session-end` skills; the filled `baton.md` is gitignored).
@@ -30,7 +34,9 @@ reference docs. New projects start from this repo (GitHub → "Use this template
    authenticate `gh`, run `/label-setup`, and protect the default branch with
    `scripts/protect-main.sh`. The publish and label skills stop until `gh` is
    authenticated.
-7. After the first feature, start updating `docs/progress.md`.
+7. After the first feature, start updating `docs/progress.md`. Once the architecture
+   has settled, fill in `CONTEXT.md` + `context/` (or delete both if the project
+   stays small enough that CLAUDE.md covers orientation on its own).
 
 ## Claude credentials volume
 

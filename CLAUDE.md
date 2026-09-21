@@ -46,6 +46,9 @@ The dev environment runs in a Dev Container (`.devcontainer/`).
 
 ## Docs
 
+- `CONTEXT.md` + `context/` — fast-orientation index (parts, seams, invariants,
+  direction), citation-per-line, pulled on demand. Not a source of truth — see
+  `CONTEXT.md` for the convention and which file to read per task.
 - `docs/progress.md` — read at session start; update after each major feature completes.
 - `docs/plans/` — per-feature product plan/decision files; read only the relevant file when working on a feature.
 - `docs/skills/` — plan/decision docs for the `.claude/skills/` tooling itself (authoring guide + per-skill decision logs). Kept out of `docs/plans/` so product plans don't mix with tooling meta-docs.
