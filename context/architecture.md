@@ -36,6 +36,14 @@ Each interface between parts and to the outside.
 
 - <contract detail not obvious from the code> -> `<path>`
 
+## Cross-cutting
+
+- <global pipeline order, config fail-fast, or other app-wide rule> -> `<entry point file>`
+
+## Infra
+
+- <dev/deploy fact: container, hosting, CI/CD> -> `<path>`
+
 ## Weak or missing seams
 
 - <known gap, stated plainly, not as a complaint> -> `<path>`
