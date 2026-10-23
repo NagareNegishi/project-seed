@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
+import { ConfirmDialog } from "./ConfirmDialog"
 
 // DeleteConfirmDialogProps defines the props for the DeleteConfirmDialog component
 interface DeleteConfirmDialogProps {

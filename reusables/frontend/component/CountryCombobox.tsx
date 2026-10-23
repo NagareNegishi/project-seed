@@ -9,15 +9,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { COUNTRY_CODES, getCountryName } from "./countryCodes"
+import CountryFlag from "./CountryFlag"
 
 type Props = {
   value: string
   onChange: (code: string) => void
   excludeCodes?: string[]
-}
-
-function Flag({ code }: { code: string }) {
-  return <span className={`fi fi-${code.toLowerCase()} rounded-sm shrink-0`} />
 }
 
 export default function CountryCombobox({ value, onChange, excludeCodes }: Props) {
@@ -29,7 +26,7 @@ export default function CountryCombobox({ value, onChange, excludeCodes }: Props
         <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
           {value ? (
             <span className="flex items-center gap-2 truncate">
-              <Flag code={value} />
+              <CountryFlag code={value} />
               {getCountryName(value)}
             </span>
           ) : (
@@ -50,7 +47,7 @@ export default function CountryCombobox({ value, onChange, excludeCodes }: Props
                 onSelect={() => { onChange(code); setOpen(false) }}
               >
                 <span className="flex items-center gap-2">
-                  <Flag code={code} />
+                  <CountryFlag code={code} />
                   {getCountryName(code)}
                 </span>
                 <Check className={cn("ml-auto h-4 w-4", value === code ? "opacity-100" : "opacity-0")} />

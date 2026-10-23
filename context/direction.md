@@ -11,6 +11,10 @@ Near-term, roughly in queue order:
 
 - <item> -> `<path>`
 
+## Deferred but real
+
+- <item not started, with the blocker> -> `<path>`
+
 ## Deliberately deferred (why)
 
 - <decision + why> -> `<path>`
@@ -23,5 +27,9 @@ Near-term, roughly in queue order:
 
 - `docs/plans/<feature>/` = <convention> -> `docs/plans/`
 - This file indexes the live plans; it does not replace them.
+
+## Notes for a reader
+
+- <frozen/stale context callout: a doc whose framing no longer matches current code> -> `<path>`
 
 <!-- SKELETON: structure only. Content fill is a separate session. -->

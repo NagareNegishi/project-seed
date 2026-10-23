@@ -22,6 +22,7 @@ interface ConfirmDialogProps {
   confirmClassName?: string  // optional styling for the confirm button; omit for plain outline
   cancelLabel?: string       // optional; defaults to "Cancel"
   onCancel?: () => void      // called when Cancel is clicked; omit to just close the dialog
+  children?: ReactNode       // optional extra content between the description and the buttons
 }
 
 /**
@@ -38,6 +39,7 @@ export function ConfirmDialog({
   confirmClassName,
   cancelLabel,
   onCancel,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,6 +48,7 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children}
         <DialogFooter className="sm:justify-between">
           <Button variant="outline" onClick={() => { onOpenChange(false); onCancel?.() }}>
             {cancelLabel ?? "Cancel"}

@@ -43,6 +43,11 @@
       "Read(**/.env.*.local)",
       "Read(**/appsettings.*.json)",
       "Read(**/*secret*)",
+      "Read(**/.env.*)",
+      "Read(**/creds.json)",
+      "Read(**/docker-compose.override.yml)",
+      "Read(**/*.db)",
+      "Read(**/uploads/**)",
       "Bash(git add .)",
       "Bash(git add . *)",
       "Bash(git add ./)",
@@ -125,6 +130,10 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-path-guard.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/env-file-guard.sh"
           }
         ]
       },

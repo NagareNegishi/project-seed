@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect, type KeyboardEvent } from "react"
-import { Trash2 } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { matchesSuggestion, type MatchStrategy } from "@/utils/matchSuggestion"
 import { validateTag } from "@/utils/validateTag"
+import { Button } from "@/components/ui/button"
 
 type TagInputProps = {
   value: string[]
@@ -59,12 +60,11 @@ export default function TagInput({
     const trimmed = raw.trim()
     if (!trimmed) return
     const error = validateTag(trimmed, { maxLength: maxItemLength, existing: value, maxItems })
-    if (error) { setInputError(error); setInputValue(""); setOpen(false); setHighlight(-1); return }
-    onChange([...value, trimmed])
+    if (!error) onChange([...value, trimmed])
+    setInputError(error)
     setInputValue("")
     setOpen(false)
     setHighlight(-1)
-    setInputError(null)
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -92,24 +92,37 @@ export default function TagInput({
   return (
     <div className="space-y-2">
       <div className="relative">
-        <input
-          value={inputValue}
-          onChange={e => {
-            setInputValue(e.target.value)
-            setOpen(true)
-            setHighlight(-1)
-            if (inputError) setInputError(null)
-          }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setOpen(true)}
-          onBlur={() => setOpen(false)}
-          placeholder={placeholder}
-          role="combobox"
-          aria-expanded={showList}
-          aria-autocomplete="list"
-          className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
-        />
+        <div className="flex gap-2">
+          <input
+            value={inputValue}
+            onChange={e => {
+              setInputValue(e.target.value)
+              setOpen(true)
+              setHighlight(-1)
+              if (inputError) setInputError(null)
+            }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
+            placeholder={placeholder}
+            role="combobox"
+            aria-expanded={showList}
+            aria-autocomplete="list"
+            className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Add"
+            // onMouseDown (not onClick) fires before the input's onBlur closes the dropdown
+            onMouseDown={e => { e.preventDefault(); commitTag(inputValue) }}
+          >
+            <Plus />
+          </Button>
+        </div>
         {inputError && <p className="text-xs text-destructive mt-1">{inputError}</p>}
+        {!inputError && inputValue && <p className="text-xs text-muted-foreground mt-1">Press Enter to add</p>}
         {showList && (
           <ul
             ref={listRef}
