@@ -23,6 +23,7 @@
 #   MARK-STATUS    a status word on a mark line, where only the maturity and
 #                  verification marks belong
 #   OPEN-FORMAT    a `- **Open:** …` step-body item with no `**Resolved by:**`
+#   RESOLVED-VAGUE a `**Resolved by:**` that is a bare `external fact` or `vendor answer`
 #   MATURITY-SUM   header counts that disagree with the marked entries, in total
 #                  or per category
 #   MATURITY-LOWEST  `lowest:` that is not the lowest mark present in the file
@@ -100,6 +101,13 @@ for f in "${files[@]}"; do
       if (t ~ /[^a-z](resolved|answered|decided|settled) (this|last) (session|week|pass)[^a-z]/) return 1
       if (t ~ /[^a-z]update:/) return 1
       return 0
+    }
+
+    # A resolver that names a kind of answer but no way to get it.
+    function vague_resolver(s,   t) {
+      t = tolower(s)
+      if (!sub(/^.*\*\*resolved by:\*\*[ \t]*/, "", t)) return 0
+      return (t ~ /^(external fact|vendor answer)[ \t.]*$/)
     }
 
     function is_mark(s) { return (s ~ /^(🌱|🤖|👤|✅)/) }
@@ -181,6 +189,9 @@ for f in "${files[@]}"; do
       if (index($0, "**Resolved by:**") == 0) {
         bad(FNR, "OPEN-FORMAT", "open item has no **Resolved by:** marker")
       }
+      if (vague_resolver($0)) {
+        bad(FNR, "RESOLVED-VAGUE", "name how it gets answered: relay:, vendor answer:, or spike:")
+      }
       if (resolution_wording($0)) {
         bad(FNR, "RESOLVED-INLINE", "open item reads as already answered; land it and delete the line")
       }
@@ -252,6 +263,9 @@ for f in "${files[@]}"; do
         entries++
         if (index($0, "**Resolved by:**") == 0) {
           bad(FNR, "ENTRY-FORMAT", "entry has no **Resolved by:** marker")
+        }
+        if (vague_resolver($0)) {
+          bad(FNR, "RESOLVED-VAGUE", "name how it gets answered: relay:, vendor answer:, or spike:")
         }
       } else if ($0 ~ /^[ \t]+/) {
         bad(FNR, "CONTINUATION", "entries are one line each - no wrapped or nested lines")
