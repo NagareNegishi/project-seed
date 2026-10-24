@@ -40,6 +40,9 @@
         "source=aspnet-https,target=/home/vscode/.aspnet/https,type=volume",
 		// Mount a volume for Claude credentials
 		"source=claude-credentials,target=/home/vscode/.claude,type=volume"
+		// Optional, not required for the stack to work: keeps frontend/node_modules off the slow
+		// Windows bind mount ("Improve disk performance" in VS Code). Uncomment if on Windows:
+		// , "source=frontend-node-modules,target=${containerWorkspaceFolder}/frontend/node_modules,type=volume"
     ],
 
 	// Use 'containerEnv' to set environment variables in the container. (for all processes, set during container build)

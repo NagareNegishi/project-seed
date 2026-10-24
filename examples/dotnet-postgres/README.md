@@ -12,3 +12,13 @@ stack-specific parts into the seed's `.devcontainer/` placeholders:
 
 Project-specific values still inside these files (paths, connection-string key,
 timezone) — replace them when instantiating.
+
+## Optional, not part of the stack
+
+Spotted in a downstream project built from this example — quality-of-life,
+not required for the stack to run:
+
+- **`frontend-node-modules` mount** — a named volume for `frontend/node_modules`,
+  to keep it off the slow Windows bind mount. Left commented out in
+  `devcontainer.json`'s `mounts` block; uncomment on Windows if frontend
+  installs/builds feel slow.
