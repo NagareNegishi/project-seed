@@ -18,13 +18,14 @@ reference docs. New projects start from this repo (GitHub → "Use this template
   `reference/project-specific/` holds the seed author's own worked examples
   (real domain, real AWS decisions) — read for ideas, don't carry into a new
   project; delete it during instantiation if you don't want it.
-- `examples/<stack>/` — real files from working projects; the stack-specific pieces the seed leaves out.
+- `examples/stack/<stack>/` — real files from working projects; the stack-specific pieces the seed leaves out.
+- `examples/cicd/` — real GitHub Actions pipelines (test gates, deploy, dependency updates) from working projects.
 - `reusables/` — portable React/TypeScript pieces carried between projects: `component/` (app components), `shadcn/` (shadcn/ui primitives), `util/` (helpers and hooks). Copy what a new project needs; not wired into any build.
 
 ## Instantiation checklist
 
 1. Create a repo from this template and open it locally.
-2. Pick a stack from `examples/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains. Then delete the `examples/` entries you didn't use.
+2. Pick a stack from `examples/stack/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains. Then delete the `examples/` entries you didn't use.
 3. Create `.devcontainer/.env` from `.env.example` and fill the values.
 4. Fill `CLAUDE.md` (skeleton at repo root) and `.claude/rules/` paths.
    Review `LICENSE` — the seed ships MIT under the seed author's name; replace or
