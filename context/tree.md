@@ -59,7 +59,7 @@ files changed.
 | `context/` | done | the 5 skeleton docs marked unfilled; `tree.md` is this file |
 | `.devcontainer/` | done | all 6 files |
 | `docs/` | done | all files mapped; most entries read in part, not line by line - re-verify before relying on specifics |
-| `examples/` | done | all 23 files across the 4 stacks, leaning on each stack's own README |
+| `examples/` | done | all files across `stack/` (6 stacks) and `cicd/` (3 pipelines + dependabot baseline), leaning on each folder's own README |
 | `.github/` | done | the 1 tracked file |
 | `reusables/` | done | all files; spot-checked against description, not every file individually re-read this pass |
 | `scripts/` | done | both files |
@@ -367,35 +367,76 @@ mapped" above, not in this tree.
 
 ```
 examples/
-├── cpp/
-│   ├── devcontainer.json       fragments to copy: node feature (Claude Code needs it on this base image), cpptools-extension-pack; no forwardPorts since the GUI runs on the host
-│   ├── docker-compose.yml      single app service, no database; a commented stub marks where a second Node sync-server service would go
-│   ├── Dockerfile              JUCE example base image plus ninja, clang-tools, and JUCE 8.0.12 built and installed at image build time
-│   ├── project-firewall.sh     stack domain block: npm registry, OSV, VS Code marketplace; no C++-specific domains, since JUCE is fetched before the firewall exists
-│   └── README.md               how to merge this C++/JUCE example's dev-container pieces into the seed placeholders, and which values stay project-specific
-├── dotnet/
-│   ├── .env.example            root-level secrets template (registry API keys) from the source app; keep the pattern, replace the keys
-│   ├── devcontainer.json       fragments to copy: forwardPorts for Kestrel HTTPS/HTTP, csdevkit and rest-client extensions; commented postCreateCommand still shows an older app's restore path
-│   ├── docker-compose.yml      single app service; optional env_file pulls the root .env into the container
-│   ├── Dockerfile              dotnet base image plus firewall tools and dotnet global tools on PATH; no db client, this stack has no database
-│   ├── project-firewall.sh     stack domain block: NuGet, dotnetcli, VS Code marketplace, plus two app-specific registry APIs as an example of whitelisting your own external calls
-│   └── README.md               how to merge this .NET-only example's dev-container pieces into the seed placeholders, and which values stay project-specific
-├── dotnet-postgres/
-│   ├── reference/
-│   │   ├── ASP.NET Core backend.md  notes on enum validation with JsonStringEnumConverter, why AllowedHosts matters, where security headers live, and an xUnit concept map
-│   │   └── ASP.NET Identity.md      explainer on how ASP.NET Core Identity and JWT bearer fit together, what to build versus get free, why to skip MapIdentityApi, packages needed and reading links
-│   ├── .env.example            POSTGRES_* vars; copy to .devcontainer/.env and fill
-│   ├── devcontainer.json       fragments to copy: forwardPorts for backend/frontend/postgres, aspnet-https mount, Kestrel remoteEnv, postCreateCommand restore/install, csdevkit extension
-│   ├── docker-compose.yml      db (Postgres) service plus postgres-data and aspnet-https volumes alongside app
-│   ├── Dockerfile              dotnet base image plus postgresql-client, with dotnet-ef installed as the vscode user
-│   ├── project-firewall.sh     stack domain block: NuGet, VS Code marketplace, dotnetcli, shadcn
-│   └── README.md               how to merge this .NET + PostgreSQL example's dev-container pieces into the seed placeholders, and which values stay project-specific
-└── node-vite/
-    ├── devcontainer.json       fragments to copy: node feature, forwardPorts for the Vite dev server, npm install postCreateCommand, eslint/prettier/tailwindcss/vitest extensions
-    ├── docker-compose.yml      single app service, no database; optional env_file for local secrets
-    ├── Dockerfile              base:ubuntu-22.04 plus firewall tools only; Node comes from the devcontainer feature, not the image
-    ├── project-firewall.sh     stack domain block: npm registry, VS Code marketplace, shadcn/ui
-    └── README.md               how to merge this Node + Vite example's dev-container pieces into the seed placeholders, and which values stay project-specific
+├── cicd/
+│   ├── dotnet-ec2-ecr/
+│   │   ├── deploy.yml        test → build/push to ECR → EF Core migration over an SSH tunnel to RDS → SSH+Compose redeploy on EC2
+│   │   ├── pr-checks.yml     merge gate: dotnet test, frontend build/lint/test as separate parallel jobs
+│   │   ├── README.md         what each workflow does, the secrets it needs, and which values stay project-specific
+│   │   └── renew-cert.yml    monthly cron that renews the Let's Encrypt cert only when it is within 30 days of expiry, then restarts containers
+│   ├── dotnet-render/
+│   │   ├── demo-reset.yml    daily cron plus manual trigger that calls the app's own API to reset demo data and purge unverified accounts
+│   │   ├── deploy.yml        test → EF Core migration straight against Render Postgres → curl to Render's deploy hook; no ECR or SSH tunnel
+│   │   ├── pr-checks.yml     same merge-gate shape as dotnet-ec2-ecr's
+│   │   └── README.md         what each workflow does, the secrets it needs, and when to pick this over the EC2/ECR example
+│   ├── tauri-desktop-release/
+│   │   ├── build-windows.yml                  manual MSI-only build, for verifying the Windows path without a full multi-OS run
+│   │   ├── flatpak-build.yml                   runs flatpak-builder against the repo's Flatpak manifest; can't run in a devcontainer (needs bubblewrap)
+│   │   ├── flatpak-demo-video.yml              records a video of the built Flatpak under a virtual display, for a Flathub submission
+│   │   ├── README.md                           what each workflow does, the shared build/cache pattern, and which values stay project-specific
+│   │   ├── release-linux.yml                   manual Linux-only build and publish of the .deb for Flathub submission
+│   │   ├── release-macos-apple-silicon.yml     manual arm64-only macOS build and publish; kept as a reference/fallback
+│   │   ├── release-macos.yml                   manual universal-binary (Apple Silicon + Intel) macOS build and publish
+│   │   ├── release-windows.yml                 manual Windows build and publish, merging its entry into the updater's shared latest.json
+│   │   └── release.yml                         the real "build and publish everything at once" release: Windows, macOS and Linux, then one GitHub Release with a merged latest.json
+│   ├── dependabot.yml   baseline Dependabot config: one package-ecosystem block per manifest, weekly, ignoring minor/patch bumps; `<placeholder>` block for the backend ecosystem
+│   └── README.md        index of the cicd examples: what each folder is, its source project, and when dotnet-ec2-ecr/dotnet-render each apply
+└── stack/
+    ├── browser-extension/
+    │   ├── scripts/
+    │   │   ├── build.mjs           esbuild entry points for background/popup/content scripts, copies static assets, zips store builds
+    │   │   └── storeManifest.mjs   strips dev-only hosts and the pinned key for store submissions, plus a Firefox manifest variant
+    │   ├── manifest.json    MV3 dev manifest with `<placeholder>` tokens for name, key, domains, ports and icon filenames
+    │   ├── package.json     tsc --noEmit for typechecking, esbuild for the build, vitest for tests; build/build:store/build:prod-local/build:firefox/watch scripts
+    │   ├── README.md        states up front this is not a dev-container stack, lists the placeholder tokens and where each appears
+    │   └── tsconfig.json    @types/chrome, noEmit true since esbuild transpiles, erasableSyntaxOnly for the TS 7 compiler
+    ├── cpp/
+    │   ├── devcontainer.json       fragments to copy: node feature (Claude Code needs it on this base image), cpptools-extension-pack; no forwardPorts since the GUI runs on the host
+    │   ├── docker-compose.yml      single app service, no database; a commented stub marks where a second Node sync-server service would go
+    │   ├── Dockerfile              JUCE example base image plus ninja, clang-tools, and JUCE 8.0.12 built and installed at image build time
+    │   ├── project-firewall.sh     stack domain block: npm registry, OSV, VS Code marketplace; no C++-specific domains, since JUCE is fetched before the firewall exists
+    │   └── README.md               how to merge this C++/JUCE example's dev-container pieces into the seed placeholders, and which values stay project-specific
+    ├── dotnet/
+    │   ├── .env.example            root-level secrets template (registry API keys) from the source app; keep the pattern, replace the keys
+    │   ├── devcontainer.json       fragments to copy: forwardPorts for Kestrel HTTPS/HTTP, csdevkit and rest-client extensions; commented postCreateCommand still shows an older app's restore path
+    │   ├── docker-compose.yml      single app service; optional env_file pulls the root .env into the container
+    │   ├── Dockerfile              dotnet base image plus firewall tools and dotnet global tools on PATH; no db client, this stack has no database
+    │   ├── project-firewall.sh     stack domain block: NuGet, dotnetcli, VS Code marketplace, plus two app-specific registry APIs as an example of whitelisting your own external calls
+    │   └── README.md               how to merge this .NET-only example's dev-container pieces into the seed placeholders, and which values stay project-specific
+    ├── dotnet-postgres/
+    │   ├── reference/
+    │   │   ├── ASP.NET Core backend.md  notes on enum validation with JsonStringEnumConverter, why AllowedHosts matters, where security headers live, and an xUnit concept map
+    │   │   └── ASP.NET Identity.md      explainer on how ASP.NET Core Identity and JWT bearer fit together, what to build versus get free, why to skip MapIdentityApi, packages needed and reading links
+    │   ├── .env.example            POSTGRES_* vars; copy to .devcontainer/.env and fill
+    │   ├── devcontainer.json       fragments to copy: forwardPorts for backend/frontend/postgres, aspnet-https mount, Kestrel remoteEnv, postCreateCommand restore/install, csdevkit extension; frontend-node-modules mount left commented out as an opt-in Windows perf fix
+    │   ├── docker-compose.yml      db (Postgres) service plus postgres-data and aspnet-https volumes alongside app
+    │   ├── Dockerfile              dotnet base image plus postgresql-client, with dotnet-ef installed as the vscode user
+    │   ├── project-firewall.sh     stack domain block: NuGet, VS Code marketplace, dotnetcli, shadcn
+    │   └── README.md               how to merge this .NET + PostgreSQL example's dev-container pieces into the seed placeholders, which values stay project-specific, and the optional frontend-node-modules mount
+    ├── node-vite/
+    │   ├── devcontainer.json       fragments to copy: node feature, forwardPorts for the Vite dev server, npm install postCreateCommand, eslint/prettier/tailwindcss/vitest extensions
+    │   ├── docker-compose.yml      single app service, no database; optional env_file for local secrets
+    │   ├── Dockerfile              base:ubuntu-22.04 plus firewall tools only; Node comes from the devcontainer feature, not the image
+    │   ├── project-firewall.sh     stack domain block: npm registry, VS Code marketplace, shadcn/ui
+    │   └── README.md               how to merge this Node + Vite example's dev-container pieces into the seed placeholders, and which values stay project-specific
+    ├── python-postgres/
+    │   ├── .env.example            POSTGRES_* vars only; DATABASE_URL is built from them at shell start, no separate connection-string key
+    │   ├── devcontainer.json       fragments to copy: forwardPorts for uvicorn/Vite/postgres, frontend-node-modules mount, postCreateCommand with a pyproject.toml existence guard, shell-env building an asyncpg DATABASE_URL
+    │   ├── docker-compose.yml      db (Postgres) service plus postgres-data volume; Compose project name pinned to a `<project>` placeholder
+    │   ├── Dockerfile              Python base image plus postgresql-client and firewall tools; uv installed by copying the pinned binary out of Astral's own image
+    │   ├── project-firewall.sh     stack domain block: PyPI, npm registry, shadcn, VS Code marketplace, plus api.osv.dev for the owasp-* skills
+    │   └── README.md               how to merge this FastAPI + PostgreSQL example's dev-container pieces into the seed placeholders, which values stay project-specific, and the backend dependency set for reference
+    └── README.md    how each stack folder maps onto the seed's `.devcontainer/` placeholders, and the merge/delete workflow
+└── README.md    top-level index: points to stack/ (dev-container setups) and cicd/ (pipelines); neither group is wired into anything
 ```
 
 ## .github/
