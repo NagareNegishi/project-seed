@@ -1,0 +1,87 @@
+name: Build Windows
+
+# Manual only: this closes the win-x64 verification gap from impl.md Step 8 item
+# 10 (Tauri can't cross-compile a Windows target from the Linux devcontainer).
+# Not wired to push/PR — flip that on once Step 11's release pipeline needs it.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    # The checked-in src-tauri/.cargo/config.toml pins target-dir to a
+    # devcontainer-only Linux path (/home/vscode/.cargo-target/...) to dodge a
+    # slow 9p mount there. That path means nothing on this runner, so every
+    # cargo/tauri step below overrides it via env var, which takes precedence
+    # over the config file.
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}\cargo-target
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      # Keyed on the pinned tauri-cli version so a version bump invalidates
+      # the cache instead of silently reusing a stale binary.
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with release-windows.yml/release.yml — a hit means
+      # the binary already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        # Pinned to match .devcontainer/Dockerfile so local and CI builds use
+        # the same tauri-cli version.
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        shell: bash
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build
+        working-directory: src-tauri
+        run: cargo tauri build
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobtracker-windows-installers
+          path: ${{ env.CARGO_TARGET_DIR }}\release\bundle\msi\*.msi
+          if-no-files-found: error
+          retention-days: 3

@@ -1,0 +1,64 @@
+name: Flatpak demo video
+
+# Records a short video of the built Flatpak running under a virtual display,
+# for the Flathub submission's required demo video (impl.md Step 12, item 1 —
+# see docs/plans/desktop-app/flathub-submission-checklist.md's "Blocked" section).
+# Separate from flatpak-build.yml so that workflow stays a pure build check;
+# this one's purpose-built for producing the video artifact, and self-contained
+# (builds its own copy rather than depending on another workflow's artifacts).
+# Manual for now — first run is a render check (does the app even show up, see
+# tauri-apps/tauri#8970) before this becomes the actual submission video.
+on:
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak + flatpak-builder + xvfb + ffmpeg
+        timeout-minutes: 5
+        run: |
+          for i in 1 2 3; do
+            timeout 60 sudo apt-get update && break
+            echo "apt-get update stalled/failed (attempt $i), retrying..."
+            sleep 10
+          done
+          sudo apt-get install -y flatpak flatpak-builder xvfb ffmpeg
+
+      - name: Add Flathub remote
+        run: flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+
+      - name: flatpak-builder
+        run: |
+          flatpak-builder --user --install-deps-from=flathub --force-clean \
+            --repo=repo builddir flatpak/com.nagarenegishi.jobtracker.yml
+
+      - name: Bundle single-file .flatpak
+        run: flatpak build-bundle repo com.nagarenegishi.jobtracker.flatpak com.nagarenegishi.jobtracker
+
+      - name: Install the built bundle
+        run: flatpak install --user --bundle -y com.nagarenegishi.jobtracker.flatpak
+
+      - name: Record demo video
+        run: |
+          Xvfb :99 -screen 0 1280x800x24 &
+          export DISPLAY=:99
+          sleep 2
+
+          flatpak run com.nagarenegishi.jobtracker &
+          sleep 5
+
+          ffmpeg -y -f x11grab -video_size 1280x800 -i :99 -t 15 -pix_fmt yuv420p demo.mp4
+
+      - name: Upload demo video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-video
+          path: demo.mp4
+          if-no-files-found: ignore
+          retention-days: 3

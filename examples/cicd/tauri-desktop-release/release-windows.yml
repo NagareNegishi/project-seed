@@ -1,0 +1,194 @@
+name: Release Windows
+
+# Manual, Windows-only: builds and publishes just the MSI (+ .sig), for
+# verifying the Windows path (Step 10's Open action, Step 11's auto-update
+# loop) without also paying for a macOS/Linux build. Split out the same way
+# release-linux.yml was split out of release.yml. Once all platforms are
+# verified, release.yml remains the real "build and publish everything at
+# once" workflow for actual releases — this one isn't meant to replace it.
+#
+# latest.json is shared with macOS (both platforms need an entry in the same
+# file), so unlike release-linux.yml this workflow can't just overwrite it —
+# it downloads whatever latest.json already exists on the release (if any)
+# and merges its own windows-x86_64 entry in, preserving any darwin-aarch64
+# entry already published.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-windows:
+    runs-on: windows-latest
+
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/cargo-target
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with build-windows.yml/release.yml — this is what
+      # broke the 2026-08-20 run: a hit means the binary already exists, and
+      # cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key below can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        shell: bash
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build
+        working-directory: src-tauri
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: cargo tauri build
+
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stage release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          cp "${{ env.CARGO_TARGET_DIR }}"/release/bundle/msi/*.msi release-assets/
+          cp "${{ env.CARGO_TARGET_DIR }}"/release/bundle/msi/*.msi.sig release-assets/
+
+      # Falls back to uploading onto the existing release if release.yml or
+      # release-linux.yml already published this version. Uploaded before
+      # latest.json so the next step can read back GitHub's real asset URL.
+      - name: Publish MSI to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/*.msi release-assets/*.msi.sig --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" --repo "$REPO" --title "$TAG" \
+              --notes "Automated Windows release published from job-tracker-desktop." \
+              release-assets/*.msi release-assets/*.msi.sig
+          fi
+
+      # Merge, not overwrite: pull any existing latest.json off the release
+      # (it may already carry a darwin-aarch64 entry from a macOS run) and
+      # jq-deep-merge this platform's entry into it rather than replacing
+      # the whole file. url is matched by version substring, not filename —
+      # GitHub renames spaces to dots on upload.
+      - name: Build merged latest.json
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+
+          gh release download "$TAG" --repo "$REPO" -p latest.json -O existing-latest.json --clobber 2>/dev/null \
+            || echo '{}' > existing-latest.json
+
+          WIN_MSI_SIG=$(cat release-assets/*.msi.sig)
+          WIN_URL=$(gh api "repos/${REPO}/releases/tags/${TAG}" \
+            | jq -r --arg version "$VERSION" \
+              '[.assets[] | select((.name | endswith(".msi")) and (.name | contains($version)))] | .[0].browser_download_url')
+          if [ -z "$WIN_URL" ] || [ "$WIN_URL" = "null" ]; then
+            echo "::error::No .msi asset on $TAG matched version $VERSION" >&2
+            exit 1
+          fi
+          PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          jq -n \
+            --slurpfile existing existing-latest.json \
+            --arg version "$VERSION" \
+            --arg notes "Kajitor v${VERSION}. See the source repository for release notes." \
+            --arg pub_date "$PUB_DATE" \
+            --arg win_url "$WIN_URL" \
+            --arg win_sig "$WIN_MSI_SIG" \
+            '$existing[0] * {
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: {
+                "windows-x86_64": { signature: $win_sig, url: $win_url }
+              }
+            }' > release-assets/latest.json
+
+      - name: Upload latest.json to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          gh release upload "$TAG" release-assets/latest.json --repo "$REPO" --clobber
+
+      # Traceability only. Skips if another platform's workflow already
+      # tagged this version.
+      - name: Tag source commit
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin, skipping."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi

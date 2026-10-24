@@ -1,0 +1,411 @@
+name: Release
+
+# Manual only: closes the win-x64/macOS verification gap from impl.md Step 8
+# item 10 (Tauri can't cross-compile those targets from the Linux devcontainer)
+# and implements Step 11 item 10's signed release pipeline. Not wired to
+# push/PR by design.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    # The checked-in src-tauri/.cargo/config.toml pins target-dir to a
+    # devcontainer-only Linux path (/home/vscode/.cargo-target/...) to dodge a
+    # slow 9p mount there. That path means nothing on this runner, so every
+    # cargo/tauri step below overrides it via env var, which takes precedence
+    # over the config file.
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}\cargo-target
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      # Keyed on the pinned tauri-cli version so a version bump invalidates
+      # the cache instead of silently reusing a stale binary.
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with build-windows.yml/release-windows.yml — a
+      # hit means the binary already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        # Pinned to match .devcontainer/Dockerfile so local and CI builds use
+        # the same tauri-cli version.
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        shell: bash
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build
+        working-directory: src-tauri
+        # Signing env vars make the updater plugin sign the installers and
+        # emit .sig files alongside them (Tauri reads these two var names).
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: cargo tauri build
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobtracker-windows-installers
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}\release\bundle\msi\*.msi
+            ${{ env.CARGO_TARGET_DIR }}\release\bundle\msi\*.msi.sig
+          if-no-files-found: error
+          retention-days: 1
+
+  build-macos:
+    runs-on: macos-latest
+
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/cargo-target
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      # Both targets needed: --target universal-apple-darwin below builds
+      # each separately, then lipo's them together.
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key will be shared with release-macos.yml once it exists — a
+      # hit means the binary already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      # universal-apple-darwin/ prefix: --target nests output under a
+      # per-triple dir (tauri-cli's interface/rust.rs get_target_dir).
+      - name: Clean stale bundle output
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/universal-apple-darwin/release/bundle"
+
+      - name: cargo tauri build
+        working-directory: src-tauri
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: cargo tauri build --target universal-apple-darwin
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobtracker-macos-installers
+          path: |
+            ${{ env.CARGO_TARGET_DIR }}/universal-apple-darwin/release/bundle/dmg/*.dmg
+            ${{ env.CARGO_TARGET_DIR }}/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+            ${{ env.CARGO_TARGET_DIR }}/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
+          if-no-files-found: error
+          retention-days: 1
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    # The checked-in src-tauri/.cargo/config.toml pins target-dir to a
+    # devcontainer-only Linux path (/home/vscode/.cargo-target/...) to dodge a
+    # slow 9p mount there. That path means nothing on this runner, so every
+    # cargo/tauri step below overrides it via env var, which takes precedence
+    # over the config file.
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/cargo-target
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tauri v2 Linux build prerequisites (https://v2.tauri.app/start/prerequisites/),
+      # same list as .devcontainer/Dockerfile — ubuntu-latest doesn't have these.
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with release-linux.yml — a hit means the binary
+      # already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build (deb)
+        working-directory: src-tauri
+        run: cargo tauri build -b deb
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: jobtracker-linux-installer
+          path: ${{ env.CARGO_TARGET_DIR }}/release/bundle/deb/*.deb
+          if-no-files-found: error
+          retention-days: 1
+
+  # Publishes to the separate public job-tracker-desktop-releases repo, never
+  # this one - see impl.md Step 11's update-manifest hosting decision. Only
+  # this job touches RELEASES_REPO_TOKEN, and only via the Releases API
+  # (release create/upload), never a push of any branch to that repo.
+  publish:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read app version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jobtracker-windows-installers
+          path: artifacts/windows
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jobtracker-macos-installers
+          path: artifacts/macos
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jobtracker-linux-installer
+          path: artifacts/linux
+
+      - name: Stage release assets
+        # macOS artifact keeps its dmg/ and macos/ subfolders — upload-artifact
+        # roots multi-pattern uploads at the least common ancestor, not flat.
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          cp artifacts/windows/*.msi artifacts/windows/*.msi.sig release-assets/
+          cp artifacts/macos/dmg/*.dmg release-assets/
+          cp artifacts/macos/macos/*.app.tar.gz artifacts/macos/macos/*.app.tar.gz.sig release-assets/
+          cp artifacts/linux/*.deb release-assets/
+
+          # Companion checksum file for the .deb, same convention as the
+          # updater's .sig files above — the Flatpak manifest's `type: file`
+          # source needs this hash for its `sha256:` field.
+          DEB_NAME=$(basename "$(ls artifacts/linux/*.deb)")
+          sha256sum "artifacts/linux/$DEB_NAME" | cut -d' ' -f1 > "release-assets/${DEB_NAME}.sha256"
+
+      # Falls back to uploading onto the existing release if release-linux.yml
+      # already published this version. Uploaded before latest.json so the
+      # next step can read back GitHub's real asset URLs.
+      - name: Publish installers to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/* --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" --repo "$REPO" --title "$TAG" \
+              --notes "Automated release published from job-tracker-desktop." \
+              release-assets/*
+          fi
+
+      # .msi matches by version substring; .app.tar.gz has no version in its
+      # filename, so it matches by extension only.
+      - name: Build latest.json
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+
+          WIN_MSI_SIG=$(cat release-assets/*.msi.sig)
+          MAC_TARGZ_SIG=$(cat release-assets/*.app.tar.gz.sig)
+          PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          ASSETS_JSON=$(gh api "repos/${REPO}/releases/tags/${TAG}" --jq '.assets')
+          WIN_URL=$(echo "$ASSETS_JSON" | jq -r --arg version "$VERSION" \
+            '[.[] | select((.name | endswith(".msi")) and (.name | contains($version)))] | .[0].browser_download_url')
+          MAC_URL=$(echo "$ASSETS_JSON" | jq -r \
+            '[.[] | select(.name | endswith(".app.tar.gz"))] | .[0].browser_download_url')
+          if [ -z "$WIN_URL" ] || [ "$WIN_URL" = "null" ]; then
+            echo "::error::No .msi asset on $TAG matched version $VERSION" >&2
+            exit 1
+          fi
+          if [ -z "$MAC_URL" ] || [ "$MAC_URL" = "null" ]; then
+            echo "::error::No .app.tar.gz asset on $TAG matched version $VERSION" >&2
+            exit 1
+          fi
+
+          jq -n \
+            --arg version "$VERSION" \
+            --arg notes "Kajitor v${VERSION}. See the source repository for release notes." \
+            --arg pub_date "$PUB_DATE" \
+            --arg win_url "$WIN_URL" \
+            --arg win_sig "$WIN_MSI_SIG" \
+            --arg mac_url "$MAC_URL" \
+            --arg mac_sig "$MAC_TARGZ_SIG" \
+            '{
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: {
+                "windows-x86_64": { signature: $win_sig, url: $win_url },
+                "darwin-aarch64": { signature: $mac_sig, url: $mac_url },
+                "darwin-x86_64": { signature: $mac_sig, url: $mac_url }
+              }
+            }' > release-assets/latest.json
+
+      - name: Upload latest.json to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          gh release upload "$TAG" release-assets/latest.json --repo "$REPO" --clobber
+
+      # Traceability only. Skips if release-linux.yml already tagged this version.
+      - name: Tag source commit
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin, skipping."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi

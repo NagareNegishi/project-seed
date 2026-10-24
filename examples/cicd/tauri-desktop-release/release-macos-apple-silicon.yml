@@ -1,0 +1,190 @@
+name: Release macOS
+
+# Manual, macOS-only: builds and publishes the DMG + updater artifacts, for
+# verifying the macOS path (Step 10's Open action, Step 11's auto-update
+# loop, Gatekeeper first-launch UX) without also paying for a Windows/Linux
+# build. Split out the same way release-windows.yml was split out of
+# release.yml. Once all platforms are verified, release.yml remains the real
+# "build and publish everything at once" workflow for actual releases — this
+# one isn't meant to replace it.
+#
+# latest.json is shared with Windows (both platforms need an entry in the
+# same file), so unlike release-linux.yml this workflow can't just overwrite
+# it — it downloads whatever latest.json already exists on the release (if
+# any) and merges its own darwin-aarch64 entry in, preserving any
+# windows-x86_64 entry already published.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-macos:
+    runs-on: macos-latest
+
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/cargo-target
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      # Frozen arm64-only reference (see header) — release.yml and
+      # release-macos.yml both build universal now; this one stays single-arch.
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with release.yml's build-macos job — a hit means
+      # the binary already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build
+        working-directory: src-tauri
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: cargo tauri build
+
+      - name: Read app version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stage release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          cp "${{ env.CARGO_TARGET_DIR }}"/release/bundle/dmg/*.dmg release-assets/
+          cp "${{ env.CARGO_TARGET_DIR }}"/release/bundle/macos/*.app.tar.gz release-assets/
+          cp "${{ env.CARGO_TARGET_DIR }}"/release/bundle/macos/*.app.tar.gz.sig release-assets/
+
+      # Falls back to uploading onto the existing release if release.yml or
+      # release-windows.yml already published this version. Uploaded before
+      # latest.json so the next step can read back GitHub's real asset URL.
+      - name: Publish installer to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/*.dmg release-assets/*.app.tar.gz release-assets/*.app.tar.gz.sig --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" --repo "$REPO" --title "$TAG" \
+              --notes "Automated macOS release published from job-tracker-desktop." \
+              release-assets/*.dmg release-assets/*.app.tar.gz release-assets/*.app.tar.gz.sig
+          fi
+
+      # Merge, not overwrite: pull any existing latest.json off the release
+      # (it may already carry a windows-x86_64 entry from a Windows run) and
+      # jq-deep-merge this platform's entry into it. Unlike the .msi, Tauri's
+      # macOS updater archive has no version in its filename (tauri-bundler
+      # source), so match by extension alone — safe since a release only
+      # ever has one .app.tar.gz.
+      - name: Build merged latest.json
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+
+          gh release download "$TAG" --repo "$REPO" -p latest.json -O existing-latest.json --clobber 2>/dev/null \
+            || echo '{}' > existing-latest.json
+
+          MAC_TARGZ_SIG=$(cat release-assets/*.app.tar.gz.sig)
+          MAC_URL=$(gh api "repos/${REPO}/releases/tags/${TAG}" \
+            | jq -r '[.assets[] | select(.name | endswith(".app.tar.gz"))] | .[0].browser_download_url')
+          if [ -z "$MAC_URL" ] || [ "$MAC_URL" = "null" ]; then
+            echo "::error::No .app.tar.gz asset found on $TAG" >&2
+            exit 1
+          fi
+          PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          jq -n \
+            --slurpfile existing existing-latest.json \
+            --arg version "$VERSION" \
+            --arg notes "Kajitor v${VERSION}. See the source repository for release notes." \
+            --arg pub_date "$PUB_DATE" \
+            --arg mac_url "$MAC_URL" \
+            --arg mac_sig "$MAC_TARGZ_SIG" \
+            '$existing[0] * {
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: {
+                "darwin-aarch64": { signature: $mac_sig, url: $mac_url }
+              }
+            }' > release-assets/latest.json
+
+      - name: Upload latest.json to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          gh release upload "$TAG" release-assets/latest.json --repo "$REPO" --clobber
+
+      # Traceability only. Skips if another platform's workflow already
+      # tagged this version.
+      - name: Tag source commit
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin, skipping."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi

@@ -1,0 +1,206 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Shared env vars available to all jobs.
+# Keeps image names consistent across build-push and deploy jobs.
+env:
+  AWS_REGION: ap-southeast-2
+  BACKEND_IMAGE: ${{ secrets.ECR_REGISTRY }}/jobtracker-backend
+  NGINX_IMAGE: ${{ secrets.ECR_REGISTRY }}/jobtracker-frontend
+
+jobs:
+  # Runs xUnit tests — all downstream jobs declare needs: [test, frontend-test] transitively, so a failure here stops the pipeline
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Run tests
+        run: dotnet test --verbosity normal
+
+  # Runs the Vitest suite — same gate as backend test, kept as a separate job so it runs in parallel.
+  frontend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: job-tracker-ui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test -- --run
+
+  # Builds backend + nginx images and pushes to ECR.
+  # needs: [test, frontend-test] — skipped entirely if either test suite fails.
+  build-push:
+    runs-on: ubuntu-latest
+    needs: [test, frontend-test]
+    steps:
+      - uses: actions/checkout@v6
+
+      # Authenticates the Actions runner to AWS.
+      # Credentials come from GitHub secrets — never hardcoded.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Exchanges AWS credentials for a temporary Docker registry password,
+      # then logs Docker into ECR so subsequent push steps are authorized.
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Creates a BuildKit builder instance — required by build-push-action.
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Build context is repo root (needs .sln + both projects).
+      # :latest tag — deploy job always pulls the newest image.
+      - name: Build and push backend
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: JobTrackerApi/Dockerfile
+          push: true
+          tags: ${{ env.BACKEND_IMAGE }}:latest
+
+      # Build context is job-tracker-ui/ (self-contained Node build).
+      - name: Build and push nginx
+        uses: docker/build-push-action@v7
+        with:
+          context: job-tracker-ui
+          file: job-tracker-ui/Dockerfile
+          push: true
+          tags: ${{ env.NGINX_IMAGE }}:latest
+
+  # Runs EF Core migrations against RDS via SSH tunnel before new containers start.
+  # needs: [build-push] — skipped if build fails; failed migration stops deploy, old containers stay up.
+  migrate:
+    runs-on: ubuntu-latest
+    needs: [build-push]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      # dotnet-ef is not on the runner by default — install as a global tool.
+      # $GITHUB_PATH persists the tools directory into PATH for all subsequent steps.
+      - name: Install dotnet-ef
+        run: |
+          dotnet tool install --global dotnet-ef
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # RDS is not internet-accessible — only EC2 can reach it via rds-ec2-1 security group.
+      # -L tunnels runner's localhost:5432 through EC2 to RDS.
+      # -N -f: no command, fork to background. ExitOnForwardFailure: fail fast if EC2 can't reach RDS.
+      - name: Open SSH tunnel to RDS
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -L 5432:${{ secrets.RDS_ENDPOINT }}:5432 \
+              -N -f \
+              -o ExitOnForwardFailure=yes \
+              ubuntu@${{ secrets.EC2_HOST }}
+
+      # Poll until port 5432 accepts connections — proper readiness check, not a fixed sleep.
+      # timeout 30 ensures the job fails instead of hanging if the tunnel never becomes ready.
+      - name: Wait for tunnel
+        run: timeout 30 bash -c 'until nc -z localhost 5432; do sleep 1; done'
+
+      # Reuse DB_CONNECTION_STRING but swap Host to localhost — tunnel handles the routing.
+      # ConnectionStrings__ double-underscore maps to ConnectionStrings: in ASP.NET Core config.
+      - name: Run migrations
+        run: |
+          export ConnectionStrings__JobTrackerContext=$(echo "${{ secrets.DB_CONNECTION_STRING }}" | sed 's/Host=[^;]*/Host=localhost/')
+          dotnet ef database update --project JobTrackerApi
+
+  # Copies compose.prod.yml to EC2, then pulls new images and restarts containers.
+  # needs: [migrate] — only runs after migrations succeed.
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    steps:
+      - uses: actions/checkout@v6
+
+      # Write the SSH key to a temp file and lock down permissions.
+      # chmod 600 — SSH refuses to use keys readable by anyone else.
+      # ssh-keyscan fetches EC2's public host key — verifies we're connecting
+      # to the right machine before the session starts. -H hashes the hostname.
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      # Copy compose.prod.yml from the runner to EC2.
+      # Runner has the file via checkout above.
+      - name: Copy compose file to EC2
+        run: |
+          scp -i ~/.ssh/deploy_key compose.prod.yml \
+            ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/compose.prod.yml
+
+      # All commands in the heredoc run on EC2 via SSH.
+      # ECR login uses the EC2 IAM role (jobtracker_ec2_ecr_pull) — no AWS credentials needed here.
+      # docker pull both images before up — old containers keep running
+      # until both are ready, minimising the mixed-version window.
+      # ${{ }} expressions are expanded by GitHub Actions before SSH — safe inside 'EOF'.
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+              | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+            docker pull ${{ env.BACKEND_IMAGE }}:latest
+            docker pull ${{ env.NGINX_IMAGE }}:latest
+
+            cd /home/ubuntu/app
+
+            # compose.prod.yml uses ${VAR} substitution — must be exported in this session.
+            export ECR_REGISTRY="${{ secrets.ECR_REGISTRY }}"
+            export DB_CONNECTION_STRING="${{ secrets.DB_CONNECTION_STRING }}"
+            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            export JWT_ISSUER="${{ secrets.JWT_ISSUER }}"
+            export JWT_AUDIENCE="${{ secrets.JWT_AUDIENCE }}"
+            export S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}"
+            export DEMO_RESET_KEY="${{ secrets.DEMO_RESET_KEY }}"
+            export EMAIL_FROM_ADDRESS="${{ secrets.EMAIL_FROM_ADDRESS }}"
+            export RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}"
+            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
+            export ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
+
+            docker compose -f compose.prod.yml up --no-build -d
+          EOF
