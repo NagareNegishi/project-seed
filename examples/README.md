@@ -12,6 +12,7 @@ checklist") for the merge steps.
 | `dotnet/` | company-verification service | `devcontainers/dotnet` | `app` only, no db | `.env.example` for app-specific secrets; firewall includes two external APIs (NZ/AU company registries) as a template for whitelisting your own |
 | `dotnet-postgres/` | Job-Application-Tracker | `devcontainers/dotnet` + `postgresql-client` | `app` + `db` (postgres) | React frontend; has its own `reference/` subfolder (ASP.NET Core, ASP.NET Identity docs) |
 | `node-vite/` | expense-splitter | `devcontainers/base:ubuntu-22.04` + node feature | `app` only, no db | Frontend-only; Vite dev server on port 5173 |
+| `python-postgres/` | kajitor-py | `devcontainers/python:3-3.14-trixie` + `uv` (copied from Astral's image) | `app` + `db` (postgres) | React frontend; FastAPI/SQLAlchemy/Alembic backend; the Python rebuild of `dotnet-postgres`'s source project |
 
 Every folder above leaves project-specific values in place (names, timezones,
 app-specific domains/keys) — its `README.md` lists exactly which ones to
