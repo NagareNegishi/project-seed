@@ -1,0 +1,23 @@
+name: Reset Demo Data
+
+on:
+  schedule:
+    # 14:00 UTC = 02:00 NZST / 03:00 NZDT; GitHub's scheduling delay pushes the
+    # actual run to roughly 03:00-05:00 NZ, a low-traffic window year-round.
+    - cron: '0 14 * * *'
+  workflow_dispatch:       # manual trigger from GitHub Actions UI
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reset demo data
+        run: |
+          curl -X POST https://api.kajitor.com/api/auth/demo/reset \
+               -H "X-Reset-Key: ${{ secrets.DEMO_RESET_KEY }}" \
+               --fail
+      - name: Clean up unverified accounts
+        run: |
+          curl -X POST https://api.kajitor.com/api/auth/cleanup-unverified \
+               -H "X-Reset-Key: ${{ secrets.DEMO_RESET_KEY }}" \
+               --fail

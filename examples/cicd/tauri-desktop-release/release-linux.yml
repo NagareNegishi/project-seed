@@ -1,0 +1,140 @@
+name: Release Linux
+
+# Manual, Linux-only: publishes just the .deb (+ its sha256) needed for the
+# Flatpak/Flathub submission. Split out from release.yml so a Windows or
+# macOS build failure there — both still unverified, see progress.md Step 12 —
+# doesn't block getting the Linux artifact we actually need right now.
+# Release/tag steps are idempotent so this can run before or after
+# release.yml for the same version without colliding.
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish-linux:
+    runs-on: ubuntu-latest
+
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/cargo-target
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: job-tracker-ui/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache cargo bin (tauri-cli)
+        id: cache-tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: cargo-bin-tauri-cli-2.11.4-${{ runner.os }}
+
+      # Cache key is shared with release.yml's build-linux job — a hit means
+      # the binary already exists, and cargo install errors on that.
+      - name: Install Tauri CLI
+        if: steps.cache-tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "=2.11.4" --locked
+
+      - name: Cache cargo registry and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ${{ env.CARGO_TARGET_DIR }}
+          key: cargo-build-${{ runner.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            cargo-build-${{ runner.os }}-
+
+      - name: Install frontend dependencies
+        working-directory: job-tracker-ui
+        run: npm ci
+
+      # Fallback cache key above can restore a prior version's bundle output too.
+      - name: Clean stale bundle output
+        run: rm -rf "${{ env.CARGO_TARGET_DIR }}/release/bundle"
+
+      - name: cargo tauri build (deb)
+        working-directory: src-tauri
+        run: cargo tauri build -b deb
+
+      - name: Read app version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stage release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          DEB_PATH=$(ls "${{ env.CARGO_TARGET_DIR }}"/release/bundle/deb/*.deb)
+          cp "$DEB_PATH" release-assets/
+          DEB_NAME=$(basename "$DEB_PATH")
+          sha256sum "$DEB_PATH" | cut -d' ' -f1 > "release-assets/${DEB_NAME}.sha256"
+
+      # gh release create fails if the tag already exists (e.g. release.yml
+      # already published this version) — fall back to uploading assets onto
+      # the existing release instead of erroring out.
+      - name: Publish release to public releases repo
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          REPO="kajitor/desktop-releases"
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" release-assets/* --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" --repo "$REPO" --title "$TAG" \
+              --notes "Automated Linux release published from job-tracker-desktop." \
+              release-assets/*
+          fi
+
+      # Same idempotency concern as release.yml's identical step — skip if
+      # this version was already tagged by a prior run (Linux-only or full).
+      - name: Tag source commit
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin, skipping."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
