@@ -316,15 +316,6 @@ docs/
 │   ├── reusables-candidates/
 │   │   ├── implementation-order.md  round 1 status log for populating reusables/: test infra setup and which candidate entries are done, by phase
 │   │   └── proposal.md              round 1 proposal of reusables/ candidates to accept or reject one by one, entries that build on each other, and later rounds to explore
-│   ├── site-factory/
-│   │   ├── catalog.md     v1 pattern catalog: which site sections ship at Level 1, and the day-cost cutoff rule for the cut
-│   │   ├── decisions.md   recommendations for site-factory's nine open questions, each awaiting promotion through product.md's maturity scheme
-│   │   ├── ideas.md       uncommitted idea pool for site-factory beyond the v1 catalog, tagged by cost and phase
-│   │   ├── impl.md        implementation plan for site-factory, verified against official sites via domain-restricted search
-│   │   ├── intake.md      site-factory's content-intake design: a Zod schema per section as the single source of truth, mirrored by the client questionnaire
-│   │   ├── level-2.md     contract that site-factory's Phase 3 dynamic services must support, while the site itself stays static
-│   │   ├── operations.md  site-factory's delivery and operations proposal: client lifecycle, per-tier obligations, and how delivered sites survive over time
-│   │   └── product.md     ai-audited plan for site-factory, linking out to its detail docs (decisions, catalog, intake, operations, level-2)
 │   ├── site-prospector/
 │   │   └── product.md  idea plan for a lead-prospecting tool: find outdated or broken sites, score them as leads for a web-building service
 │   ├── verify-fanout/
