@@ -30,6 +30,5 @@ RUN chmod +x /usr/local/bin/project-firewall.sh \
 # ENV PATH="$PATH:<tool path>"
 
 
-# Codex CLI — npm install; no official devcontainer Feature exists yet (verified
-# 2026-11-06), this matches OpenAI's own documented install methods
-RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g @openai/codex" 2>&1
+# [Optional] Uncomment this line to install global node packages.
+# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1

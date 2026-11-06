@@ -52,7 +52,10 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": {
 		// Set up Claude onboarding state, skip the onboarding process
-		"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json"
+		"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json",
+		// Codex CLI: needs Node, which the feature adds after the Dockerfile builds.
+		// "|| true": a failure here would skip the firewall in postStartCommand.
+		"codex-install": "npm install -g @openai/codex || true"
 		// <placeholder> dependency restore/install commands per stack (see examples/)
 	},
 
