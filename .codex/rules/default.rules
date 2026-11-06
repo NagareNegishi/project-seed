@@ -1,0 +1,54 @@
+# DISABLED: Codex is not part of this project.
+# Running Codex and Claude Code in one repo/container is not officially supported
+# (no official guidance or shared control setup found), and Codex's bubblewrap sandbox
+# needs a loosened container. Not pursued here. If the Codex sandbox is needed, build it
+# in a fork of this project that references this repo, so the Claude setup is untouched.
+# Kept commented out for reference only.
+
+# Codex command rules: git read-only, no gh.
+# Source: learn.chatgpt.com/docs/agent-configuration/rules.md
+# No negation syntax: write/network git subcommands are listed explicitly.
+# Exact-prefix matching: global options before the subcommand are denied below.
+# Not covered by prefix rules: --opt=value tokens, absolute paths,
+# and scripts Codex does not split (redirection, env vars, wildcards).
+
+# prefix_rule(
+#     pattern = ["git", [
+#         "add", "am", "apply", "archive", "bisect", "branch", "bundle",
+#         "checkout", "cherry-pick", "clean", "clone", "commit", "config",
+#         "fetch", "filter-branch", "format-patch", "gc", "init", "lfs",
+#         "ls-remote", "maintenance", "merge", "mv", "notes", "pack-refs",
+#         "prune", "pull", "push", "rebase", "reflog", "remote", "repack",
+#         "replace", "reset", "restore", "revert", "rm", "sparse-checkout",
+#         "stash", "submodule", "switch", "symbolic-ref", "tag",
+#         "update-index", "update-ref", "worktree",
+#     ]],
+#     decision = "forbidden",
+#     justification = "Only git status, diff, log and show are permitted.",
+#     match = ["git push origin main", "git commit -m x", "git checkout main"],
+#     not_match = ["git status", "git diff", "git log", "git show HEAD"],
+# )
+
+# prefix_rule(
+#     pattern = ["git", [
+#         "-C", "-c", "--git-dir", "--work-tree", "--exec-path",
+#         "--no-pager", "-p", "--paginate", "--bare", "--namespace",
+#         "--literal-pathspecs", "--config-env",
+#     ]],
+#     decision = "forbidden",
+#     justification = "Git global options can route around the subcommand rule.",
+#     match = ["git -C /tmp push", "git --no-pager push"],
+# )
+
+# prefix_rule(
+#     pattern = [["gh", "/usr/bin/gh", "/usr/local/bin/gh"]],
+#     decision = "forbidden",
+#     justification = "No GitHub CLI for Codex in this repo.",
+#     match = ["gh pr list", "/usr/bin/gh auth status"],
+# )
+
+# prefix_rule(
+#     pattern = [["/usr/bin/git", "/usr/local/bin/git"]],
+#     decision = "forbidden",
+#     justification = "Call git by name so the rules above apply.",
+# )

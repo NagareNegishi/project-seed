@@ -1,0 +1,36 @@
+# DISABLED: Codex is not part of this project.
+# Running Codex and Claude Code in one repo/container is not officially supported
+# (no official guidance or shared control setup found), and Codex's bubblewrap sandbox
+# needs a loosened container. Not pursued here. If the Codex sandbox is needed, build it
+# in a fork of this project that references this repo, so the Claude setup is untouched.
+# Kept commented out for reference only.
+
+# Codex config for this repo: read-only, no command network, ask first.
+# Sources: learn.chatgpt.com/docs/permissions.md (profiles, deny),
+#          /docs/config-file/config-reference.md and /config-basic.md (keys, trust).
+
+# default_permissions = "repo-readonly"
+# approval_policy     = "on-request"
+# web_search          = "disabled"   # hosted search is not covered by command network rules
+
+# No sandbox_mode here. If sandbox_mode appears in ANY loaded config file
+# (including ~/.codex/config.toml), in a selected profile file, or via --sandbox,
+# Codex uses the legacy sandbox settings instead of this profile.
+
+# [permissions.repo-readonly.filesystem]
+# ":root"    = "deny"
+# ":minimal" = "read"
+# glob_scan_max_depth = 8   # bounded pre-expansion for "**" deny globs on Linux
+
+# [permissions.repo-readonly.filesystem.":workspace_roots"]
+# "."                              = "read"
+# "**/.env*"                       = "deny"
+# "**/appsettings.*.json"          = "deny"
+# "**/*secret*"                    = "deny"
+# "**/creds.json"                  = "deny"
+# "**/docker-compose.override.yml" = "deny"
+# "**/*.db"                        = "deny"
+# "uploads"                        = "deny"
+
+# [permissions.repo-readonly.network]
+# enabled = false   # commands only; model and auth traffic is unaffected

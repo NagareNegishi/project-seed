@@ -3,6 +3,7 @@
 FROM mcr.microsoft.com/devcontainers/base:debian
 
 # Install firewall tools — required by project-firewall.sh, do not remove.
+# DISABLED (Codex not supported here, see .codex/config.toml): bubblewrap, the Codex CLI Linux sandbox, was removed from this list.
 # Add stack packages (db clients etc.) to this list; see examples/.
 # "apt-get update" fetches the latest package lists from Debian/Ubuntu repositories
 # "apt-get install" installs the packages. "-y" auto-confirms prompts. "--no-install-recommends" tells apt to install only what's strictly required
