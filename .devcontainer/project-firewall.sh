@@ -69,6 +69,7 @@ done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 # registry.npmjs.org — essential for npm installs
 # api.osv.dev — vulnerability database, used by the owasp-* skills
 # api.openai.com, auth.openai.com — essential for Codex CLI auth and API calls
+# chatgpt.com — Codex CLI ChatGPT-account login (workspace routing)
 #
 # <placeholder> Add stack domains below, one per line ending in \
 # (e.g. NuGet, VS Code marketplace — see examples/<stack>/ for a ready-made block)
@@ -77,7 +78,8 @@ for domain in \
     "registry.npmjs.org" \
     "api.osv.dev" \
     "api.openai.com" \
-    "auth.openai.com"; do
+    "auth.openai.com" \
+    "chatgpt.com"; do
     echo "Resolving $domain..."
     ips=$(dig +noall +answer A "$domain" | awk '$4 == "A" {print $5}')
     if [ -z "$ips" ]; then
