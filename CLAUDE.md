@@ -37,10 +37,10 @@ Promote to CLAUDE.md or a skill only with user review. Mechanism: `docs/notes-sy
 
 <One paragraph: what the app does.>
 
-- **Backend**: <framework + version> (`<backend-dir>/`)
-- **Frontend**: <framework + version> (`<frontend-dir>/`)
-- **Database**: <database + access layer>
-- **Test project**: <test framework> (`<test-dir>/`)
+- **Backend**: none yet (`backend/` is an empty folder, any stack)
+- **Frontend**: React 19 + Vite 8, plain JavaScript, no TypeScript (`frontend/`)
+- **Database**: none
+- **Test project**: Vitest 5 + React Testing Library (`frontend/src/**/*.test.jsx`)
 
 The dev environment runs in a Dev Container (`.devcontainer/`).
 
@@ -67,18 +67,20 @@ and hooks). Check here before writing a new component or util; not part of any b
 <run command>
 ```
 
-### Tests (from repo root or `<test-dir>/`)
+### Tests (from `frontend/`)
 
 ```bash
-<test command>
-<single-test filter command>
+npm test                        # run once
+npm test -- src/App.test.jsx    # single file
+npm run test:watch
 ```
 
-### Frontend (from `<frontend-dir>/`)
+### Frontend (from `frontend/`)
 
 ```bash
-<dev server command>    # <dev URL>
-<build command>
+npm run dev     # http://localhost:5173
+npm run build
+npm run lint
 ```
 
 ## Configuration

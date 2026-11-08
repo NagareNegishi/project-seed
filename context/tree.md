@@ -61,6 +61,7 @@ files changed.
 | `docs/` | done | all files mapped; most entries read in part, not line by line - re-verify before relying on specifics |
 | `examples/` | done | all files across `stack/` (6 stacks) and `cicd/` (3 pipelines + dependabot baseline), leaning on each folder's own README |
 | `.github/` | done | the 1 tracked file |
+| `frontend/`, `backend/` | done | all files except `package-lock.json` (not opened) |
 | `reusables/` | done | all files; spot-checked against description, not every file individually re-read this pass |
 | `scripts/` | done | both files |
 | root files (`CLAUDE.md`, `CONTEXT.md`, `README.md`, `LICENSE`, `.editorconfig`, `.gitignore`, `REUSABLES.md`) | done | all 7 |
@@ -430,6 +431,25 @@ examples/
 
 `.github/drafts/` is gitignored local state - see "Not mapped" above, not in this
 tree.
+
+## backend/ and frontend/
+
+```
+backend/
+└── .gitkeep  keeps the empty backend folder tracked; any stack goes here
+frontend/
+├── src/
+│   ├── test/
+│   │   └── setup.js    registers Testing Library cleanup after each test
+│   ├── App.jsx         starter root component: a heading and a counter button
+│   ├── App.test.jsx    tests that the starter renders and the counter increments
+│   └── main.jsx        React entry point that mounts App in StrictMode
+├── eslint.config.js    flat ESLint config: JS recommended, React and React hooks rules, browser globals
+├── index.html          Vite HTML entry that loads src/main.jsx
+├── package-lock.json   npm lockfile; NOT READ
+├── package.json        scripts (dev, build, preview, lint, test, test:watch) and dependencies for React 19, Vite, Vitest, Testing Library and ESLint
+└── vite.config.js      Vite and Vitest config: React plugin, dev server exposed on all interfaces for the dev container, jsdom tests
+```
 
 ## reusables/
 
