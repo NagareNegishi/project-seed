@@ -20,14 +20,16 @@
 	// VS code specific properties: https://containers.dev/supporting#visual-studio-code
 	"customizations": {
 		"vscode": {
-			// <placeholder> stack extensions, e.g. "ms-dotnettools.csdevkit"
-			"extensions": []
+			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"vitest.explorer"
+			]
 		}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// <placeholder> backend, frontend, db ports
-	"forwardPorts": [],
+	// frontend (Vite dev server)
+	"forwardPorts": [5173],
 
 	"mounts": [
 		// Fixed volume name shared by every project built from the seed:
@@ -52,8 +54,9 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": {
 		// Set up Claude onboarding state, skip the onboarding process
-		"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json"
-		// <placeholder> dependency restore/install commands per stack (see examples/)
+		"claude-onboarding": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json",
+		// Install frontend dependencies
+		"frontend": "cd frontend && npm install"
 	},
 
 	// Executes the firewall script every time the container starts
