@@ -309,18 +309,9 @@ docs/
 │   ├── v3-no-coauthor.md       v2 permissions unchanged; the coauthor-guard.sh hook denies any command carrying a Co-Authored-By trailer or the Claude author identity
 │   └── v4-gh-allowlist.md      opens the GitHub CLI for the first time: eleven gh forms allowed silently, everything else hard-denied by the gh-guard.sh hook
 ├── plans/
-│   ├── idea-shaping/
-│   │   └── product.md  idea plan for a voice-to-product-plan pipeline: record a spoken idea, transcribe and organize it, ask about unclear parts, hand it off once well-formed
-│   ├── promotion-engine/
-│   │   └── product.md  idea plan for a reusable product-promotion engine: register a product, work out who to reach, draft channel-appropriate content on a cadence
 │   ├── reusables-candidates/
 │   │   ├── implementation-order.md  round 1 status log for populating reusables/: test infra setup and which candidate entries are done, by phase
 │   │   └── proposal.md              round 1 proposal of reusables/ candidates to accept or reject one by one, entries that build on each other, and later rounds to explore
-│   ├── site-prospector/
-│   │   └── product.md  idea plan for a lead-prospecting tool: find outdated or broken sites, score them as leads for a web-building service
-│   ├── verify-fanout/
-│   │   ├── impl.md     implementation plan for verify-fanout: a standalone headless-Claude container running a research-manager that dispatches researcher subagents
-│   │   └── product.md  settled product plan for verify-fanout: a managed multi-agent workflow that checks every external claim in an impl.md against its cited source
 │   └── .gitkeep  keeps docs/plans/ tracked when empty of files
 ├── reference/
 │   ├── project-specific/
