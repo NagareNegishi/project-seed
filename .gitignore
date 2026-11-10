@@ -37,3 +37,7 @@ build-orchestration/route-block-count
 AGENTS.md
 .codex/
 .agents/
+
+# Dependencies and build output
+node_modules/
+dist/
