@@ -22,7 +22,7 @@ Produce a PR title and body from local git history and write them to a draft fil
 3. Collect the branch's work: `git log <base>..HEAD` and `git diff <base>...HEAD --stat`. If the log is empty (on the base branch, or no commits yet), stop and tell the user there is nothing to draft — never invent one.
 4. Read the full diff of any file whose purpose is unclear from the stat and commit messages. Never paste raw diffs into the draft.
 5. Run `git status`; if anything is uncommitted, note in chat that it is not part of the draft.
-6. If `.github/PULL_REQUEST_TEMPLATE.md` exists, fill its structure instead of the default one below.
+6. If `.github/PULL_REQUEST_TEMPLATE.md` is tracked (`git ls-files --error-unmatch .github/PULL_REQUEST_TEMPLATE.md` exits 0), fill its structure instead of the default one below. An untracked file does not count.
 
 ## Write the draft
 

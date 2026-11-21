@@ -41,6 +41,7 @@ Every entry carries exactly one maturity mark:
   a named entry: ask, wait for the instruction, then stamp — one entry per
   instruction. Never stamp either mark on your own initiative, and never reuse
   one entry's instruction for another.
+- Once the user has named an entry and said it passes, stamp it. Don't re-show it or ask again.
 - Stamp the running model's short id per entry, e.g. `🤖 ai-audited(opus-4.8)`.
 
 An audit pass on an entry means: read it, tighten the wording, flag

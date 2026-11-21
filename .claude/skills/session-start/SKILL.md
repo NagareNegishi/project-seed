@@ -19,3 +19,4 @@ Orient from the baton the previous session left.
 3. If **Read first** names a doc (not `None`), read that doc before anything else.
 4. Restate to the user, in 2–3 lines: the **Goal** and the **Next task**.
 5. Stop and confirm the next task with the user before acting — never auto-start it.
+6. Once confirmed, invoke the `read` skill before any plan or edit.

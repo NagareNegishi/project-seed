@@ -15,7 +15,7 @@ This skill is user-invoked only (`/owasp-update`). It never runs automatically.
 
 ### 1. Detect Project Language
 
-Scan the project for language signals:
+Detect from `git ls-files --cached --others --exclude-standard`, not a filesystem walk, so ignored dependency and build output (`node_modules/`, `dist/`) never count. Look for these signals:
 
 | Language | Detection signals |
 |---|---|
