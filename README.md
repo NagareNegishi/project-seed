@@ -25,7 +25,7 @@ reference docs. New projects start from this repo (GitHub → "Use this template
 ## Instantiation checklist
 
 1. Create a repo from this template and open it locally.
-2. Pick a stack from `examples/stack/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains. Then delete the `examples/` entries you didn't use.
+2. Pick a stack from `examples/stack/` and merge its files over the `<placeholder>` markers (its README says what goes where): Dockerfile base image + packages, compose services/volumes, devcontainer ports/mounts/env/postCreate, firewall stack domains. Then delete the `examples/` entries you didn't use. The seed mounts all of `/workspaces` so its author can read sibling repos; in a new project, change the compose mount to `..:/workspaces/<project>:cached` (see `examples/stack/node-supabase/docker-compose.yml`) to keep other repos out of the container.
 3. Create `.devcontainer/.env` from `.env.example` and fill the values.
 4. Fill `CLAUDE.md` (skeleton at repo root) and `.claude/rules/` paths.
    Review `LICENSE` — the seed ships MIT under the seed author's name; replace or
