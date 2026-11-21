@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    # Keeps the container running after the shell exits.
+    command: sleep infinity
+    # The firewall script needs these.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+volumes:
+  # Fixed name shared by every dev container: one Claude login.
+  claude-credentials:
+    name: claude-credentials

@@ -1,0 +1,33 @@
+// Dev container for a static site: plain files served by python3 on one port.
+// No Docker-in-Docker, no database, no node_modules volumes.
+{
+	"name": "<project-name>",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	// <placeholder> the port the static server listens on
+	"forwardPorts": [8000],
+	"portsAttributes": {
+		"8000": { "label": "<site-label>", "requireLocalPort": true }
+	},
+	"mounts": [
+		// Shared with the other dev containers: one Claude login for all of them.
+		"source=claude-credentials,target=/home/vscode/.claude,type=volume"
+	],
+	"containerEnv": {
+		"NODE_OPTIONS": "--max-old-space-size=4096",
+		"CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+		// <placeholder> e.g. Pacific/Auckland
+		"TZ": "Etc/UTC"
+	},
+	// Skips the Claude onboarding screens.
+	"postCreateCommand": "echo '{\"hasCompletedOnboarding\":true}' > /home/vscode/.claude/.claude.json",
+	// Applies the outbound firewall on every start, and tells git to trust the folder.
+	"postStartCommand": "sudo /usr/local/bin/project-firewall.sh && git config --global --add safe.directory ${containerWorkspaceFolder}",
+	"waitFor": "postStartCommand"
+}

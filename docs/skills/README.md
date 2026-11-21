@@ -31,6 +31,9 @@ a skill drove them (see `../permissions/v4-gh-allowlist.md`).
 - [github-issue-creator-decisions.md](github-issue-creator-decisions.md):
   decision log for the `github-issue-creator` skill (draft-only scope, output
   format, structure).
+- [main-sync.md](main-sync.md): dormant record of a `main-sync` skill for team repos
+  with local-only edits to tracked files. Not installed; copy it into
+  `.claude/skills/` to use.
 - `build-orchestration-*.md`: design ledger for the `build-orchestration` skill (the
   skill itself is the authoritative "what" at `.claude/skills/build-orchestration/SKILL.md`) —
   [build-orchestration-design-notes.md](build-orchestration-design-notes.md) (rationale,

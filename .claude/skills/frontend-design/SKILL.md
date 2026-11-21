@@ -18,6 +18,7 @@ description: Improve the visual design of the <project> frontend. Use when asked
 - Do not change <non-visual frontend dirs, e.g. `src/services/`, `src/hooks/`, `src/types/`>
 - Do not change routing structure
 - Do not modify <build config files, e.g. `vite.config.ts`, `tsconfig.json`>
+- Ask before changing design tokens (<tokens-file, e.g. `src/index.css` variables or a theme file>): they restyle every screen
 - Do not add npm dependencies without explicit approval
 
 ## Conventions
@@ -35,7 +36,7 @@ If the request is ambiguous, do not proceed — ask for clarification first:
 
 ### Per component loop
 1. Make changes to one component only
-2. Show a summary of what changed and why
+2. Run `<lint-command>` and report the result, then show a summary of what changed and why
 3. Stop and wait — do not proceed to the next component
 4. If approved, suggest a commit message but do not run any git commands — the user will handle git themselves
 5. If not approved, ask what to change before retrying
