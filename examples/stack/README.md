@@ -13,6 +13,7 @@ checklist") for the merge steps.
 | `dotnet-postgres/` | Job-Application-Tracker | `devcontainers/dotnet` + `postgresql-client` | `app` + `db` (postgres) | React frontend; has its own `reference/` subfolder (ASP.NET Core, ASP.NET Identity docs) |
 | `node-vite/` | expense-splitter | `devcontainers/base:ubuntu-22.04` + node feature | `app` only, no db | Frontend-only; Vite dev server on port 5173 |
 | `python-postgres/` | kajitor-py | `devcontainers/python:3-3.14-trixie` + `uv` (copied from Astral's image) | `app` + `db` (postgres) | React frontend; FastAPI/SQLAlchemy/Alembic backend; the Python rebuild of `dotnet-postgres`'s source project |
+| `static-site/` | static demo site | seed `Dockerfile` + `python3` | `app` only, no db | `python3 -m http.server`; firewall without the Docker-in-Docker parts; project name, port and timezone are placeholders |
 | `node-supabase/` | private monorepo | seed `Dockerfile` as is | `app` only (Supabase runs in Docker-in-Docker) | Docker-in-Docker firewall variant, per-package node_modules volumes, isolated mount; project names are placeholders |
 
 Every folder above leaves project-specific values in place (names, timezones,
